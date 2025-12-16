@@ -19,6 +19,7 @@ import Files from './components/Files'
 import Notifications from './components/Notifications'
 import Courses from './components/Courses'
 import CourseDetail from './components/CourseDetail'
+import LessonDetail from './components/LessonDetail'
 import VideoPlayer from './components/VideoPlayer'
 import Profile from './components/Profile'
 import { getRoles } from './utils/roles'
@@ -108,6 +109,7 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/courses/:id" element={<CourseDetail />} />
+              <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
               <Route path="/courses/:courseId/lessons/:lessonId/videos/:videoId" element={<VideoPlayer />} />
               <Route path="/files" element={<Files />} />
               <Route path="/notifications" element={<Notifications />} />

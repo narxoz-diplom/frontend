@@ -264,6 +264,11 @@
   min-width: 0;
 }
 
+.lesson-actions {
+  margin-top: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
 .lesson-header {
   display: flex;
   justify-content: space-between;
@@ -378,6 +383,11 @@
 .video-link:hover {
   background: rgba(52, 152, 219, 0.1);
   transform: translateX(4px);
+}
+
+.video-link.see-more {
+  font-style: italic;
+  opacity: 0.8;
 }
 
 .video-icon {

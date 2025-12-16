@@ -46,16 +46,26 @@
   padding: var(--spacing-lg);
   opacity: 0;
   transition: opacity var(--transition-base);
+  pointer-events: none;
+  z-index: 10;
 }
 
-.video-wrapper:hover .video-controls {
+.video-wrapper:hover .video-controls,
+.video-controls:hover {
   opacity: 1;
+  pointer-events: auto;
+}
+
+.video-controls * {
+  pointer-events: auto;
 }
 
 .progress-bar-container {
   width: 100%;
   padding: var(--spacing-sm) 0;
   cursor: pointer;
+  position: relative;
+  z-index: 11;
 }
 
 .progress-bar {
@@ -97,6 +107,8 @@
   align-items: center;
   margin-top: var(--spacing-md);
   gap: var(--spacing-md);
+  position: relative;
+  z-index: 11;
 }
 
 .controls-left,

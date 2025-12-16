@@ -70,40 +70,79 @@ const VideoPlayer = () => {
     const handleTimeUpdate = () => {
       const current = video.currentTime
       setCurrentTime(current)
+      if (duration > 0) {
       saveProgress(current)
+      }
     }
 
     const handleLoadedMetadata = () => {
-      setDuration(video.duration)
+      const videoDuration = video.duration
+      if (videoDuration && videoDuration > 0) {
+        setDuration(videoDuration)
+        // Загружаем сохраненный прогресс после загрузки метаданных
+        setTimeout(() => {
       loadProgress()
+        }, 100)
+      }
     }
 
-    const handlePlay = () => setIsPlaying(true)
-    const handlePause = () => setIsPlaying(false)
+    const handleLoadedData = () => {
+      const videoDuration = video.duration
+      if (videoDuration && videoDuration > 0 && duration === 0) {
+        setDuration(videoDuration)
+      }
+    }
+
+    const handlePlay = () => {
+      setIsPlaying(true)
+    }
+    
+    const handlePause = () => {
+      setIsPlaying(false)
+    }
+    
+    const handleEnded = () => {
+      setIsPlaying(false)
+    }
+    
     const handleVolumeChange = () => {
       setVolume(video.volume)
       setIsMuted(video.muted)
     }
+    
     const handleFullscreenChange = () => {
       setIsFullscreen(!!document.fullscreenElement)
     }
 
+    const handleCanPlay = () => {
+      // Убеждаемся, что duration установлен
+      if (video.duration && video.duration > 0 && duration === 0) {
+        setDuration(video.duration)
+      }
+    }
+
     video.addEventListener('timeupdate', handleTimeUpdate)
     video.addEventListener('loadedmetadata', handleLoadedMetadata)
+    video.addEventListener('loadeddata', handleLoadedData)
+    video.addEventListener('canplay', handleCanPlay)
     video.addEventListener('play', handlePlay)
     video.addEventListener('pause', handlePause)
+    video.addEventListener('ended', handleEnded)
     video.addEventListener('volumechange', handleVolumeChange)
     document.addEventListener('fullscreenchange', handleFullscreenChange)
 
     return () => {
       video.removeEventListener('timeupdate', handleTimeUpdate)
       video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+      video.removeEventListener('loadeddata', handleLoadedData)
+      video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('play', handlePlay)
       video.removeEventListener('pause', handlePause)
+      video.removeEventListener('ended', handleEnded)
       video.removeEventListener('volumechange', handleVolumeChange)
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
-  }, [videoRef.current])
+  }, [videoUrl, duration])
 
   const loadVideo = async () => {
     try {
@@ -115,7 +154,28 @@ const VideoPlayer = () => {
       
       if (foundVideo) {
         setVideo(foundVideo)
-        setVideoUrl(`/api${foundVideo.videoUrl}`)
+        // Формируем полный URL для видео
+        // videoUrl содержит /api/courses/videos/{objectName}/stream
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+        let url = foundVideo.videoUrl
+        
+        // Если videoUrl начинается с /api, добавляем базовый URL
+        if (url.startsWith('/api')) {
+          if (apiUrl.startsWith('http')) {
+            url = `${apiUrl}${url}`
+          } else {
+            url = url // Используем относительный URL
+          }
+        } else if (!url.startsWith('http')) {
+          // Если не начинается с http и не с /api, добавляем /api
+          url = `/api${url}`
+        }
+        
+        // НЕ кодируем objectName - Spring автоматически декодирует path variables
+        // Если objectName уже закодирован в базе данных, он будет правильно обработан
+        // Двойное кодирование приведет к ошибкам
+        
+        setVideoUrl(url)
       }
 
       const lessonsResponse = await api.get(`/courses/${courseId}/lessons`)
@@ -136,15 +196,30 @@ const VideoPlayer = () => {
   }
 
   const loadProgress = () => {
-    if (typeof Storage !== 'undefined') {
+    if (typeof Storage !== 'undefined' && videoRef.current) {
       const progressData = localStorage.getItem('videoProgress')
       if (progressData) {
         try {
           const progress = JSON.parse(progressData)
           const savedProgress = progress[progressKey]
-          if (savedProgress && videoRef.current) {
-            videoRef.current.currentTime = savedProgress.currentTime || 0
-            setCurrentTime(savedProgress.currentTime || 0)
+          if (savedProgress && savedProgress.currentTime !== undefined) {
+            const savedTime = savedProgress.currentTime || 0
+            // Устанавливаем время только если видео готово
+            if (videoRef.current.readyState >= 2) {
+              videoRef.current.currentTime = savedTime
+              setCurrentTime(savedTime)
+            } else {
+              // Если видео еще не готово, ждем и устанавливаем позже
+              const checkReady = () => {
+                if (videoRef.current && videoRef.current.readyState >= 2) {
+                  videoRef.current.currentTime = savedTime
+                  setCurrentTime(savedTime)
+                } else if (videoRef.current) {
+                  setTimeout(checkReady, 100)
+                }
+              }
+              checkReady()
+            }
           }
         } catch (e) {
           console.error('Error loading progress:', e)
@@ -241,20 +316,30 @@ const VideoPlayer = () => {
     }
   }
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (videoRef.current) {
+      try {
       if (isPlaying) {
         videoRef.current.pause()
+          setIsPlaying(false)
       } else {
-        videoRef.current.play()
+          await videoRef.current.play()
+          setIsPlaying(true)
+        }
+      } catch (error) {
+        console.error('Error toggling play:', error)
+        setIsPlaying(false)
       }
     }
   }
 
   const handleSeek = (e) => {
+    if (!videoRef.current || duration <= 0) return
+    
     const rect = e.currentTarget.getBoundingClientRect()
-    const pos = (e.clientX - rect.left) / rect.width
+    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
     const newTime = pos * duration
+    
     if (videoRef.current) {
       videoRef.current.currentTime = newTime
       setCurrentTime(newTime)
@@ -434,6 +519,28 @@ const VideoPlayer = () => {
               src={videoUrl}
               className="video-element"
               onClick={togglePlay}
+              crossOrigin="anonymous"
+              preload="metadata"
+              onError={(e) => {
+                console.error('Video playback error:', e, 'Video URL:', videoUrl)
+                setError('Failed to load video. Please check your connection and try again.')
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.target
+                if (video.duration && video.duration > 0) {
+                  setDuration(video.duration)
+                }
+              }}
+              onTimeUpdate={(e) => {
+                const video = e.target
+                setCurrentTime(video.currentTime)
+                if (duration > 0) {
+                  saveProgress(video.currentTime)
+                }
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              playsInline
             />
             
             {/* Custom Controls */}
@@ -473,7 +580,9 @@ const VideoPlayer = () => {
                   </div>
                   
                   <div className="time-display">
-                    {formatTime(currentTime)} / {formatTime(duration)}
+                    <span>{formatTime(Math.floor(currentTime))}</span>
+                    <span> / </span>
+                    <span>{formatTime(Math.floor(duration))}</span>
                   </div>
                 </div>
                 

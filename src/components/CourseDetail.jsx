@@ -168,7 +168,15 @@ const CourseDetail = () => {
       })
     } catch (err) {
       console.error('Error uploading file:', err)
-      setError('Failed to upload file')
+      if (err.response?.status === 413 || err.response?.status === 400) {
+        const errorMessage = err.response?.data?.message || 
+          'File size too large. Maximum allowed size is 2GB. Please upload a smaller file.'
+        setError(errorMessage)
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message)
+      } else {
+        setError('Failed to upload file. Please try again.')
+      }
     } finally {
       setUploadingFile({ ...uploadingFile, [lessonId]: false })
     }
@@ -178,6 +186,30 @@ const CourseDetail = () => {
     if (lessons.length === 0) return 0
     const completedLessons = Object.values(lessonProgress).filter(p => p.completed).length
     return (completedLessons / lessons.length) * 100
+  }
+
+  const handleFileDownload = async (fileId, fileName) => {
+    try {
+      const response = await api.get(`/files/${fileId}/download`, {
+        responseType: 'blob'
+      })
+      
+      // Создаем blob URL и скачиваем файл
+      const blob = new Blob([response.data], { 
+        type: response.headers['content-type'] || 'application/octet-stream' 
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', fileName)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Error downloading file:', err)
+      setError('Failed to download file. Please try again.')
+    }
   }
 
   if (loading) {
@@ -358,14 +390,24 @@ const CourseDetail = () => {
                         </div>
                       )}
                       
-                      {/* Видео урока */}
+                      {/* Кнопка для перехода к уроку */}
+                      <div className="lesson-actions">
+                        <Link
+                          to={`/courses/${id}/lessons/${lesson.id}`}
+                          className="btn btn-primary"
+                        >
+                          <FiBook /> Study Lesson
+                        </Link>
+                      </div>
+                      
+                      {/* Видео урока (краткий список) */}
                       {lesson.videos && lesson.videos.length > 0 && (
                         <div className="lesson-videos">
                           <h4>
-                            <FiPlay /> Videos
+                            <FiPlay /> Videos ({lesson.videos.length})
                           </h4>
                           <div className="videos-list">
-                            {lesson.videos.map((video) => (
+                            {lesson.videos.slice(0, 3).map((video) => (
                               <Link
                                 key={video.id}
                                 to={`/courses/${id}/lessons/${lesson.id}/videos/${video.id}`}
@@ -375,28 +417,44 @@ const CourseDetail = () => {
                                 <span className="video-title">{video.title}</span>
                               </Link>
                             ))}
+                            {lesson.videos.length > 3 && (
+                              <Link
+                                to={`/courses/${id}/lessons/${lesson.id}`}
+                                className="video-link see-more"
+                              >
+                                <span>+{lesson.videos.length - 3} more videos</span>
+                              </Link>
+                            )}
                           </div>
                         </div>
                       )}
                       
-                      {/* Файлы урока */}
+                      {/* Файлы урока (краткий список) */}
                       <div className="lesson-files">
                         <h4>
-                          <FiFile /> Files
+                          <FiFile /> Files ({lessonFiles[lesson.id]?.length || 0})
                         </h4>
                         {lessonFiles[lesson.id] && lessonFiles[lesson.id].length > 0 ? (
                           <div className="files-list">
-                            {lessonFiles[lesson.id].map((file) => (
-                              <a
+                            {lessonFiles[lesson.id].slice(0, 3).map((file) => (
+                              <div
                                 key={file.id}
-                                href={`/api/files/${file.id}/download`}
                                 className="file-link"
-                                download
+                                onClick={() => handleFileDownload(file.id, file.originalFileName)}
+                                style={{ cursor: 'pointer' }}
                               >
                                 <FiFile className="file-icon" />
                                 <span>{file.originalFileName}</span>
-                              </a>
+                              </div>
                             ))}
+                            {lessonFiles[lesson.id].length > 3 && (
+                              <Link
+                                to={`/courses/${id}/lessons/${lesson.id}`}
+                                className="file-link see-more"
+                              >
+                                <span>+{lessonFiles[lesson.id].length - 3} more files</span>
+                              </Link>
+                            )}
                           </div>
                         ) : (
                           <p className="no-files">No files yet</p>
