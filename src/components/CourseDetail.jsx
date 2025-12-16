@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { 
+  FiPlay, 
+  FiFile, 
+  FiUpload, 
+  FiPlus, 
+  FiX,
+  FiCheckCircle,
+  FiClock,
+  FiBook
+} from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import './CourseDetail.css'
@@ -15,11 +25,55 @@ const CourseDetail = () => {
   const [newLesson, setNewLesson] = useState({ title: '', description: '', orderNumber: 1 })
   const [uploadingFile, setUploadingFile] = useState(null) // { lessonId: true/false }
   const [statusChanging, setStatusChanging] = useState(false)
+  const [lessonProgress, setLessonProgress] = useState({}) // { lessonId: { completed: bool, progress: number } }
 
   useEffect(() => {
     loadCourse()
     loadLessons()
+    loadProgress()
   }, [id])
+
+  const loadProgress = () => {
+    // Загружаем прогресс из localStorage
+    if (typeof Storage !== 'undefined') {
+      const progressData = localStorage.getItem('videoProgress')
+      if (progressData) {
+        try {
+          const progress = JSON.parse(progressData)
+          const lessonProgressMap = {}
+          
+          // Группируем прогресс по урокам
+          Object.keys(progress).forEach(key => {
+            const [courseId, lessonId, videoId] = key.split('-')
+            if (courseId === id) {
+              if (!lessonProgressMap[lessonId]) {
+                lessonProgressMap[lessonId] = { completed: 0, total: 0, videos: {} }
+              }
+              lessonProgressMap[lessonId].videos[videoId] = progress[key]
+              lessonProgressMap[lessonId].total++
+              if (progress[key].completed) {
+                lessonProgressMap[lessonId].completed++
+              }
+            }
+          })
+          
+          // Вычисляем процент прогресса для каждого урока
+          const progressPercentages = {}
+          Object.keys(lessonProgressMap).forEach(lessonId => {
+            const lesson = lessonProgressMap[lessonId]
+            progressPercentages[lessonId] = {
+              completed: lesson.completed === lesson.total && lesson.total > 0,
+              progress: lesson.total > 0 ? (lesson.completed / lesson.total) * 100 : 0
+            }
+          })
+          
+          setLessonProgress(progressPercentages)
+        } catch (e) {
+          console.error('Error parsing progress:', e)
+        }
+      }
+    }
+  }
 
   const loadCourse = async () => {
     try {
@@ -72,6 +126,7 @@ const CourseDetail = () => {
       setLessonFiles(filesMap)
       
       setLoading(false)
+      loadProgress() // Обновляем прогресс после загрузки уроков
     } catch (err) {
       console.error('Error loading lessons:', err)
       setError('Failed to load lessons')
@@ -119,6 +174,12 @@ const CourseDetail = () => {
     }
   }
 
+  const getCourseProgress = () => {
+    if (lessons.length === 0) return 0
+    const completedLessons = Object.values(lessonProgress).filter(p => p.completed).length
+    return (completedLessons / lessons.length) * 100
+  }
+
   if (loading) {
     return <div className="loading">Loading course...</div>
   }
@@ -127,6 +188,8 @@ const CourseDetail = () => {
     return <div className="error">Course not found</div>
   }
 
+  const courseProgress = getCourseProgress()
+
   return (
     <div className="course-detail">
       <div className="course-hero">
@@ -134,9 +197,8 @@ const CourseDetail = () => {
           <img src={course.imageUrl} alt={course.title} className="course-hero-image" />
         )}
         <div className="course-hero-content">
-          <h1>{course.title}</h1>
-          <p className="course-hero-description">{course.description}</p>
-          <div className="course-hero-meta">
+          <div className="course-hero-header">
+            <h1>{course.title}</h1>
             <div className="course-status-section">
               <span className={`course-status ${course.status}`}>{course.status}</span>
               {(isTeacher(window.keycloak) || isAdmin(window.keycloak)) && (
@@ -153,10 +215,32 @@ const CourseDetail = () => {
                 </select>
               )}
             </div>
-            <span>{lessons.length} уроков</span>
           </div>
+          <p className="course-hero-description">{course.description}</p>
+          <div className="course-hero-meta">
+            <div className="meta-item">
+              <FiBook />
+              <span>{lessons.length} {lessons.length === 1 ? 'урок' : 'уроков'}</span>
+            </div>
+            {lessons.length > 0 && (
+              <div className="meta-item">
+                <FiCheckCircle />
+                <span>{Math.round(courseProgress)}% завершено</span>
+              </div>
+            )}
+          </div>
+          {lessons.length > 0 && (
+            <div className="course-progress-bar">
+              <div 
+                className="course-progress-fill" 
+                style={{ width: `${courseProgress}%` }}
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      {error && <div className="error">{error}</div>}
 
       <div className="course-content-section">
         <div className="lessons-section">
@@ -167,7 +251,15 @@ const CourseDetail = () => {
                 className="btn btn-primary"
                 onClick={() => setShowLessonForm(!showLessonForm)}
               >
-                {showLessonForm ? 'Cancel' : '+ Add Lesson'}
+                {showLessonForm ? (
+                  <>
+                    <FiX /> Cancel
+                  </>
+                ) : (
+                  <>
+                    <FiPlus /> Add Lesson
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -183,6 +275,7 @@ const CourseDetail = () => {
                     value={newLesson.title}
                     onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
                     required
+                    placeholder="Enter lesson title"
                   />
                 </div>
                 <div className="form-group">
@@ -191,6 +284,7 @@ const CourseDetail = () => {
                     value={newLesson.description}
                     onChange={(e) => setNewLesson({...newLesson, description: e.target.value})}
                     rows="3"
+                    placeholder="Enter lesson description"
                   />
                 </div>
                 <div className="form-group">
@@ -203,88 +297,146 @@ const CourseDetail = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-primary">Create Lesson</button>
+                <div className="form-actions">
+                  <button type="submit" className="btn btn-primary">
+                    <FiPlus /> Create Lesson
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary"
+                    onClick={() => setShowLessonForm(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </form>
             </div>
           )}
 
           {lessons.length === 0 ? (
-            <div className="card">
-              <p style={{ textAlign: 'center', color: '#7f8c8d', padding: '40px' }}>
+            <div className="card empty-state">
+              <div className="empty-state-icon">
+                <FiBook />
+              </div>
+              <p>
                 No lessons yet. {canUpload(window.keycloak) && 'Create the first lesson!'}
               </p>
             </div>
           ) : (
             <div className="lessons-list">
-              {lessons.map((lesson, index) => (
-                <div key={lesson.id} className="lesson-card">
-                  <div className="lesson-number">{index + 1}</div>
-                  <div className="lesson-content">
-                    <h3>{lesson.title}</h3>
-                    {lesson.description && <p>{lesson.description}</p>}
-                    
-                    {/* Видео урока */}
-                    {lesson.videos && lesson.videos.length > 0 && (
-                      <div className="lesson-videos">
-                        <h4>Videos:</h4>
-                        {lesson.videos.map((video) => (
-                          <Link
-                            key={video.id}
-                            to={`/courses/${id}/lessons/${lesson.id}/videos/${video.id}`}
-                            className="video-link"
-                          >
-                            ▶ {video.title}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    
-                    {/* Файлы урока */}
-                    <div className="lesson-files">
-                      <h4>Files:</h4>
-                      {lessonFiles[lesson.id] && lessonFiles[lesson.id].length > 0 ? (
-                        <div className="files-list">
-                          {lessonFiles[lesson.id].map((file) => (
-                            <a
-                              key={file.id}
-                              href={`/api/files/${file.id}/download`}
-                              className="file-link"
-                              download
-                            >
-                              📄 {file.originalFileName}
-                            </a>
-                          ))}
-                        </div>
+              {lessons.map((lesson, index) => {
+                const progress = lessonProgress[lesson.id] || { completed: false, progress: 0 }
+                return (
+                  <div key={lesson.id} className="lesson-card">
+                    <div className="lesson-number">
+                      {progress.completed ? (
+                        <FiCheckCircle className="lesson-completed-icon" />
                       ) : (
-                        <p className="no-files">No files yet</p>
-                      )}
-                      
-                      {/* Загрузка файла к уроку */}
-                      {canUpload(window.keycloak) && (
-                        <div className="file-upload-section">
-                          <input
-                            type="file"
-                            id={`file-upload-${lesson.id}`}
-                            style={{ display: 'none' }}
-                            onChange={(e) => {
-                              if (e.target.files[0]) {
-                                handleFileUpload(lesson.id, e.target.files[0])
-                              }
-                            }}
-                          />
-                          <label
-                            htmlFor={`file-upload-${lesson.id}`}
-                            className="btn btn-secondary btn-sm"
-                            style={{ cursor: 'pointer', display: 'inline-block' }}
-                          >
-                            {uploadingFile?.[lesson.id] ? 'Uploading...' : '+ Add File'}
-                          </label>
-                        </div>
+                        <span>{index + 1}</span>
                       )}
                     </div>
+                    <div className="lesson-content">
+                      <div className="lesson-header">
+                        <h3>{lesson.title}</h3>
+                        {progress.completed && (
+                          <span className="lesson-completed-badge">
+                            <FiCheckCircle /> Completed
+                          </span>
+                        )}
+                      </div>
+                      {lesson.description && <p className="lesson-description">{lesson.description}</p>}
+                      
+                      {progress.progress > 0 && !progress.completed && (
+                        <div className="lesson-progress">
+                          <div className="lesson-progress-bar">
+                            <div 
+                              className="lesson-progress-fill" 
+                              style={{ width: `${progress.progress}%` }}
+                            />
+                          </div>
+                          <span className="lesson-progress-text">{Math.round(progress.progress)}%</span>
+                        </div>
+                      )}
+                      
+                      {/* Видео урока */}
+                      {lesson.videos && lesson.videos.length > 0 && (
+                        <div className="lesson-videos">
+                          <h4>
+                            <FiPlay /> Videos
+                          </h4>
+                          <div className="videos-list">
+                            {lesson.videos.map((video) => (
+                              <Link
+                                key={video.id}
+                                to={`/courses/${id}/lessons/${lesson.id}/videos/${video.id}`}
+                                className="video-link"
+                              >
+                                <FiPlay className="video-icon" />
+                                <span className="video-title">{video.title}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Файлы урока */}
+                      <div className="lesson-files">
+                        <h4>
+                          <FiFile /> Files
+                        </h4>
+                        {lessonFiles[lesson.id] && lessonFiles[lesson.id].length > 0 ? (
+                          <div className="files-list">
+                            {lessonFiles[lesson.id].map((file) => (
+                              <a
+                                key={file.id}
+                                href={`/api/files/${file.id}/download`}
+                                className="file-link"
+                                download
+                              >
+                                <FiFile className="file-icon" />
+                                <span>{file.originalFileName}</span>
+                              </a>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="no-files">No files yet</p>
+                        )}
+                        
+                        {/* Загрузка файла к уроку */}
+                        {canUpload(window.keycloak) && (
+                          <div className="file-upload-section">
+                            <input
+                              type="file"
+                              id={`file-upload-${lesson.id}`}
+                              style={{ display: 'none' }}
+                              onChange={(e) => {
+                                if (e.target.files[0]) {
+                                  handleFileUpload(lesson.id, e.target.files[0])
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor={`file-upload-${lesson.id}`}
+                              className="btn btn-secondary btn-sm"
+                              style={{ cursor: 'pointer', display: 'inline-flex' }}
+                            >
+                              {uploadingFile?.[lesson.id] ? (
+                                <>
+                                  <FiClock /> Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <FiUpload /> Add File
+                                </>
+                              )}
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
@@ -294,5 +446,3 @@ const CourseDetail = () => {
 }
 
 export default CourseDetail
-
-

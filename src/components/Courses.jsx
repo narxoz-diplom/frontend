@@ -79,6 +79,7 @@ const Courses = () => {
       setShowCreateForm(false)
       setNewCourse({ title: '', description: '', imageUrl: '' })
     } catch (err) {
+      console.error('Error creating course:', err)
       setError('Failed to create course')
     }
   }

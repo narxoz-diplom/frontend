@@ -1,11 +1,61 @@
 import Keycloak from 'keycloak-js'
 
+// Функция для сохранения токенов в localStorage
+const saveTokens = (kc) => {
+  if (kc.authenticated && kc.token) {
+    localStorage.setItem('kc-access-token', kc.token)
+    if (kc.refreshToken) {
+      localStorage.setItem('kc-refresh-token', kc.refreshToken)
+    }
+    if (kc.idToken) {
+      localStorage.setItem('kc-id-token', kc.idToken)
+    }
+    localStorage.setItem('kc-authenticated', 'true')
+  }
+}
+
+// Функция для очистки токенов из localStorage
+const clearTokens = () => {
+  localStorage.removeItem('kc-access-token')
+  localStorage.removeItem('kc-refresh-token')
+  localStorage.removeItem('kc-id-token')
+  localStorage.removeItem('kc-authenticated')
+}
+
 // Создаем единственный экземпляр Keycloak
 const keycloak = new Keycloak({
   url: 'http://localhost:8080',
   realm: 'microservices-realm',
   clientId: 'microservices-client'
 })
+
+// Устанавливаем обработчики событий для сохранения токенов
+keycloak.onAuthSuccess = function() {
+  console.log('Keycloak authentication successful')
+  saveTokens(this)
+}
+
+keycloak.onAuthError = function() {
+  console.error('Keycloak authentication error')
+  clearTokens()
+}
+
+keycloak.onTokenExpired = function() {
+  console.log('Keycloak token expired, refreshing...')
+  this.updateToken(30).then((refreshed) => {
+    if (refreshed) {
+      saveTokens(this)
+    }
+  }).catch(() => {
+    console.error('Failed to refresh token')
+    clearTokens()
+  })
+}
+
+keycloak.onAuthLogout = function() {
+  console.log('Keycloak logout')
+  clearTokens()
+}
 
 // Флаг для отслеживания инициализации
 let initPromise = null
@@ -50,6 +100,11 @@ keycloak.initSafe = function(options) {
   // Иначе инициализируем как обычно
   initPromise = this.init(options || { onLoad: 'check-sso', checkLoginIframe: false })
     .then((authenticated) => {
+      // Сохраняем токены после успешной инициализации
+      if (authenticated) {
+        saveTokens(this)
+      }
+      
       // Убеждаемся, что keycloak доступен в window после инициализации
       if (typeof window !== 'undefined') {
         window.keycloak = keycloak

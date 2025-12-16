@@ -78,7 +78,8 @@ const Register = () => {
     try {
       const { confirmPassword, ...registrationData } = formData
       
-      const response = await axios.post('http://localhost:8083/api/auth/register', registrationData)
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+      const response = await axios.post(`${apiUrl}/api/auth/register`, registrationData)
       
       setSuccess(true)
       setTimeout(() => {

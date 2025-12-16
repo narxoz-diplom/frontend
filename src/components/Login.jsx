@@ -23,49 +23,52 @@ const Login = () => {
     setLoading(true)
 
     try {
-      // Прямой вызов к Keycloak API для входа через username/password
-      // Для этого нужно включить "Direct Access Grants" в настройках клиента Keycloak
-      const tokenUrl = 'http://localhost:8080/realms/microservices-realm/protocol/openid-connect/token'
+      // Используем auth-service через API Gateway
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+      const loginUrl = `${apiUrl}/api/auth/login`
       
-      const formData = new URLSearchParams()
-      formData.append('grant_type', 'password')
-      formData.append('client_id', 'microservices-client')
-      formData.append('username', username)
-      formData.append('password', password)
-
-      const response = await fetch(tokenUrl, {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Type': 'application/json',
         },
-        body: formData,
+        body: JSON.stringify({
+          username,
+          password,
+        }),
       })
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error_description || 'Неверное имя пользователя или пароль')
+        throw new Error(errorData.error || 'Неверное имя пользователя или пароль')
       }
 
       const tokenData = await response.json()
       
       // Сохраняем токены в localStorage для использования после перезагрузки
-      localStorage.setItem('kc-access-token', tokenData.access_token)
-      localStorage.setItem('kc-refresh-token', tokenData.refresh_token)
-      if (tokenData.id_token) {
-        localStorage.setItem('kc-id-token', tokenData.id_token)
+      localStorage.setItem('kc-access-token', tokenData.accessToken)
+      localStorage.setItem('kc-refresh-token', tokenData.refreshToken)
+      if (tokenData.idToken) {
+        localStorage.setItem('kc-id-token', tokenData.idToken)
       }
       
-      // Устанавливаем токены в Keycloak
+      // Устанавливаем токены в Keycloak объект для совместимости
       keycloak.authenticated = true
-      keycloak.token = tokenData.access_token
-      keycloak.refreshToken = tokenData.refresh_token
-      keycloak.idToken = tokenData.id_token
+      keycloak.token = tokenData.accessToken
+      keycloak.refreshToken = tokenData.refreshToken
+      keycloak.idToken = tokenData.idToken
       
       // Парсим токен для получения информации о пользователе
-      if (tokenData.access_token) {
+      if (tokenData.accessToken) {
         try {
-          const payload = JSON.parse(atob(tokenData.access_token.split('.')[1]))
-          keycloak.tokenParsed = payload
+          // Добавляем padding если нужно
+          let payload = tokenData.accessToken.split('.')[1]
+          switch (payload.length % 4) {
+            case 2: payload += '=='; break
+            case 3: payload += '='; break
+          }
+          const decoded = JSON.parse(atob(payload))
+          keycloak.tokenParsed = decoded
         } catch (e) {
           console.error('Error parsing token', e)
         }
@@ -91,7 +94,9 @@ const Login = () => {
   }
 
   const handleKeycloakLogin = () => {
-    keycloak.login()
+    // Указываем redirectUri для правильного возврата после логина
+    const redirectUri = window.location.origin + window.location.pathname
+    keycloak.login({ redirectUri })
   }
 
   return (

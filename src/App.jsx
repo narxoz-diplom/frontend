@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
+import { 
+  FiHome, 
+  FiBook, 
+  FiFolder, 
+  FiBell, 
+  FiUser, 
+  FiLogOut, 
+  FiMenu, 
+  FiX,
+  FiBookOpen
+} from 'react-icons/fi'
 import keycloak from './config/keycloak'
 import Login from './components/Login'
 import Register from './components/Register'
@@ -24,8 +35,19 @@ function App() {
       window.keycloak = keycloak
     }
     
+    // Проверяем, есть ли callback от Keycloak в URL (после редиректа после логина)
+    const urlParams = new URLSearchParams(window.location.search)
+    const hash = window.location.hash
+    const hasKeycloakCallback = urlParams.has('code') || urlParams.has('state') || 
+                                hash.includes('access_token') || hash.includes('code=') || hash.includes('state=')
+    
     // Используем безопасную инициализацию (не будет повторной инициализации)
-    keycloak.initSafe({ onLoad: 'check-sso', checkLoginIframe: false })
+    // Если есть callback от Keycloak, используем 'login-required' для обработки callback
+    const initOptions = hasKeycloakCallback 
+      ? { onLoad: 'login-required', checkLoginIframe: false }
+      : { onLoad: 'check-sso', checkLoginIframe: false }
+    
+    keycloak.initSafe(initOptions)
       .then((auth) => {
         // Убеждаемся, что keycloak все еще в window
         if (typeof window !== 'undefined') {
@@ -34,6 +56,21 @@ function App() {
         
         // Проверяем как результат инициализации, так и состояние keycloak
         const isAuth = auth || keycloak.authenticated
+        
+        // Если только что прошли аутентификацию через Keycloak callback, очищаем URL
+        if (isAuth && hasKeycloakCallback) {
+          // Очищаем hash или query параметры от Keycloak callback
+          // Если мы на странице логина, перенаправляем на главную страницу
+          const currentPath = window.location.pathname
+          if (currentPath === '/login' || currentPath === '/register') {
+            window.history.replaceState(null, '', '/')
+          } else {
+            // Оставляем текущий путь, очищая только hash и query параметры
+            const cleanPath = currentPath || '/'
+            window.history.replaceState(null, '', cleanPath)
+          }
+        }
+        
         setAuthenticated(isAuth)
         setLoading(false)
         if (isAuth) {
@@ -88,6 +125,7 @@ function App() {
 const Navigation = ({ userRoles }) => {
   const location = useLocation()
   const [userName, setUserName] = useState('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     if (window.keycloak && window.keycloak.tokenParsed) {
@@ -95,6 +133,11 @@ const Navigation = ({ userRoles }) => {
       setUserName(token.preferred_username || token.name || 'User')
     }
   }, [])
+
+  useEffect(() => {
+    // Закрываем мобильное меню при изменении маршрута
+    setMobileMenuOpen(false)
+  }, [location.pathname])
 
   const handleLogout = async () => {
     try {
@@ -133,67 +176,106 @@ const Navigation = ({ userRoles }) => {
     }
   }
 
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/'
+    }
+    return location.pathname.startsWith(path)
+  }
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen)
+  }
 
   return (
-    <nav className="main-nav">
-      <div className="nav-brand">
-        <Link to="/" className="brand-link">
-          <span className="brand-icon">📚</span>
-          <span className="brand-text">EduPlatform</span>
-        </Link>
-      </div>
+    <>
+      <button 
+        className="mobile-menu-toggle"
+        onClick={toggleMobileMenu}
+        aria-label="Toggle menu"
+      >
+        {mobileMenuOpen ? <FiX /> : <FiMenu />}
+      </button>
       
-      <div className="nav-links">
-        <Link 
-          to="/" 
-          className={`nav-link ${isActive('/') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">🏠</span>
-          <span>Dashboard</span>
-        </Link>
-        <Link 
-          to="/courses" 
-          className={`nav-link ${isActive('/courses') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">📖</span>
-          <span>Courses</span>
-        </Link>
-        <Link 
-          to="/files" 
-          className={`nav-link ${isActive('/files') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">📁</span>
-          <span>Files</span>
-        </Link>
-        <Link 
-          to="/notifications" 
-          className={`nav-link ${isActive('/notifications') ? 'active' : ''}`}
-        >
-          <span className="nav-icon">🔔</span>
-          <span>Notifications</span>
-        </Link>
-      </div>
+      <div 
+        className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={toggleMobileMenu}
+      />
+      
+      <nav className={`main-nav ${mobileMenuOpen ? 'mobile-open' : ''}`}>
+        <div className="nav-brand">
+          <Link to="/" className="brand-link" onClick={() => setMobileMenuOpen(false)}>
+            <span className="brand-icon">
+              <FiBookOpen />
+            </span>
+            <span className="brand-text">EduPlatform</span>
+          </Link>
+        </div>
+        
+        <div className="nav-links">
+          <Link 
+            to="/" 
+            className={`nav-link ${isActive('/') && location.pathname === '/' ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="nav-icon">
+              <FiHome />
+            </span>
+            <span>Dashboard</span>
+          </Link>
+          <Link 
+            to="/courses" 
+            className={`nav-link ${isActive('/courses') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="nav-icon">
+              <FiBook />
+            </span>
+            <span>Courses</span>
+          </Link>
+          <Link 
+            to="/files" 
+            className={`nav-link ${isActive('/files') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="nav-icon">
+              <FiFolder />
+            </span>
+            <span>Files</span>
+          </Link>
+          <Link 
+            to="/notifications" 
+            className={`nav-link ${isActive('/notifications') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="nav-icon">
+              <FiBell />
+            </span>
+            <span>Notifications</span>
+          </Link>
+        </div>
 
-      <div className="nav-user">
-        <Link 
-          to="/profile" 
-          className={`nav-link profile-link ${isActive('/profile') ? 'active' : ''}`}
-        >
-          <span className="user-avatar">
-            {userName.charAt(0).toUpperCase()}
-          </span>
-          <span className="user-name">{userName}</span>
-        </Link>
-        <button 
-          className="btn-logout" 
-          onClick={handleLogout}
-          title="Logout"
-        >
-          <span>🚪</span>
-        </button>
-      </div>
-    </nav>
+        <div className="nav-user">
+          <Link 
+            to="/profile" 
+            className={`nav-link profile-link ${isActive('/profile') ? 'active' : ''}`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            <span className="user-avatar">
+              {userName.charAt(0).toUpperCase()}
+            </span>
+            <span className="user-name">{userName}</span>
+          </Link>
+          <button 
+            className="btn-logout" 
+            onClick={handleLogout}
+            title="Logout"
+          >
+            <FiLogOut />
+          </button>
+        </div>
+      </nav>
+    </>
   )
 }
 

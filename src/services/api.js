@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: apiUrl.startsWith('http') ? `${apiUrl}/api` : '/api',
   headers: {
     'Content-Type': 'application/json'
   }
@@ -30,13 +32,61 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     console.error('DEBUG: API Error:', error.response?.status, error.response?.data)
-    if (error.response?.status === 401 && window.keycloak) {
+    if (error.response?.status === 401 && window.keycloak && window.keycloak.refreshToken) {
       try {
-        await window.keycloak.updateToken(30)
-        error.config.headers.Authorization = `Bearer ${window.keycloak.token}`
+        // Используем auth-service для обновления токена
+        const refreshUrl = `${apiUrl}/api/auth/refresh`
+        
+        const refreshResponse = await axios.post(refreshUrl, {
+          refreshToken: window.keycloak.refreshToken
+        })
+        
+        const tokenData = refreshResponse.data
+        
+        // Обновляем токены
+        window.keycloak.token = tokenData.accessToken
+        window.keycloak.refreshToken = tokenData.refreshToken
+        if (tokenData.idToken) {
+          window.keycloak.idToken = tokenData.idToken
+        }
+        
+        // Обновляем localStorage
+        localStorage.setItem('kc-access-token', tokenData.accessToken)
+        localStorage.setItem('kc-refresh-token', tokenData.refreshToken)
+        if (tokenData.idToken) {
+          localStorage.setItem('kc-id-token', tokenData.idToken)
+        }
+        
+        // Парсим новый токен
+        if (tokenData.accessToken) {
+          try {
+            let payload = tokenData.accessToken.split('.')[1]
+            switch (payload.length % 4) {
+              case 2: payload += '=='; break
+              case 3: payload += '='; break
+            }
+            window.keycloak.tokenParsed = JSON.parse(atob(payload))
+          } catch (e) {
+            console.error('Error parsing refreshed token', e)
+          }
+        }
+        
+        // Повторяем запрос с новым токеном
+        error.config.headers.Authorization = `Bearer ${tokenData.accessToken}`
         return api.request(error.config)
       } catch (refreshError) {
-        window.keycloak.logout()
+        console.error('Token refresh failed:', refreshError)
+        // Очищаем localStorage и перенаправляем на логин
+        localStorage.removeItem('kc-access-token')
+        localStorage.removeItem('kc-refresh-token')
+        localStorage.removeItem('kc-id-token')
+        localStorage.removeItem('kc-authenticated')
+        if (window.keycloak) {
+          window.keycloak.authenticated = false
+          window.keycloak.token = null
+          window.keycloak.refreshToken = null
+        }
+        window.location.href = '/login'
         return Promise.reject(refreshError)
       }
     }
