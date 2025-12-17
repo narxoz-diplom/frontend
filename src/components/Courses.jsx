@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { FiEye } from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import './Courses.css'
@@ -14,6 +15,7 @@ const Courses = () => {
   const [enrolledCourses, setEnrolledCourses] = useState(new Set())
   const [enrolling, setEnrolling] = useState(new Set())
   const [filter, setFilter] = useState('all') // 'all' или 'enrolled'
+  const [courseViews, setCourseViews] = useState({}) // { courseId: views }
 
   useEffect(() => {
     if (filter === 'enrolled') {
@@ -41,6 +43,19 @@ const Courses = () => {
       })
       setEnrolledCourses(enrolled)
       
+      // Загружаем просмотры для каждого курса
+      const viewsMap = {}
+      for (const course of response.data) {
+        try {
+          const viewsResponse = await api.get(`/courses/${course.id}/views`)
+          viewsMap[course.id] = viewsResponse.data || 0
+        } catch (err) {
+          console.error(`Error loading views for course ${course.id}:`, err)
+          viewsMap[course.id] = 0
+        }
+      }
+      setCourseViews(viewsMap)
+      
       setError(null)
     } catch (err) {
       setError('Failed to load courses')
@@ -58,6 +73,19 @@ const Courses = () => {
       // Все загруженные курсы - это записанные курсы
       const enrolled = new Set(response.data.map(course => course.id))
       setEnrolledCourses(enrolled)
+      
+      // Загружаем просмотры для каждого курса
+      const viewsMap = {}
+      for (const course of response.data) {
+        try {
+          const viewsResponse = await api.get(`/courses/${course.id}/views`)
+          viewsMap[course.id] = viewsResponse.data || 0
+        } catch (err) {
+          console.error(`Error loading views for course ${course.id}:`, err)
+          viewsMap[course.id] = 0
+        }
+      }
+      setCourseViews(viewsMap)
       
       setError(null)
     } catch (err) {
@@ -224,11 +252,18 @@ const Courses = () => {
                 </p>
                 <div className="course-meta">
                   <span className="course-status">{course.status}</span>
-                  {course.lessons && (
-                    <span className="course-lessons">
-                      {course.lessons.length} lesson{course.lessons.length !== 1 ? 's' : ''}
-                    </span>
-                  )}
+                  <div className="course-stats">
+                    {course.lessons && (
+                      <span className="course-lessons">
+                        {course.lessons.length} lesson{course.lessons.length !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {courseViews[course.id] !== undefined && (
+                      <span className="course-views">
+                        <FiEye /> {courseViews[course.id] || 0}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="course-actions">
                   <Link to={`/courses/${course.id}`} className="btn btn-primary">

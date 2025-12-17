@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { FiEdit3, FiTrash2, FiSave, FiX, FiDownload } from 'react-icons/fi'
 import api from '../services/api'
-import { canDelete, isAdmin } from '../utils/roles'
+import { canDelete, isAdmin, canUpload } from '../utils/roles'
+import './Files.css'
 
 const Files = () => {
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [editingFile, setEditingFile] = useState(null)
+  const [editFileName, setEditFileName] = useState('')
 
   useEffect(() => {
     loadFiles()
@@ -26,6 +30,28 @@ const Files = () => {
     }
   }
 
+
+  const handleEdit = (file) => {
+    setEditingFile(file.id)
+    setEditFileName(file.originalFileName)
+  }
+
+  const handleSaveEdit = async (id) => {
+    try {
+      await api.put(`/files/${id}`, { originalFileName: editFileName })
+      setSuccess('Файл успешно обновлен')
+      setEditingFile(null)
+      setEditFileName('')
+      loadFiles()
+    } catch (err) {
+      setError('Ошибка при обновлении файла')
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setEditingFile(null)
+    setEditFileName('')
+  }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
@@ -110,27 +136,70 @@ const Files = () => {
             {files.map((file) => (
               <li key={file.id} className="file-item">
                 <div className="file-info">
-                  <div className="file-name">{file.originalFileName}</div>
-                  <div className="file-meta">
-                    {formatFileSize(file.fileSize)} • {file.contentType} • 
-                    Загружено: {formatDate(file.uploadedAt)}
-                  </div>
+                  {editingFile === file.id ? (
+                    <div className="file-edit-form">
+                      <input
+                        type="text"
+                        value={editFileName}
+                        onChange={(e) => setEditFileName(e.target.value)}
+                        className="file-edit-input"
+                        autoFocus
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="file-name">{file.originalFileName}</div>
+                      <div className="file-meta">
+                        {formatFileSize(file.fileSize)} • {file.contentType} • 
+                        Загружено: {formatDate(file.uploadedAt)}
+                      </div>
+                    </>
+                  )}
                 </div>
-                <div>
-                  <button
-                    className="btn btn-primary"
-                    onClick={() => handleDownload(file.id, file.originalFileName)}
-                    style={{ marginRight: '10px' }}
-                  >
-                    Скачать
-                  </button>
-                  {canDelete(window.keycloak) && (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleDelete(file.id)}
-                    >
-                      Удалить
-                    </button>
+                <div className="file-actions">
+                  {editingFile === file.id ? (
+                    <>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleSaveEdit(file.id)}
+                      >
+                        <FiSave /> Сохранить
+                      </button>
+                      <button
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleCancelEdit}
+                      >
+                        <FiX /> Отмена
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={() => handleDownload(file.id, file.originalFileName)}
+                        title="Скачать"
+                      >
+                        <FiDownload />
+                      </button>
+                      {canUpload(window.keycloak) && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleEdit(file)}
+                          title="Редактировать"
+                        >
+                          <FiEdit3 />
+                        </button>
+                      )}
+                      {canUpload(window.keycloak) && (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleDelete(file.id)}
+                          title="Удалить"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               </li>

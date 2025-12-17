@@ -8,7 +8,10 @@ import {
   FiX,
   FiCheckCircle,
   FiClock,
-  FiBook
+  FiBook,
+  FiEdit3,
+  FiTrash2,
+  FiEye
 } from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
@@ -26,6 +29,7 @@ const CourseDetail = () => {
   const [uploadingFile, setUploadingFile] = useState(null) // { lessonId: true/false }
   const [statusChanging, setStatusChanging] = useState(false)
   const [lessonProgress, setLessonProgress] = useState({}) // { lessonId: { completed: bool, progress: number } }
+  const [courseViews, setCourseViews] = useState(0)
 
   useEffect(() => {
     loadCourse()
@@ -79,6 +83,16 @@ const CourseDetail = () => {
     try {
       const response = await api.get(`/courses/${id}`)
       setCourse(response.data)
+      
+      // Загружаем просмотры курса
+      try {
+        const viewsResponse = await api.get(`/courses/${id}/views`)
+        setCourseViews(viewsResponse.data || 0)
+      } catch (err) {
+        console.error('Error loading course views:', err)
+        setCourseViews(0)
+      }
+      
       setLoading(false)
     } catch (err) {
       console.error('Error loading course:', err)
@@ -213,6 +227,39 @@ const CourseDetail = () => {
     }
   }
 
+  const handleDeleteLesson = async (lessonId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот урок? Все связанные видео и файлы также будут удалены.')) {
+      return
+    }
+    try {
+      await api.delete(`/courses/lessons/${lessonId}`)
+      loadLessons()
+      setError(null)
+    } catch (err) {
+      console.error('Error deleting lesson:', err)
+      setError('Ошибка при удалении урока')
+    }
+  }
+
+  const handleDeleteFile = async (fileId, lessonId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
+      return
+    }
+    try {
+      await api.delete(`/files/${fileId}`)
+      // Обновляем список файлов для урока
+      const filesResponse = await api.get(`/files/lesson/${lessonId}`)
+      setLessonFiles({
+        ...lessonFiles,
+        [lessonId]: filesResponse.data
+      })
+      setError(null)
+    } catch (err) {
+      console.error('Error deleting file:', err)
+      setError('Ошибка при удалении файла')
+    }
+  }
+
   if (loading) {
     return <div className="loading">Loading course...</div>
   }
@@ -261,6 +308,10 @@ const CourseDetail = () => {
                 <span>{Math.round(courseProgress)}% завершено</span>
               </div>
             )}
+            <div className="meta-item">
+              <FiEye />
+              <span>{courseViews} {courseViews === 1 ? 'просмотр' : courseViews < 5 ? 'просмотра' : 'просмотров'}</span>
+            </div>
           </div>
           {lessons.length > 0 && (
             <div className="course-progress-bar">
@@ -399,6 +450,15 @@ const CourseDetail = () => {
                         >
                           <FiBook /> Study Lesson
                         </Link>
+                        {canUpload(window.keycloak) && (
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleDeleteLesson(lesson.id)}
+                            title="Удалить урок"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        )}
                       </div>
                       
                       {/* Видео урока (краткий список) */}
@@ -441,11 +501,27 @@ const CourseDetail = () => {
                               <div
                                 key={file.id}
                                 className="file-link"
-                                onClick={() => handleFileDownload(file.id, file.originalFileName)}
-                                style={{ cursor: 'pointer' }}
+                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}
                               >
-                                <FiFile className="file-icon" />
-                                <span>{file.originalFileName}</span>
+                                <div
+                                  onClick={() => handleFileDownload(file.id, file.originalFileName)}
+                                  style={{ cursor: 'pointer', flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
+                                  <FiFile className="file-icon" />
+                                  <span>{file.originalFileName}</span>
+                                </div>
+                                {canUpload(window.keycloak) && (
+                                  <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleDeleteFile(file.id, lesson.id)
+                                    }}
+                                    title="Удалить файл"
+                                  >
+                                    <FiTrash2 />
+                                  </button>
+                                )}
                               </div>
                             ))}
                             {lessonFiles[lesson.id].length > 3 && (

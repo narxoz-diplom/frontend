@@ -14,7 +14,8 @@ import {
   FiClock,
   FiBook,
   FiChevronRight,
-  FiChevronLeft
+  FiChevronLeft,
+  FiTrash2
 } from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
@@ -216,6 +217,38 @@ const LessonDetail = () => {
     } catch (err) {
       console.error('Error downloading file:', err)
       setError('Failed to download file. Please try again.')
+    }
+  }
+
+  const handleDeleteVideo = async (videoId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить это видео?')) {
+      return
+    }
+    try {
+      await api.delete(`/courses/lessons/${lessonId}/videos/${videoId}`)
+      // Перезагружаем видео
+      const videosResponse = await api.get(`/courses/lessons/${lessonId}/videos`)
+      setVideos(videosResponse.data || [])
+      setError(null)
+    } catch (err) {
+      console.error('Error deleting video:', err)
+      setError('Ошибка при удалении видео')
+    }
+  }
+
+  const handleDeleteFile = async (fileId) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
+      return
+    }
+    try {
+      await api.delete(`/files/${fileId}`)
+      // Перезагружаем файлы
+      const filesResponse = await api.get(`/files/lesson/${lessonId}`)
+      setFiles(filesResponse.data || [])
+      setError(null)
+    } catch (err) {
+      console.error('Error deleting file:', err)
+      setError('Ошибка при удалении файла')
     }
   }
 
@@ -479,33 +512,47 @@ const LessonDetail = () => {
                   }
                   
                   return (
-                    <Link
-                      key={video.id}
-                      to={`/courses/${courseId}/lessons/${lessonId}/videos/${video.id}`}
-                      className="video-card"
-                    >
-                      <div className="video-card-number">{index + 1}</div>
-                      <div className="video-card-content">
-                        <div className="video-card-header">
-                          <h3>{video.title}</h3>
-                          {isCompleted && (
-                            <FiCheckCircle className="completed-icon" />
+                    <div key={video.id} className="video-card-wrapper">
+                      <Link
+                        to={`/courses/${courseId}/lessons/${lessonId}/videos/${video.id}`}
+                        className="video-card"
+                      >
+                        <div className="video-card-number">{index + 1}</div>
+                        <div className="video-card-content">
+                          <div className="video-card-header">
+                            <h3>{video.title}</h3>
+                            {isCompleted && (
+                              <FiCheckCircle className="completed-icon" />
+                            )}
+                          </div>
+                          {video.description && (
+                            <p className="video-card-description">{video.description}</p>
                           )}
+                          <div className="video-card-meta">
+                            {video.duration > 0 && (
+                              <span>
+                                <FiClock /> {formatDuration(video.duration)}
+                              </span>
+                            )}
+                            <span>{formatFileSize(video.fileSize)}</span>
+                          </div>
                         </div>
-                        {video.description && (
-                          <p className="video-card-description">{video.description}</p>
-                        )}
-                        <div className="video-card-meta">
-                          {video.duration > 0 && (
-                            <span>
-                              <FiClock /> {formatDuration(video.duration)}
-                            </span>
-                          )}
-                          <span>{formatFileSize(video.fileSize)}</span>
-                        </div>
-                      </div>
-                      <FiChevronRight className="video-card-arrow" />
-                    </Link>
+                        <FiChevronRight className="video-card-arrow" />
+                      </Link>
+                      {canEdit && (
+                        <button
+                          className="btn btn-danger btn-sm video-delete-btn"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDeleteVideo(video.id)
+                          }}
+                          title="Удалить видео"
+                        >
+                          <FiTrash2 />
+                        </button>
+                      )}
+                    </div>
                   )
                 })}
               </div>
@@ -569,17 +616,33 @@ const LessonDetail = () => {
                   <div
                     key={file.id}
                     className="file-card"
-                    onClick={() => handleFileDownload(file.id, file.originalFileName)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}
                   >
-                    <FiFile className="file-icon" />
-                    <div className="file-card-content">
-                      <h3>{file.originalFileName}</h3>
-                      <div className="file-card-meta">
-                        <span>{formatFileSize(file.fileSize)}</span>
-                        <span>{file.contentType}</span>
+                    <div
+                      onClick={() => handleFileDownload(file.id, file.originalFileName)}
+                      style={{ cursor: 'pointer', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}
+                    >
+                      <FiFile className="file-icon" />
+                      <div className="file-card-content">
+                        <h3>{file.originalFileName}</h3>
+                        <div className="file-card-meta">
+                          <span>{formatFileSize(file.fileSize)}</span>
+                          <span>{file.contentType}</span>
+                        </div>
                       </div>
                     </div>
+                    {canEdit && (
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDeleteFile(file.id)
+                        }}
+                        title="Удалить файл"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
