@@ -112,11 +112,11 @@ const CourseDetail = () => {
       const lessonsData = response.data
       setLessons(lessonsData)
       
-      // Загружаем файлы для каждого урока
+      // Загружаем файлы для каждого урока через file-service
       const filesMap = {}
       for (const lesson of lessonsData) {
         try {
-          const filesResponse = await api.get(`/courses/lessons/${lesson.id}/files`)
+          const filesResponse = await api.get(`/files/lesson/${lesson.id}`)
           filesMap[lesson.id] = filesResponse.data
         } catch (err) {
           console.error(`Error loading files for lesson ${lesson.id}:`, err)
@@ -154,8 +154,9 @@ const CourseDetail = () => {
       setUploadingFile({ ...uploadingFile, [lessonId]: true })
       const formData = new FormData()
       formData.append('file', file)
+      formData.append('lessonId', lessonId)
       
-      const response = await api.post(`/courses/lessons/${lessonId}/files`, formData, {
+      const response = await api.post(`/files/upload-to-lesson`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

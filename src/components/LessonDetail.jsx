@@ -63,8 +63,8 @@ const LessonDetail = () => {
       const videosResponse = await api.get(`/courses/lessons/${lessonId}/videos`)
       setVideos(videosResponse.data || [])
       
-      // Загружаем файлы урока
-      const filesResponse = await api.get(`/courses/lessons/${lessonId}/files`)
+      // Загружаем файлы урока через file-service
+      const filesResponse = await api.get(`/files/lesson/${lessonId}`)
       setFiles(filesResponse.data || [])
       
       setLoading(false)
@@ -128,21 +128,30 @@ const LessonDetail = () => {
     
     try {
       setUploadingVideo(true)
-      const formData = new FormData()
-      formData.append('file', newVideo.file)
-      formData.append('title', newVideo.title)
-      if (newVideo.description) {
-        formData.append('description', newVideo.description)
-      }
-      if (newVideo.orderNumber) {
-        formData.append('orderNumber', newVideo.orderNumber)
-      }
       
-      await api.post(`/courses/lessons/${lessonId}/videos`, formData, {
+      // Шаг 1: Загружаем видео в file-service
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', newVideo.file)
+      
+      const uploadResponse = await api.post(`/files/upload-video`, uploadFormData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       })
+      
+      // Шаг 2: Создаем метаданные видео в course-service
+      const videoMetadata = {
+        title: newVideo.title,
+        description: newVideo.description || '',
+        orderNumber: newVideo.orderNumber || videos.length + 1,
+        videoUrl: uploadResponse.data.videoUrl,
+        objectName: uploadResponse.data.objectName,
+        fileSize: uploadResponse.data.fileSize,
+        duration: 0,
+        status: 'READY'
+      }
+      
+      await api.post(`/courses/lessons/${lessonId}/videos`, videoMetadata)
       
       // Перезагружаем видео для получения актуального списка с правильной сортировкой
       const videosResponse = await api.get(`/courses/lessons/${lessonId}/videos`)
@@ -520,13 +529,14 @@ const LessonDetail = () => {
                         try {
                           const formData = new FormData()
                           formData.append('file', e.target.files[0])
-                          await api.post(`/courses/lessons/${lessonId}/files`, formData, {
+                          formData.append('lessonId', lessonId)
+                          await api.post(`/files/upload-to-lesson`, formData, {
                             headers: {
                               'Content-Type': 'multipart/form-data'
                             }
                           })
                           // Перезагружаем файлы для получения актуального списка
-                          const filesResponse = await api.get(`/courses/lessons/${lessonId}/files`)
+                          const filesResponse = await api.get(`/files/lesson/${lessonId}`)
                           setFiles(filesResponse.data || [])
                           setError(null)
                         } catch (err) {

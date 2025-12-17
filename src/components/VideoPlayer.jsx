@@ -155,7 +155,7 @@ const VideoPlayer = () => {
       if (foundVideo) {
         setVideo(foundVideo)
         // Формируем полный URL для видео
-        // videoUrl содержит /api/courses/videos/{objectName}/stream
+        // videoUrl теперь содержит /api/files/videos/{objectName}/stream
         const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
         let url = foundVideo.videoUrl
         
@@ -170,10 +170,6 @@ const VideoPlayer = () => {
           // Если не начинается с http и не с /api, добавляем /api
           url = `/api${url}`
         }
-        
-        // НЕ кодируем objectName - Spring автоматически декодирует path variables
-        // Если objectName уже закодирован в базе данных, он будет правильно обработан
-        // Двойное кодирование приведет к ошибкам
         
         setVideoUrl(url)
       }
