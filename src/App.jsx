@@ -9,9 +9,10 @@ import {
   FiLogOut, 
   FiMenu, 
   FiX,
-  FiBookOpen
+  FiBookOpen,
+  FiLayers
 } from 'react-icons/fi'
-import keycloak from './config/keycloak'
+import auth from './config/auth'
 import Login from './components/Login'
 import Register from './components/Register'
 import Dashboard from './components/Dashboard'
@@ -22,6 +23,7 @@ import CourseDetail from './components/CourseDetail'
 import LessonDetail from './components/LessonDetail'
 import VideoPlayer from './components/VideoPlayer'
 import Profile from './components/Profile'
+import RAG from './components/RAG'
 import { getRoles } from './utils/roles'
 import './index.css'
 
@@ -31,62 +33,13 @@ function App() {
   const [userRoles, setUserRoles] = useState([])
 
   useEffect(() => {
-    // Всегда устанавливаем keycloak в window для глобального доступа
-    if (typeof window !== 'undefined') {
-      window.keycloak = keycloak
-    }
-    
-    // Проверяем, есть ли callback от Keycloak в URL (после редиректа после логина)
-    const urlParams = new URLSearchParams(window.location.search)
-    const hash = window.location.hash
-    const hasKeycloakCallback = urlParams.has('code') || urlParams.has('state') || 
-                                hash.includes('access_token') || hash.includes('code=') || hash.includes('state=')
-    
-    // Используем безопасную инициализацию (не будет повторной инициализации)
-    // Если есть callback от Keycloak, используем 'login-required' для обработки callback
-    const initOptions = hasKeycloakCallback 
-      ? { onLoad: 'login-required', checkLoginIframe: false }
-      : { onLoad: 'check-sso', checkLoginIframe: false }
-    
-    keycloak.initSafe(initOptions)
-      .then((auth) => {
-        // Убеждаемся, что keycloak все еще в window
-        if (typeof window !== 'undefined') {
-          window.keycloak = keycloak
-        }
-        
-        // Проверяем как результат инициализации, так и состояние keycloak
-        const isAuth = auth || keycloak.authenticated
-        
-        // Если только что прошли аутентификацию через Keycloak callback, очищаем URL
-        if (isAuth && hasKeycloakCallback) {
-          // Очищаем hash или query параметры от Keycloak callback
-          // Если мы на странице логина, перенаправляем на главную страницу
-          const currentPath = window.location.pathname
-          if (currentPath === '/login' || currentPath === '/register') {
-            window.history.replaceState(null, '', '/')
-          } else {
-            // Оставляем текущий путь, очищая только hash и query параметры
-            const cleanPath = currentPath || '/'
-            window.history.replaceState(null, '', cleanPath)
-          }
-        }
-        
-        setAuthenticated(isAuth)
-        setLoading(false)
-        if (isAuth) {
-          const roles = getRoles(keycloak)
-          setUserRoles(roles)
-        }
-      })
-      .catch((error) => {
-        console.error('Keycloak initialization failed:', error)
-        // Убеждаемся, что keycloak все еще в window даже при ошибке
-        if (typeof window !== 'undefined') {
-          window.keycloak = keycloak
-        }
-        setLoading(false)
-      })
+    auth.initSafe().then((isAuth) => {
+      setAuthenticated(isAuth)
+      setLoading(false)
+      if (isAuth) {
+        setUserRoles(getRoles(auth))
+      }
+    })
   }, [])
 
   if (loading) {
@@ -112,6 +65,7 @@ function App() {
               <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
               <Route path="/courses/:courseId/lessons/:lessonId/videos/:videoId" element={<VideoPlayer />} />
               <Route path="/files" element={<Files />} />
+              <Route path="/rag" element={<RAG />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="*" element={<Navigate to="/" />} />
@@ -130,9 +84,9 @@ const Navigation = ({ userRoles }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    if (window.keycloak && window.keycloak.tokenParsed) {
-      const token = window.keycloak.tokenParsed
-      setUserName(token.preferred_username || token.name || 'User')
+    const kc = window.keycloak || auth
+    if (kc && kc.tokenParsed) {
+      setUserName(kc.tokenParsed.preferred_username || kc.tokenParsed.name || 'User')
     }
   }, [])
 
@@ -141,40 +95,12 @@ const Navigation = ({ userRoles }) => {
     setMobileMenuOpen(false)
   }, [location.pathname])
 
-  const handleLogout = async () => {
-    try {
-      // Очищаем localStorage
-      localStorage.removeItem('kc-access-token')
-      localStorage.removeItem('kc-refresh-token')
-      localStorage.removeItem('kc-id-token')
-      localStorage.removeItem('kc-authenticated')
-      
-      // Получаем keycloak экземпляр
-      const kc = window.keycloak || keycloak
-      
-      // Проверяем, что keycloak существует и инициализирован
-      if (kc && kc.authenticated !== undefined) {
-        // Если метод logout доступен, используем его
-        if (typeof kc.logout === 'function') {
-          try {
-            await kc.logout()
-          } catch (logoutError) {
-            console.warn('Keycloak logout error:', logoutError)
-            // В случае ошибки просто перенаправляем на логин
-            window.location.href = '/login'
-          }
-        } else {
-          // Если logout недоступен, просто перенаправляем
-          window.location.href = '/login'
-        }
-      } else {
-        // Если keycloak не инициализирован, просто перенаправляем
-        window.location.href = '/login'
-      }
-    } catch (error) {
-      console.error('Logout error:', error)
-      // В любом случае перенаправляем на логин
-      window.location.href = '/login'
+  const handleLogout = () => {
+    const kc = window.keycloak || auth
+    if (kc && typeof kc.logout === 'function') {
+      kc.logout()
+    } else {
+      auth.logout()
     }
   }
 
@@ -245,6 +171,18 @@ const Navigation = ({ userRoles }) => {
             </span>
             <span>Files</span>
           </Link>
+          {(userRoles.includes('admin') || userRoles.includes('teacher') || userRoles.includes('ROLE_ADMIN') || userRoles.includes('ROLE_TEACHER')) && (
+            <Link 
+              to="/rag" 
+              className={`nav-link ${isActive('/rag') ? 'active' : ''}`}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <span className="nav-icon">
+                <FiLayers />
+              </span>
+              <span>RAG / Модули</span>
+            </Link>
+          )}
           <Link 
             to="/notifications" 
             className={`nav-link ${isActive('/notifications') ? 'active' : ''}`}
