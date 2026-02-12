@@ -1,9 +1,32 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { FiUpload, FiFileText, FiMessageSquare, FiHelpCircle, FiEdit3 } from 'react-icons/fi'
 import api from '../services/api'
+import { isTeacher } from '../utils/roles'
 import './RAG.css'
 
+// Ключи функций для учителя и студента
+const TEACHER_FUNCTIONS = [
+  { value: 'ingest', label: 'Загрузить контент', icon: FiUpload },
+  { value: 'module', label: 'Сгенерировать модуль', icon: FiFileText },
+  { value: 'summary', label: 'Создать сводку', icon: FiMessageSquare },
+  { value: 'quiz', label: 'Викторина', icon: FiHelpCircle },
+  { value: 'exam', label: 'Экзаменационные вопросы', icon: FiEdit3 }
+]
+const STUDENT_FUNCTIONS = [
+  { value: 'summary', label: 'Получить резюме', icon: FiMessageSquare },
+  { value: 'quiz', label: 'Пройти викторину', icon: FiHelpCircle }
+]
+
 const RAG = () => {
+  const keycloak = typeof window !== 'undefined' ? window.keycloak : null
+  const isTeacherRole = useMemo(() => isTeacher(keycloak), [keycloak?.token])
+  const functions = isTeacherRole ? TEACHER_FUNCTIONS : STUDENT_FUNCTIONS
+  const [selectedFunction, setSelectedFunction] = useState(functions[0]?.value ?? 'ingest')
+  useEffect(() => {
+    const allowed = isTeacherRole ? TEACHER_FUNCTIONS : STUDENT_FUNCTIONS
+    const valid = allowed.some(f => f.value === selectedFunction)
+    if (!valid && allowed.length) setSelectedFunction(allowed[0].value)
+  }, [isTeacherRole, selectedFunction])
   const [ingestFile, setIngestFile] = useState(null)
   const [ingestCollection, setIngestCollection] = useState('')
   const [ingestMetadata, setIngestMetadata] = useState('')
@@ -24,6 +47,8 @@ const RAG = () => {
   const [quizData, setQuizData] = useState(null)
   const [quizLoading, setQuizLoading] = useState(false)
   const [quizAnswers, setQuizAnswers] = useState({})
+  const [quizAnsweredQuestions, setQuizAnsweredQuestions] = useState(new Set())
+  const [quizHintsVisible, setQuizHintsVisible] = useState(new Set())
   const [quizChecked, setQuizChecked] = useState(false)
   const [quizScore, setQuizScore] = useState(null)
 
@@ -86,7 +111,7 @@ const RAG = () => {
     setSummaryResult(null)
     try {
       const r = await ragPost('/generate-summary', {
-        prompt: 'Резюме по материалам.',
+        prompt: 'Сгенерируй по загруженным материалам.',
         collection_name: summaryCollection.trim() || undefined,
         top_k: 8
       })
@@ -107,6 +132,8 @@ const RAG = () => {
     setQuizChecked(false)
     setQuizScore(null)
     setQuizAnswers({})
+    setQuizAnsweredQuestions(new Set())
+    setQuizHintsVisible(new Set())
     try {
       const r = await ragPost('/generate-quiz-interactive', {
         prompt: 'Создай тест.',
@@ -121,6 +148,25 @@ const RAG = () => {
     } finally {
       setQuizLoading(false)
     }
+  }
+
+  const handleQuizAnswer = (questionIndex, optionKey) => {
+    if (!quizData?.questions) return
+    const newAnswers = { ...quizAnswers, ['q' + questionIndex]: optionKey }
+    setQuizAnswers(newAnswers)
+    setQuizAnsweredQuestions(prev => {
+      const next = new Set([...prev, questionIndex])
+      if (next.size === quizData.questions.length) {
+        let correct = 0
+        quizData.questions.forEach((q, i) => {
+          if (newAnswers['q' + i] === q.correct) correct++
+        })
+        const total = quizData.questions.length
+        setQuizScore({ correct, total, pct: total ? Math.round((correct / total) * 100) : 0 })
+        setQuizChecked(true)
+      }
+      return next
+    })
   }
 
   const handleFinishQuiz = () => {
@@ -140,7 +186,7 @@ const RAG = () => {
     setExamResult(null)
     try {
       const r = await ragPost('/generate-exam-questions', {
-        prompt: 'Экзаменационные вопросы по материалам.',
+        prompt: 'Сгенерируй по загруженным материалам.',
         collection_name: examCollection.trim() || undefined,
         top_k: 8
       })
@@ -159,17 +205,37 @@ const RAG = () => {
       <header className="rag-header">
         <h1>RAG — образовательные модули</h1>
         <p className="rag-subtitle">
-          Загружайте контент в векторную базу и создавайте модули, презентации, тесты и экзаменационные вопросы.
+          {isTeacherRole
+            ? 'Загружайте контент в векторную базу и создавайте модули, презентации, тесты и экзаменационные вопросы.'
+            : 'Задавайте вопросы по курсу, получайте резюме и проходите викторины по материалам.'}
         </p>
       </header>
 
+      <div className="rag-toolbar">
+        <span className={`rag-role-badge ${isTeacherRole ? 'teacher' : 'student'}`}>
+          {isTeacherRole ? 'Учитель' : 'Студент'}
+        </span>
+        <label className="rag-toolbar-label">Функция:</label>
+        <select
+          className="rag-function-select"
+          value={selectedFunction}
+          onChange={(e) => setSelectedFunction(e.target.value)}
+          aria-label="Выберите функцию"
+        >
+          {functions.map((f) => (
+            <option key={f.value} value={f.value}>{f.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {selectedFunction === 'ingest' && (
       <section className="rag-card">
         <h2><FiUpload /> Загрузить контент</h2>
         <form onSubmit={handleIngest}>
           <label>Файл (PDF, DOCX, видео, аудио, изображение)</label>
           <input
             type="file"
-            accept=".pdf,.docx,.doc,.mp4,.mp3,.wav,.m4a,.png,.jpg,.jpeg"
+            accept=".pdf,.docx,.doc,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg"
             onChange={(e) => setIngestFile(e.target.files?.[0] || null)}
             required
           />
@@ -199,7 +265,9 @@ const RAG = () => {
           </div>
         )}
       </section>
+      )}
 
+      {selectedFunction === 'module' && (
       <section className="rag-card">
         <h2><FiFileText /> Сгенерировать модуль</h2>
         <form onSubmit={handleGenerateModule}>
@@ -242,7 +310,9 @@ const RAG = () => {
           </div>
         )}
       </section>
+      )}
 
+      {selectedFunction === 'summary' && (
       <section className="rag-card">
         <h2><FiMessageSquare /> Создать сводку</h2>
         <form onSubmit={handleSummary}>
@@ -270,9 +340,11 @@ const RAG = () => {
           </div>
         )}
       </section>
+      )}
 
+      {selectedFunction === 'quiz' && (
       <section className="rag-card">
-        <h2><FiHelpCircle /> Создать викторину</h2>
+        <h2><FiHelpCircle /> {isTeacherRole ? 'Создать викторину' : 'Викторина'}</h2>
         <form onSubmit={handleQuiz}>
           <label>Коллекция</label>
           <input
@@ -291,30 +363,65 @@ const RAG = () => {
               quizData.error
             ) : (
               <>
-                {(quizData.questions || []).map((q, i) => (
-                  <div
-                    key={i}
-                    className={`quiz-item ${quizChecked ? (quizAnswers['q' + i] === q.correct ? 'correct' : 'incorrect') : ''}`}
-                  >
-                    <p><strong>{i + 1}. {q.question}</strong></p>
-                    {['A', 'B', 'C', 'D'].filter(k => q.options?.[k]).map(k => (
-                      <label key={k}>
-                        <input
-                          type="radio"
-                          name={'q' + i}
-                          value={k}
-                          checked={quizAnswers['q' + i] === k}
-                          onChange={() => setQuizAnswers(prev => ({ ...prev, ['q' + i]: k }))}
-                          disabled={quizChecked}
-                        />
-                        {q.options[k]}
-                      </label>
-                    ))}
-                    {quizChecked && (
-                      <p className="correct-answer">Правильный ответ: {q.options?.[q.correct] ?? q.correct}</p>
-                    )}
-                  </div>
-                ))}
+                {(quizData.questions || []).map((q, i) => {
+                  const answered = quizAnsweredQuestions.has(i)
+                  const userAnswer = quizAnswers['q' + i]
+                  const isCorrect = userAnswer === q.correct
+                  return (
+                    <div
+                      key={i}
+                      className={`quiz-item ${answered ? (isCorrect ? 'correct' : 'incorrect') : ''}`}
+                    >
+                      <p><strong>{i + 1}. {q.question}</strong></p>
+                      {(q.hint != null && q.hint !== '') && (
+                        <div className="quiz-hint-block">
+                          {!quizHintsVisible.has(i) ? (
+                            <button
+                              type="button"
+                              className="btn-quiz-hint"
+                              onClick={() => setQuizHintsVisible(prev => new Set([...prev, i]))}
+                            >
+                              Подсказка
+                            </button>
+                          ) : (
+                            <p className="quiz-hint-text">{q.hint}</p>
+                          )}
+                        </div>
+                      )}
+                      {['A', 'B', 'C', 'D'].filter(k => q.options?.[k]).map(k => (
+                        <label key={k}>
+                          <input
+                            type="radio"
+                            name={'q' + i}
+                            value={k}
+                            checked={userAnswer === k}
+                            onChange={() => handleQuizAnswer(i, k)}
+                            disabled={answered}
+                          />
+                          {q.options[k]}
+                        </label>
+                      ))}
+                      {answered && (
+                        <div className="quiz-feedback">
+                          {isCorrect ? (
+                            <>
+                              <p className="quiz-feedback-correct">Верно!</p>
+                              <p className="correct-answer">Правильный ответ: {q.options?.[q.correct] ?? q.correct}</p>
+                              {q.explanation && <p className="quiz-explanation">{q.explanation}</p>}
+                            </>
+                          ) : (
+                            <>
+                              <p className="quiz-feedback-incorrect">Неверно.</p>
+                              <p className="quiz-your-answer">Ваш ответ: {userAnswer ? (q.options?.[userAnswer] ?? userAnswer) : '—'}</p>
+                              <p className="correct-answer">Правильный ответ: {q.options?.[q.correct] ?? q.correct}</p>
+                              {q.explanation && <p className="quiz-explanation">{q.explanation}</p>}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
                 {quizData.questions?.length && !quizChecked && (
                   <button type="button" className="btn-finish-quiz" onClick={handleFinishQuiz}>
                     Завершить тест
@@ -330,7 +437,9 @@ const RAG = () => {
           </div>
         )}
       </section>
+      )}
 
+      {selectedFunction === 'exam' && (
       <section className="rag-card">
         <h2><FiEdit3 /> Экзаменационные вопросы</h2>
         <form onSubmit={handleExam}>
@@ -358,6 +467,7 @@ const RAG = () => {
           </div>
         )}
       </section>
+      )}
     </div>
   )
 }
