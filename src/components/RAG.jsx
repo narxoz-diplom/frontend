@@ -28,6 +28,7 @@ const RAG = () => {
     if (!valid && allowed.length) setSelectedFunction(allowed[0].value)
   }, [isTeacherRole, selectedFunction])
   const [ingestFile, setIngestFile] = useState(null)
+  const [dragActive, setDragActive] = useState(false)
   const [ingestCollection, setIngestCollection] = useState('')
   const [ingestMetadata, setIngestMetadata] = useState('')
   const [ingestResult, setIngestResult] = useState(null)
@@ -56,10 +57,39 @@ const RAG = () => {
   const [examResult, setExamResult] = useState(null)
   const [examLoading, setExamLoading] = useState(false)
 
+
+
   const ragPost = (path, body, isJson = true) => {
     const config = isJson ? {} : { headers: { 'Content-Type': undefined } }
     return api.post(`/rag${path}`, body, config)
   }
+
+    const handleDrag = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true)
+        } else if (e.type === "dragleave") {
+            setDragActive(false)
+        }
+    }
+
+    const handleDrop = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setDragActive(false)
+
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            setIngestFile(e.dataTransfer.files[0])
+        }
+    }
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setIngestFile(e.target.files[0])
+        }
+    }
 
   const handleIngest = async (e) => {
     e.preventDefault()
@@ -233,12 +263,42 @@ const RAG = () => {
         <h2><FiUpload /> Загрузить контент</h2>
         <form onSubmit={handleIngest}>
           <label>Файл (PDF, DOCX, видео, аудио, изображение)</label>
-          <input
-            type="file"
-            accept=".pdf,.docx,.doc,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg"
-            onChange={(e) => setIngestFile(e.target.files?.[0] || null)}
-            required
-          />
+            <div
+              className={`file-upload ${dragActive ? "active" : ""}`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+
+            <input
+              type="file"
+              id="fileInput"
+              className="file-input"
+              accept=".pdf,.docx,.doc,.mp4,.mov,.mp3,.wav,.m4a,.png,.jpg,.jpeg"
+              onChange={handleFileChange}
+              required
+            />
+
+            <label htmlFor="fileInput" className="file-label">
+              {ingestFile ? (
+                <>
+                  <span className="file-name">📄 {ingestFile.name}</span>
+                  <span className="file-sub">Файл успешно выбран</span>
+                </>
+              ) : (
+                <>
+                  <span className="file-main">
+                    Загрузите учебный материал<br />
+                  </span>
+
+                  <span className="file-sub">
+                    (Перетащите файл сюда или нажмите для выбора)
+                  </span>
+                </>
+              )}
+            </label>
+            </div>
           <label>Коллекция (необязательно)</label>
           <input
             type="text"
