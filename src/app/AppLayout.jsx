@@ -1,0 +1,37 @@
+import React from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+
+import Navigation from '../components/Navigation'
+import Dashboard from '../components/dashboard/Dashboard'
+import Courses from '../components/Courses'
+import CourseDetail from '../components/CourseDetail'
+import LessonDetail from '../components/LessonDetail'
+import VideoPlayer from '../components/VideoPlayer'
+import Files from '../components/Files'
+import Notifications from '../components/Notifications'
+import Profile from '../components/Profile'
+import RAG from '../components/RAG'
+
+const AppLayout = ({ userRoles }) => {
+    return (
+        <div className="app-container">
+            <Navigation userRoles={userRoles} />
+            <div className="main-content">
+                <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/courses" element={<Courses />} />
+                    <Route path="/courses/:id" element={<CourseDetail />} />
+                    <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
+                    <Route path="/courses/:courseId/lessons/:lessonId/videos/:videoId" element={<VideoPlayer />} />
+                    <Route path="/files" element={<Files />} />
+                    <Route path="/rag" element={<RAG />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+            </div>
+        </div>
+    )
+}
+
+export default AppLayout

@@ -1,0 +1,487 @@
+/* ============================= */
+/* ===== SIDEBAR NAVIGATION ==== */
+/* ============================= */
+
+.main-nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--nav-width);
+    height: 100vh;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e8ecef;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
+    z-index: 1000;
+    transition: width var(--transition-base);
+}
+
+.main-nav.collapsed {
+    width: 80px;
+}
+
+/* Brand */
+.nav-brand {
+    padding: 32px var(--spacing-lg);
+    border-bottom: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.brand-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #000;
+}
+
+.brand-icon {
+    font-size: 24px;
+    color: var(--primary-color);
+    min-width: 32px;
+    display: flex;
+    justify-content: center;
+}
+
+.brand-text {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Collapse button */
+.collapse-btn {
+    position: absolute;
+    right: -12px;
+    top: 40px;
+    width: 24px;
+    height: 24px;
+    background: #ffffff;
+    border: 1px solid #e8ecef;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--primary-color);
+    box-shadow: var(--shadow-sm);
+    transition: 0.2s;
+}
+
+.collapse-btn:hover {
+    transform: scale(1.1);
+    background: var(--primary-color);
+    color: #ffffff;
+}
+
+/* Links */
+.nav-links {
+    flex: 1;
+    padding: 20px 0;
+    overflow-x: hidden;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 24px;
+    color: #4a5568;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.nav-icon {
+    font-size: 20px;
+    min-width: 32px;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-link:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--primary-color);
+}
+
+.nav-link.active {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Footer logout */
+.nav-footer {
+    padding: 20px 0;
+    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
+}
+
+.btn-logout-sidebar {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    color: #4a5568;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: 0.2s;
+}
+
+.btn-logout-sidebar:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--primary-color);
+}
+
+/* Collapsed state */
+.collapsed .brand-text,
+.collapsed .nav-label {
+    display: none;
+}
+
+.collapsed .btn-logout-sidebar {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+/* ============================= */
+/* ========= TOP NAVBAR ======== */
+/* ============================= */
+
+.top-navbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: var(--nav-width);
+    height: 70px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    border-bottom: 1px solid #e8ecef;
+    z-index: 999;
+    transition: left var(--transition-base);
+}
+
+/* Search */
+.top-search {
+    display: flex;
+    align-items: center;
+    background: #f5f7fa;
+    padding: 10px 16px;
+    border-radius: 10px;
+    width: 320px;
+}
+
+.top-search .search-icon {
+    color: #a0aec0;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.top-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+}
+
+/* Right section */
+.top-right-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+/* Notification button */
+.notif-wrapper {
+    position: relative;
+}
+
+.top-action-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: #4a5568;
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+}
+
+.top-action-btn:hover {
+    color: var(--primary-color);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Profile */
+.top-profile-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.top-user-name {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.top-user-role {
+    font-size: 11px;
+    color: #48bb5f;
+}
+
+.top-avatar-container {
+    position: relative;
+}
+
+.top-avatar {
+    width: 42px;
+    height: 42px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* Dropdown */
+.top-dropdown {
+    position: absolute;
+    top: calc(70% + 10px);
+    right: 0;
+    background: #ffffff;
+    min-width: 200px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e8ecef;
+    padding: 8px;
+    display: none;
+}
+
+.top-avatar-container:hover .top-dropdown {
+    display: block;
+}
+
+.top-dropdown a,
+.logout-btn-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #4a5568;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: 0.2s;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.top-dropdown a:hover,
+.logout-btn-dropdown:hover {
+    background: #f5f7fa;
+    color: var(--primary-color);
+}
+
+.logout-btn-dropdown {
+    color: #e53e3e;
+}
+
+/* ============================= */
+/* ===== NOTIFICATION POPOVER == */
+/* ============================= */
+
+.notification-popover {
+    position: absolute;
+    top: calc(100% + 15px); /* Дистанция от иконки */
+    right: -10px; /* Смещение вправо для выравнивания */
+    width: 320px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e8ecef;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: popoverFadeIn 0.2s ease-out;
+}
+
+/* Анимация появления */
+@keyframes popoverFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Шапка окна */
+.popover-header {
+    padding: 15px 20px;
+    background: #fff;
+    border-bottom: 1px solid #f0f2f5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popover-header span {
+    font-weight: 700;
+    color: #1a202c;
+    font-size: 15px;
+}
+
+.expand-link {
+    color: #a0aec0;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.expand-link:hover {
+    color: var(--primary-color, #e30000);
+}
+
+/* Список уведомлений */
+.popover-content {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+/* Кастомный скроллбар для списка */
+.popover-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.popover-content::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+/* Пустое состояние */
+.popover-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #a0aec0;
+    font-size: 14px;
+}
+
+/* Элемент списка */
+.popover-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f7fafc;
+    transition: background 0.2s;
+}
+
+.popover-item:last-child {
+    border-bottom: none;
+}
+
+.popover-item:hover {
+    background: #f8fafc;
+}
+
+/* Непрочитанное уведомление */
+.popover-item.unread {
+    background: #fff5f5; /* Очень легкий красный фон */
+    border-left: 3px solid var(--primary-color, #e30000);
+}
+
+.popover-item-text {
+    font-size: 13.5px;
+    color: #2d3748;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+}
+
+/* Футер элемента (время и кнопка) */
+.popover-item-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.popover-time {
+    font-size: 11px;
+    color: #a0aec0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Кнопка "отметить прочитанным" */
+.popover-read-btn {
+    background: none;
+    border: none;
+    color: #48bb78;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.popover-read-btn:hover {
+    background: #f0fff4;
+}
+
+/* Нижняя кнопка "Показать все" */
+.popover-footer {
+    display: block;
+    padding: 12px;
+    text-align: center;
+    background: #fdfdfd;
+    color: var(--primary-color, #e30000);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    border-top: 1px solid #f0f2f5;
+    transition: background 0.2s;
+}
+
+.popover-footer:hover {
+    background: #f7fafc;
+    text-decoration: underline;
+}
