@@ -1,0 +1,232 @@
+:root {
+    /* Светлая тема */
+    --primary-red: #e41616;
+    --primary-hover: #c91414;
+    --bg-page: #f4f6f7;
+    --bg-container: #ffffff;
+    --text-dark: #1a202c;
+    --text-gray: #6b7280;
+    --border-color: #edf2f7;
+    --input-bg: #f8fafc;
+    --radius-main: 32px;
+    --radius-input: 14px;
+    --shadow-soft: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+    --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Темная тема */
+body.dark-mode {
+    --bg-page: #0f172a;       /* Глубокий темный фон */
+    --bg-container: #1e293b;  /* Цвет карточки */
+    --text-dark: #f1f5f9;
+    --text-gray: #94a3b8;
+    --border-color: #334155;
+    --input-bg: #0f172a;
+    --shadow-soft: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Добавьте это, чтобы переключение было плавным, а не резким */
+.login-page,
+.login-container-wrapper,
+.form-group input {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--bg-page);
+    padding: 20px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    transition: background-color var(--transition);
+}
+
+.login-container-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 1100px;
+    background: var(--bg-container);
+    border-radius: var(--radius-main);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    min-height: 700px;
+    animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: background-color var(--transition);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Иллюстрация */
+.login-illustration-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    border-right: 1px solid var(--border-color);
+    color: var(--primary-red);
+}
+
+.books-illustration {
+    margin-bottom: 30px;
+    transition: transform 0.5s ease;
+    filter: drop-shadow(0 0 15px rgba(228, 22, 22, 0.1));
+}
+
+.books-illustration:hover {
+    transform: translateY(-8px);
+}
+
+.illustration-text h2 {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin: 20px 0 10px 0;
+    letter-spacing: -1.5px;
+    text-align: center;
+}
+
+.illustration-text p {
+    font-size: 18px;
+    color: var(--text-gray);
+    line-height: 1.5;
+    max-width: 320px;
+    text-align: center;
+}
+
+/* Форма */
+.login-form-section {
+    flex: 1.2;
+    padding: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+}
+
+.login-card h1 {
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--text-dark);
+    margin-bottom: 8px;
+}
+
+.login-subtitle {
+    color: var(--text-gray);
+    font-size: 15px;
+    margin-bottom: 35px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 18px;
+    font-size: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-input);
+    background: var(--input-bg);
+    color: var(--text-dark);
+    transition: var(--transition);
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary-red);
+    background: var(--bg-container);
+    box-shadow: 0 0 0 4px rgba(228, 22, 22, 0.1);
+}
+
+/* Кнопка */
+.btn-primary {
+    width: 100%;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-input);
+    cursor: pointer;
+    background: var(--primary-red);
+    color: #ffffff;
+    box-shadow: 0 10px 20px rgba(228, 22, 22, 0.2);
+    transition: var(--transition);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 25px rgba(228, 22, 22, 0.3);
+}
+
+.login-help {
+    margin-top: 25px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-gray);
+}
+
+.login-help a {
+    color: var(--primary-red);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.error-message {
+    background: #fff5f5;
+    color: #c53030;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid #feb2b2;
+}
+
+/* Мобильная адаптивность */
+@media (max-width: 900px) {
+    .login-container-wrapper {
+        flex-direction: column;
+        max-width: 500px;
+    }
+    .login-illustration-section {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 40px 20px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}

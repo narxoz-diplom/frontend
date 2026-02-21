@@ -3,11 +3,11 @@ import { Link, useLocation } from 'react-router-dom'
 import {
     FiHome, FiBook, FiFolder, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiLayers, FiChevronLeft, FiChevronRight,
-    FiSearch, FiUser, FiSettings
+    FiSearch, FiUser, FiSettings, FiSun, FiMoon
 } from 'react-icons/fi'
 import auth from '../config/auth'
-import api from '../services/api' // Добавь импорт своего API
-import NotificationPopover from './NotificationPopover' // Путь к твоему компоненту
+import api from '../services/api'
+import NotificationPopover from './NotificationPopover'
 import "./Navigation.css"
 
 const ADMIN_ROLES = ['admin', 'teacher', 'ROLE_ADMIN', 'ROLE_TEACHER']
@@ -31,7 +31,26 @@ const Navigation = ({ userRoles = [] }) => {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [userName, setUserName] = useState('User')
 
-    // Состояния для уведомлений
+    // --- Логика Темы ---
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const saved = localStorage.getItem('theme');
+        // Теперь по умолчанию всегда светлая тема, если в памяти ничего нет
+        return saved === 'dark';
+    });
+
+    useEffect(() => {
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
+
+    const toggleTheme = () => setIsDarkMode(prev => !prev);
+
+    // --- Уведомления ---
     const [showNotifications, setShowNotifications] = useState(false)
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
@@ -41,7 +60,6 @@ const Navigation = ({ userRoles = [] }) => {
         [userRoles]
     )
 
-    // Загрузка уведомлений
     const loadNotifications = useCallback(async () => {
         try {
             const response = await api.get('/notifications')
@@ -55,7 +73,7 @@ const Navigation = ({ userRoles = [] }) => {
 
     useEffect(() => {
         loadNotifications()
-        const interval = setInterval(loadNotifications, 30000) // Обновлять каждые 30 сек
+        const interval = setInterval(loadNotifications, 30000)
         return () => clearInterval(interval)
     }, [loadNotifications])
 
@@ -68,7 +86,7 @@ const Navigation = ({ userRoles = [] }) => {
 
     useEffect(() => {
         setMobileOpen(false)
-        setShowNotifications(false) // Закрывать уведомления при смене страницы
+        setShowNotifications(false)
     }, [location.pathname])
 
     const handleLogout = useCallback(() => {
@@ -106,6 +124,15 @@ const Navigation = ({ userRoles = [] }) => {
                 </div>
 
                 <div className="top-right-actions">
+                    {/* Кнопка смены темы */}
+                    <button
+                        className="top-action-btn theme-toggle-btn"
+                        onClick={toggleTheme}
+                        title={isDarkMode ? "Светлая тема" : "Темная тема"}
+                    >
+                        {isDarkMode ? <FiSun /> : <FiMoon />}
+                    </button>
+
                     {/* Контейнер уведомлений */}
                     <div className="notif-wrapper" style={{ position: 'relative' }}>
                         <button
@@ -119,11 +146,7 @@ const Navigation = ({ userRoles = [] }) => {
 
                         {showNotifications && (
                             <>
-                                {/* Прозрачная подложка для закрытия при клике вне окна */}
-                                <div
-                                    // style={{ position: 'fixed', inset: 0, z-index: 998 }}
-                                    onClick={() => setShowNotifications(false)}
-                                />
+                                <div className="notif-overlay-mobile" onClick={() => setShowNotifications(false)} />
                                 <NotificationPopover
                                     notifications={notifications}
                                     onMarkRead={handleMarkRead}
@@ -153,7 +176,6 @@ const Navigation = ({ userRoles = [] }) => {
                 </div>
             </header>
 
-            {/* Остальной код Navigation (button.mobile-menu-toggle, nav и т.д.) без изменений */}
             <button className="mobile-menu-toggle" onClick={() => setMobileOpen((prev) => !prev)}>
                 {mobileOpen ? <FiX /> : <FiMenu />}
             </button>

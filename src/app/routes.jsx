@@ -4,8 +4,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from '../auth/ProtectedRoute'
 import AppLayout from './AppLayout'
 
-import Login from '../components/Login'
-import Register from '../components/Register'
+import Login from '../auth/Login'
+import Register from '../auth/Register'
 
 const AppRoutes = ({ authenticated, userRoles }) => {
     if (!authenticated) {
