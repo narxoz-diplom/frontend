@@ -1,0 +1,553 @@
+.course-edit-loading,
+.course-edit-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: 16px;
+  color: var(--text-secondary, #718096);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.course-edit {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.course-edit-header {
+  margin-bottom: 24px;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary, #718096);
+  text-decoration: none;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.back-link:hover {
+  color: #e30000;
+}
+
+.course-edit-header h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+}
+
+.course-edit-description {
+  margin: 0;
+  color: var(--text-secondary, #718096);
+  max-width: 600px;
+}
+
+.course-edit-error-banner {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 12px 16px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+}
+
+.course-edit-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .course-edit-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.course-edit-sidebar {
+  background: var(--bg-primary, #fff);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid var(--border-color, #edf2f7);
+  height: fit-content;
+  position: sticky;
+  top: 24px;
+}
+
+.sidebar-section {
+  margin-bottom: 24px;
+}
+
+.sidebar-section:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary, #718096);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Кнопка открытия модалки «Доступ по email» */
+.allowed-emails-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  background: var(--bg-primary, #fff);
+  color: var(--text-primary, #1a202c);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.allowed-emails-trigger:hover {
+  border-color: #e30000;
+  background: #fffafa;
+  color: #e30000;
+}
+
+.allowed-emails-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e30000;
+  color: #fff;
+  border-radius: 11px;
+}
+
+.btn-outline {
+  background: transparent;
+}
+
+.btn-block {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Модальное окно */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  animation: modalOverlayIn 0.2s ease-out;
+}
+
+@keyframes modalOverlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-dialog {
+  width: 100%;
+  max-width: min(480px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary, #fff);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: modalDialogIn 0.25s ease-out;
+}
+
+.modal-dialog.modal-emails {
+  max-width: min(520px, calc(100vw - 48px));
+}
+
+@keyframes modalDialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #edf2f7);
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary, #718096);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-close:hover {
+  background: #f1f5f9;
+  color: #1a202c;
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color, #edf2f7);
+  flex-shrink: 0;
+}
+
+/* Контент модалки «Список email» */
+.modal-emails-desc {
+  font-size: 14px;
+  color: var(--text-secondary, #718096);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.modal-emails-error {
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: 10px;
+}
+
+.modal-emails-add {
+  margin-bottom: 20px;
+}
+
+.modal-emails-textarea {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  max-height: 200px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.5;
+  resize: vertical;
+  box-sizing: border-box;
+  margin-bottom: 12px;
+}
+
+.modal-emails-textarea::placeholder {
+  color: var(--text-secondary, #94a3b8);
+}
+
+.modal-emails-textarea:focus {
+  outline: none;
+  border-color: #e30000;
+  box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.15);
+}
+
+.modal-emails-add-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (min-width: 400px) {
+  .modal-emails-add {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .modal-emails-textarea {
+    flex: 1 1 100%;
+    margin-bottom: 0;
+    min-height: 100px;
+  }
+
+  .modal-emails-add-btn {
+    width: auto;
+    flex-shrink: 0;
+  }
+}
+
+.modal-emails-list-wrap {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  background: var(--bg-secondary, #f8fafc);
+}
+
+.modal-emails-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.modal-emails-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.modal-emails-item:last-child {
+  border-bottom: none;
+}
+
+.modal-emails-item-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-emails-empty {
+  font-size: 14px;
+  color: var(--text-secondary, #94a3b8);
+  margin: 0;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.upload-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 2px dashed var(--border-color, #e2e8f0);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-zone:hover {
+  border-color: #e30000;
+  background: #fffafa;
+}
+
+.files-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-check span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  color: var(--text-secondary, #718096);
+  border-radius: 6px;
+}
+
+.btn-icon:hover {
+  background: #f1f5f9;
+}
+
+.btn-icon.danger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.empty-hint {
+  color: var(--text-secondary, #94a3b8);
+  font-size: 14px;
+  margin: 0;
+}
+
+.course-edit-main {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.generate-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.generate-card {
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #edf2f7);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.generate-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+}
+
+.generate-card p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--text-secondary, #718096);
+}
+
+.test-title-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.btn-lg {
+  padding: 12px 20px;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.course-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.course-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+}
+
+.lessons-grid,
+.tests-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lesson-item {
+  padding: 12px 16px;
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #edf2f7);
+  border-radius: 10px;
+}
+
+.lesson-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.lesson-check a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lesson-check a:hover {
+  color: #e30000;
+}
+
+.test-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--bg-primary, #fff);
+  border: 1px solid var(--border-color, #edf2f7);
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--text-primary, #1a202c);
+  transition: all 0.2s;
+}
+
+.test-card:hover {
+  border-color: #e30000;
+  background: #fffafa;
+}
+
+.test-card svg {
+  color: #16a34a;
+}

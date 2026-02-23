@@ -11,7 +11,8 @@ import {
   FiBook,
   FiEdit3,
   FiTrash2,
-  FiEye
+  FiEye,
+  FiCheckSquare
 } from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
@@ -21,6 +22,7 @@ const CourseDetail = () => {
   const { id } = useParams()
   const [course, setCourse] = useState(null)
   const [lessons, setLessons] = useState([])
+  const [tests, setTests] = useState([])
   const [lessonFiles, setLessonFiles] = useState({}) // { lessonId: [files] }
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -34,6 +36,7 @@ const CourseDetail = () => {
   useEffect(() => {
     loadCourse()
     loadLessons()
+    loadTests()
     loadProgress()
   }, [id])
 
@@ -117,6 +120,15 @@ const CourseDetail = () => {
       setError('Ошибка при изменении статуса курса')
     } finally {
       setStatusChanging(false)
+    }
+  }
+
+  const loadTests = async () => {
+    try {
+      const response = await api.get(`/courses/${id}/tests`)
+      setTests(response.data || [])
+    } catch (err) {
+      console.error('Error loading tests:', err)
     }
   }
 
@@ -302,6 +314,10 @@ const CourseDetail = () => {
               <FiBook />
               <span>{lessons.length} {lessons.length === 1 ? 'урок' : 'уроков'}</span>
             </div>
+            <div className="meta-item">
+              <FiCheckSquare />
+              <span>{tests.length} {tests.length === 1 ? 'тест' : 'тестов'}</span>
+            </div>
             {lessons.length > 0 && (
               <div className="meta-item">
                 <FiCheckCircle />
@@ -329,22 +345,27 @@ const CourseDetail = () => {
       <div className="course-content-section">
         <div className="lessons-section">
           <div className="lessons-header">
-            <h2>Course Content</h2>
+            <h2>Уроки</h2>
             {canUpload(window.keycloak) && (
-              <button
-                className="btn btn-primary"
-                onClick={() => setShowLessonForm(!showLessonForm)}
-              >
+              <>
+                <Link to={`/courses/${id}/edit`} className="btn btn-secondary">
+                  Редактировать курс
+                </Link>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => setShowLessonForm(!showLessonForm)}
+                >
                 {showLessonForm ? (
                   <>
-                    <FiX /> Cancel
+                    <FiX /> Отмена
                   </>
                 ) : (
                   <>
-                    <FiPlus /> Add Lesson
+                    <FiPlus /> Добавить урок
                   </>
                 )}
               </button>
+              </>
             )}
           </div>
 
@@ -572,6 +593,32 @@ const CourseDetail = () => {
                   </div>
                 )
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Раздел тестов */}
+        <div className="tests-section">
+          <h2>Тесты</h2>
+          {tests.length === 0 ? (
+            <div className="card empty-state">
+              <div className="empty-state-icon">
+                <FiCheckSquare />
+              </div>
+              <p>Тестов пока нет</p>
+            </div>
+          ) : (
+            <div className="tests-list">
+              {tests.map((test) => (
+                <Link
+                  key={test.id}
+                  to={`/courses/${id}/tests/${test.id}`}
+                  className="test-card-link"
+                >
+                  <FiCheckSquare className="test-icon" />
+                  <span>{test.title}</span>
+                </Link>
+              ))}
             </div>
           )}
         </div>

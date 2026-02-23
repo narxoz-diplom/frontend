@@ -1,16 +1,14 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
-    FiHome, FiBook, FiFolder, FiBell, FiLogOut,
-    FiMenu, FiX, FiBookOpen, FiLayers, FiChevronLeft, FiChevronRight,
+    FiHome, FiBook, FiBell, FiLogOut,
+    FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
     FiSearch, FiUser, FiSettings, FiSun, FiMoon
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
 import NotificationPopover from './NotificationPopover'
 import "./Navigation.css"
-
-const ADMIN_ROLES = ['admin', 'teacher', 'ROLE_ADMIN', 'ROLE_TEACHER']
 
 const NavItem = ({ to, icon, label, isActive, isCollapsed, className = '' }) => {
     return (
@@ -54,11 +52,6 @@ const Navigation = ({ userRoles = [] }) => {
     const [showNotifications, setShowNotifications] = useState(false)
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
-
-    const canAccessRag = useMemo(
-        () => userRoles.some((role) => ADMIN_ROLES.includes(role)),
-        [userRoles]
-    )
 
     const loadNotifications = useCallback(async () => {
         try {
@@ -196,11 +189,6 @@ const Navigation = ({ userRoles = [] }) => {
 
                 <div className="nav-links">
                     <NavItem to="/" icon={<FiHome />} label="Dashboard" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/courses" icon={<FiBook />} label="Courses" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/files" icon={<FiFolder />} label="Files" isActive={isActive} isCollapsed={isCollapsed} />
-                    {canAccessRag && (
-                        <NavItem to="/rag" icon={<FiLayers />} label="RAG / Модули" isActive={isActive} isCollapsed={isCollapsed} />
-                    )}
                 </div>
 
                 <div className="nav-footer">

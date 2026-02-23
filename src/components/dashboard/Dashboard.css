@@ -474,6 +474,11 @@
 
 /* --- Quick Actions / Grid --- */
 .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
 }
 
@@ -519,6 +524,74 @@
 .dashboard-card:hover svg {
     transform: translateX(5px);
     color: #e30000;
+}
+
+/* --- Teacher courses section --- */
+.teacher-courses-section {
+    margin-top: var(--spacing-xl);
+}
+
+.teacher-courses-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.teacher-course-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: var(--transition-base);
+}
+
+.teacher-course-card:hover {
+    border-color: #e30000;
+    background: #fffafa;
+}
+
+.teacher-course-info h3 {
+    margin: 0 0 var(--spacing-xs) 0;
+    font-size: 18px;
+}
+
+.teacher-course-desc {
+    margin: 0 0 var(--spacing-sm) 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+    max-height: 2.4em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.teacher-course-status {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: var(--text-secondary);
+}
+
+.teacher-course-arrow {
+    color: var(--text-secondary);
+    transition: var(--transition-base);
+}
+
+.teacher-course-card:hover .teacher-course-arrow {
+    color: #e30000;
+    transform: translateX(4px);
+}
+
+.teacher-courses-empty,
+.courses-loading {
+    padding: var(--spacing-xl);
+    text-align: center;
+    color: var(--text-secondary);
 }
 
 /* --- Адаптивность --- */

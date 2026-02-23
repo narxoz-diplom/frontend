@@ -35,7 +35,7 @@ const Login = () => {
 
     useEffect(() => {
         if (auth.authenticated) {
-            window.location.reload()
+            window.location.replace('/')
         }
     }, [])
 
@@ -72,7 +72,7 @@ const Login = () => {
             auth.tokenParsed = parseJwtPayload(accessToken)
             if (typeof window !== 'undefined') window.keycloak = auth
 
-            window.location.reload()
+            window.location.replace('/')
         } catch (err) {
             setError(err.message || 'Ошибка входа.')
             setLoading(false)
