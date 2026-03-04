@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fi'
 import api from '../services/api'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
+import LessonChat from './LessonChat'
 import './LessonDetail.css'
 
 const LessonDetail = () => {
@@ -673,6 +674,16 @@ const LessonDetail = () => {
                 </Link>
               ))}
             </div>
+          </div>
+
+          {/* Lesson Chat (AG-UI + RAG) */}
+          <div className="lesson-chat-section">
+            <LessonChat
+              lessonId={lessonId}
+              courseId={courseId}
+              lessonTitle={lesson.title}
+              courseTitle={course.title}
+            />
           </div>
 
           {/* Navigation */}

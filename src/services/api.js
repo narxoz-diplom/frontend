@@ -1,9 +1,13 @@
 import axios from 'axios'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+// В dev без VITE_API_URL используем относительный путь — запросы идут через Vite proxy на gateway
+const apiUrl = import.meta.env.VITE_API_URL || ''
+const baseURL = apiUrl && apiUrl.startsWith('http')
+  ? `${apiUrl.replace(/\/$/, '')}/api`
+  : '/api'
 
 const api = axios.create({
-  baseURL: apiUrl.startsWith('http') ? `${apiUrl}/api` : '/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -35,7 +39,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && window.keycloak && window.keycloak.refreshToken) {
       try {
         // Используем auth-service для обновления токена
-        const refreshUrl = `${apiUrl}/api/auth/refresh`
+        const refreshUrl = (apiUrl && apiUrl.startsWith('http') ? apiUrl : '') + '/api/auth/refresh'
         
         const refreshResponse = await axios.post(refreshUrl, {
           refreshToken: window.keycloak.refreshToken

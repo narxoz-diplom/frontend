@@ -4,6 +4,9 @@
   "description": "Frontend for microservices application",
   "private": true,
   "dependencies": {
+    "@ag-ui/client": "^0.0.45",
+    "@copilotkit/react-core": "^1.51.4",
+    "@copilotkit/react-ui": "^1.51.4",
     "axios": "^1.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
