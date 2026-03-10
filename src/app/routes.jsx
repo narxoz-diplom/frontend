@@ -1,13 +1,11 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-
 import ProtectedRoute from '../auth/ProtectedRoute'
 import AppLayout from './AppLayout'
-
 import Login from '../auth/Login'
 import Register from '../auth/Register'
 
-const AppRoutes = ({ authenticated, userRoles }) => {
+const AppRoutes = ({ authenticated, userRoles, isDarkMode, setIsDarkMode }) => {
     if (!authenticated) {
         return (
             <Routes>
@@ -24,7 +22,12 @@ const AppRoutes = ({ authenticated, userRoles }) => {
                 path="*"
                 element={
                     <ProtectedRoute authenticated={authenticated}>
-                        <AppLayout userRoles={userRoles} />
+                        {/* ТЕПЕРЬ ПЕРЕДАЕМ ТЕМУ В LAYOUT */}
+                        <AppLayout
+                            userRoles={userRoles}
+                            isDarkMode={isDarkMode}
+                            setIsDarkMode={setIsDarkMode}
+                        />
                     </ProtectedRoute>
                 }
             />

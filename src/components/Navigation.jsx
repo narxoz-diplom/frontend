@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
-    FiSearch, FiUser, FiSettings, FiSun, FiMoon
+    FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
@@ -29,24 +29,50 @@ const Navigation = ({ userRoles = [] }) => {
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [userName, setUserName] = useState('User')
 
-    // --- Логика Темы ---
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        const saved = localStorage.getItem('theme');
-        // Теперь по умолчанию всегда светлая тема, если в памяти ничего нет
-        return saved === 'dark';
+    // --- Логика Темы (Light -> Dark -> System) ---
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('theme') || 'system';
     });
 
     useEffect(() => {
-        if (isDarkMode) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    }, [isDarkMode]);
+        const applyTheme = () => {
+            const root = document.body;
+            root.classList.remove('dark-mode');
 
-    const toggleTheme = () => setIsDarkMode(prev => !prev);
+            if (theme === 'dark') {
+                root.classList.add('dark-mode');
+            } else if (theme === 'system') {
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    root.classList.add('dark-mode');
+                }
+            }
+        };
+
+        applyTheme();
+        localStorage.setItem('theme', theme);
+
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleSystemChange = () => {
+            if (theme === 'system') applyTheme();
+        };
+
+        mediaQuery.addEventListener('change', handleSystemChange);
+        return () => mediaQuery.removeEventListener('change', handleSystemChange);
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => {
+            if (prev === 'light') return 'dark';
+            if (prev === 'dark') return 'system';
+            return 'light';
+        });
+    };
+
+    const getThemeIcon = () => {
+        if (theme === 'light') return <FiSun />;
+        if (theme === 'dark') return <FiMoon />;
+        return <FiMonitor />;
+    };
 
     // --- Уведомления ---
     const [showNotifications, setShowNotifications] = useState(false)
@@ -117,16 +143,14 @@ const Navigation = ({ userRoles = [] }) => {
                 </div>
 
                 <div className="top-right-actions">
-                    {/* Кнопка смены темы */}
                     <button
                         className="top-action-btn theme-toggle-btn"
                         onClick={toggleTheme}
-                        title={isDarkMode ? "Светлая тема" : "Темная тема"}
+                        title={`Режим: ${theme}`}
                     >
-                        {isDarkMode ? <FiSun /> : <FiMoon />}
+                        {getThemeIcon()}
                     </button>
 
-                    {/* Контейнер уведомлений */}
                     <div className="notif-wrapper" style={{ position: 'relative' }}>
                         <button
                             className={`top-action-btn ${unreadCount > 0 ? 'has-unread' : ''}`}

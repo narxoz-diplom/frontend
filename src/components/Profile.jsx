@@ -63,82 +63,80 @@ const Profile = () => {
     return 'Limited access. Please contact administrator for role assignment.'
   }
 
-  return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <div className="profile-avatar">
-          {userInfo.firstName.charAt(0).toUpperCase()}
-        </div>
-        <div className="profile-header-info">
-          <h1>{userInfo.fullName}</h1>
-          <p className="profile-username">@{userInfo.username}</p>
-        </div>
-      </div>
+    return (
+        <div className="profile-container">
+            {/* ЛЕВАЯ КОЛОНКА: Стеклянный контейнер с аватаром */}
+            <aside className="profile-sidebar-glass">
+                <div className="profile-avatar">
+                    {userInfo.firstName.charAt(0).toUpperCase()}
+                </div>
+                <div className="profile-sidebar-info">
+                    <h1>{userInfo.fullName}</h1>
+                    <p className="profile-username">@{userInfo.username}</p>
+                </div>
+            </aside>
 
-      <div className="profile-content">
-        <div className="profile-section">
-          <h2>Personal Information</h2>
-          <div className="profile-info-grid">
-            <div className="profile-info-item">
-              <label>First Name</label>
-              <p>{userInfo.firstName}</p>
-            </div>
-            <div className="profile-info-item">
-              <label>Last Name</label>
-              <p>{userInfo.lastName}</p>
-            </div>
-            <div className="profile-info-item">
-              <label>Email</label>
-              <p>
-                {userInfo.email}
-                {userInfo.emailVerified && (
-                  <span className="verified-badge">✓ Verified</span>
-                )}
-              </p>
-            </div>
-            <div className="profile-info-item">
-              <label>Username</label>
-              <p>{userInfo.username}</p>
-            </div>
-          </div>
-        </div>
+            {/* ПРАВАЯ КОЛОНКА */}
+            <main className="profile-main-content">
 
-        <div className="profile-section">
-          <h2>Roles & Permissions</h2>
-          <div className="profile-roles">
-            {roles.length > 0 ? (
-              <div className="roles-list">
-                {roles.map(role => getRoleBadge(role))}
-              </div>
-            ) : (
-              <p className="no-roles">No roles assigned</p>
-            )}
-          </div>
-          <div className="role-description">
-            <p>{getRoleDescription()}</p>
-          </div>
-        </div>
+                {/* ВЕРХНИЙ БЛОК: Личные данные */}
+                <section className="user-info-card">
+                    <h2>Personal Information</h2>
+                    <div className="profile-info-grid">
+                        <div className="profile-info-item">
+                            <label>Full Name</label>
+                            <p>{userInfo.fullName}</p>
+                        </div>
+                        <div className="profile-info-item">
+                            <label>Email</label>
+                            <p>
+                                {userInfo.email}
+                                {userInfo.emailVerified && <span className="verified-text"> ✓</span>}
+                            </p>
+                        </div>
+                        <div className="profile-info-item">
+                            <label>Username</label>
+                            <p>{userInfo.username}</p>
+                        </div>
+                    </div>
+                </section>
 
-        <div className="profile-section">
-          <h2>Account Statistics</h2>
-          <div className="profile-stats">
-            <div className="stat-item">
-              <div className="stat-value">-</div>
-              <div className="stat-label">Courses Enrolled</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">-</div>
-              <div className="stat-label">Lessons Completed</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-value">-</div>
-              <div className="stat-label">Files Uploaded</div>
-            </div>
-          </div>
+                {/* НИЖНИЙ РЯД: Роли и Статистика */}
+                <div className="bottom-row">
+                    {/* РОЛИ */}
+                    <section className="role-card">
+                        <h2>Role</h2>
+                        <div className="profile-roles">
+                            {roles.length > 0 ? (
+                                roles.map(role => getRoleBadge(role))
+                            ) : (
+                                <p className="no-roles">No roles</p>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* СТАТИСТИКА */}
+                    <section className="stats-card">
+                        <h2>Statistics</h2>
+                        <div className="stats-grid">
+                            <div className="stat-item">
+                                <span className="stat-value">-</span>
+                                <span className="stat-label">Courses</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="stat-value">-</span>
+                                <span className="stat-label">Lessons</span>
+                            </div>
+                            <div className="stat-item">
+                                <span className="stat-value">-</span>
+                                <span className="stat-label">Files</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
         </div>
-      </div>
-    </div>
-  )
+    );
 }
 
 export default Profile

@@ -9,32 +9,47 @@ const App = () => {
     const [loading, setLoading] = useState(true)
     const [userRoles, setUserRoles] = useState([])
 
+    // Состояние темной темы
+    const [isDarkMode, setIsDarkMode] = useState(() => {
+        const savedTheme = localStorage.getItem('theme');
+        return savedTheme === 'dark';
+    })
+
     useEffect(() => {
         let mounted = true
-
         const init = async () => {
             const isAuth = await auth.initSafe()
             if (!mounted) return
-
             setAuthenticated(isAuth)
             setLoading(false)
-
-            if (isAuth) {
-                setUserRoles(getRoles(auth))
-            }
+            if (isAuth) setUserRoles(getRoles(auth))
         }
-
         init()
         return () => (mounted = false)
     }, [])
 
-    if (loading) {
-        return <div className="loading">Loading...</div>
-    }
+    // Управление классом на body
+    useEffect(() => {
+        if (isDarkMode) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }, [isDarkMode]);
+
+    if (loading) return <div className="loading">Loading...</div>
 
     return (
         <Router>
-            <AppRoutes authenticated={authenticated} userRoles={userRoles} />
+            {/* Передаем тему в роуты */}
+            <AppRoutes
+                authenticated={authenticated}
+                userRoles={userRoles}
+                isDarkMode={isDarkMode}
+                setIsDarkMode={setIsDarkMode}
+            />
         </Router>
     )
 }

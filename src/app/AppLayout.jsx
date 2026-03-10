@@ -14,10 +14,17 @@ import Notifications from '../components/Notifications'
 import Profile from '../components/Profile'
 import RAG from '../components/RAG'
 
-const AppLayout = ({ userRoles }) => {
+// Добавляем пропсы для управления темой
+const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
     return (
         <div className="app-container">
-            <Navigation userRoles={userRoles} />
+            {/* Передаем состояние темы в Navigation для кнопки переключения */}
+            <Navigation
+                userRoles={userRoles}
+                isDarkMode={isDarkMode}
+                setIsDarkMode={setIsDarkMode}
+            />
+
             <div className="main-content">
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
