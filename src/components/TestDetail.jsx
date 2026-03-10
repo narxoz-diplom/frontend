@@ -39,12 +39,40 @@ const TestDetail = () => {
 
   const parseOptions = (optionsStr) => {
     if (!optionsStr) return []
+
+    // New format: JSON object from RAG service: {"A": "...", "B": "...", ...}
     try {
       const parsed = JSON.parse(optionsStr)
-      return Array.isArray(parsed) ? parsed : [optionsStr]
+
+      // If backend stored options as a JSON object, use keys (A, B, C, D) as values
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return Object.entries(parsed).map(([key, value]) => ({
+          key: String(key),
+          label: String(value)
+        }))
+      }
+
+      // If backend stored options as JSON array, generate keys A, B, C, ...
+      if (Array.isArray(parsed)) {
+        return parsed
+          .map((text, idx) => ({
+            key: String.fromCharCode(65 + idx), // A, B, C, ...
+            label: String(text)
+          }))
+      }
     } catch {
-      return optionsStr.split(',').map((s) => s.trim()).filter(Boolean)
+      // Fallback handling below
     }
+
+    // Legacy format: comma-separated string
+    return optionsStr
+      .split(',')
+      .map((s, idx) => s.trim())
+      .filter(Boolean)
+      .map((text, idx) => ({
+        key: String.fromCharCode(65 + idx),
+        label: text
+      }))
   }
 
   const handleAnswerChange = (questionId, value) => {
@@ -132,30 +160,32 @@ const TestDetail = () => {
                 <p className="question-text">{q.text}</p>
                 <div className="question-options">
                   {q.type === 'MULTIPLE_CHOICE' || q.type === 'MULTIPLE_ANSWER' ? (
-                    parseOptions(q.options).map((opt, i) => (
-                      <label key={i} className="option-label">
+                    parseOptions(q.options).map((opt) => (
+                      <label key={opt.key} className="option-label">
                         <input
                           type={q.type === 'MULTIPLE_ANSWER' ? 'checkbox' : 'radio'}
                           name={`q-${q.id}`}
-                          value={opt}
+                          value={opt.key}
                           checked={
                             q.type === 'MULTIPLE_ANSWER'
-                              ? (answers[q.id] || '').split(',').includes(opt)
-                              : answers[q.id] === opt
+                              ? (answers[q.id] || '').split(',').includes(opt.key)
+                              : answers[q.id] === opt.key
                           }
                           onChange={(e) => {
                             if (q.type === 'MULTIPLE_ANSWER') {
                               const current = (answers[q.id] || '').split(',').filter(Boolean)
                               const next = e.target.checked
-                                ? [...current, opt]
-                                : current.filter((x) => x !== opt)
+                                ? [...current, opt.key]
+                                : current.filter((x) => x !== opt.key)
                               handleAnswerChange(q.id, next.join(','))
                             } else {
-                              handleAnswerChange(q.id, opt)
+                              handleAnswerChange(q.id, opt.key)
                             }
                           }}
                         />
-                        <span>{opt}</span>
+                        <span>
+                          {opt.key}. {opt.label}
+                        </span>
                       </label>
                     ))
                   ) : q.type === 'TRUE_FALSE' ? (
