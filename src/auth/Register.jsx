@@ -97,49 +97,51 @@ const Register = () => {
         }
     }
 
-    if (success) {
-        return (
-            <div className="login-page"> {/* Используем тот же класс страницы */}
-                <div className="login-container-wrapper">
-                    {/* Левая часть остается такой же для преемственности */}
-                    <div className="login-illustration-section">
-                        <div className="books-illustration">
-                            <svg width="400" height="320" viewBox="0 0 700 420" fill="none"
-                                 xmlns="http://www.w3.org/2000/svg">
-                                <line x1="80" y1="348" x2="620" y2="348" stroke="currentColor" strokeWidth="2.5"
-                                      strokeLinecap="round"/>
-                                <rect x="248" y="122" width="140" height="226" rx="5" stroke="currentColor"
-                                      strokeWidth="2.5"/>
-                                <polyline points="304,160 317,152 330,160" stroke="currentColor" strokeWidth="2"
-                                          fill="white"/>
-                                <rect x="272" y="177" width="94" height="56" rx="3" stroke="currentColor"
-                                      strokeWidth="2"/>
-                                {/* ... (остальной твой SVG) */}
-                            </svg>
-                        </div>
-                        <div className="illustration-text">
-                            <h2>EduPlatform</h2>
-                            <p>Инновационная среда для вашего обучения</p>
-                        </div>
-                    </div>
-
-                    <div className="login-form-section">
-                        <div className="login-card">
-                            <div className="success-message" style={{textAlign: 'center'}}>
-                                <div style={{fontSize: '50px', marginBottom: '20px'}}>✅</div>
-                                <h2 style={{color: 'var(--text-dark)', fontWeight: '800'}}>Регистрация успешна!</h2>
-                                <p style={{color: 'var(--text-gray)'}}>Вы будете перенаправлены на страницу входа...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    // if (success) {
+    //     return (
+    //         <div className="login-page"> {/* Используем тот же класс страницы */}
+    //             <div className="login-container-wrapper">
+    //                 {/* Левая часть остается такой же для преемственности */}
+    //                 <div className="login-illustration-section">
+    //                     <div className="books-illustration">
+    //                         <svg width="400" height="320" viewBox="0 0 700 420" fill="none"
+    //                              xmlns="http://www.w3.org/2000/svg">
+    //                             <line x1="80" y1="348" x2="620" y2="348" stroke="currentColor" strokeWidth="2.5"
+    //                                   strokeLinecap="round"/>
+    //                             <rect x="248" y="122" width="140" height="226" rx="5" stroke="currentColor"
+    //                                   strokeWidth="2.5"/>
+    //                             <polyline points="304,160 317,152 330,160" stroke="currentColor" strokeWidth="2"
+    //                                       fill="white"/>
+    //                             <rect x="272" y="177" width="94" height="56" rx="3" stroke="currentColor"
+    //                                   strokeWidth="2"/>
+    //                             {/* ... (остальной твой SVG) */}
+    //                         </svg>
+    //                     </div>
+    //                     <div className="illustration-text">
+    //                         <h2>ACADEMIS</h2>
+    //                         <p>Инновационная среда для вашего обучения</p>
+    //                     </div>
+    //                 </div>
+    //
+    //                 <div className="login-form-section">
+    //                     <div className="login-card">
+    //                         <div className="success-message" style={{textAlign: 'center'}}>
+    //                             <div style={{fontSize: '50px', marginBottom: '20px'}}>✅</div>
+    //                             <h2 style={{color: 'var(--text-dark)', fontWeight: '800'}}>Регистрация успешна!</h2>
+    //                             <p style={{color: 'var(--text-gray)'}}>Вы будете перенаправлены на страницу входа...</p>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
 // Основная форма регистрации
     return (
+
         <div className="login-page">
+
             <div className="login-container-wrapper" style={{maxWidth: '1100px'}}> {/* Чуть шире для 2 колонок */}
 
                 {/* Левая часть — Иллюстрация */}

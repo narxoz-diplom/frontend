@@ -1,7 +1,6 @@
 /* ================================ */
-/* SIDEBAR NAVIGATION               */
+/* SIDEBAR NAVIGATION */
 /* ================================ */
-
 .main-nav {
     position: fixed;
     top: 0;
@@ -13,26 +12,22 @@
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.03);
     display: flex;
     flex-direction: column;
-    z-index: 1001; /* Чуть выше шапки */
+    z-index: 1000;
     transition: width var(--transition-base), background var(--transition-base);
 }
-
-/* Исправлено: Скрытие контента при схлопывании через opacity для плавности */
-.main-nav.collapsed .brand-text,
-.main-nav.collapsed .nav-label {
+.main-nav.collapsed {
+    width: 80px;
+}
+.collapsed .brand-text,
+.collapsed .nav-label {
     display: none;
 }
-
 /* Brand */
 .nav-brand {
     padding: 32px 24px;
     border-bottom: 1px solid var(--border-color);
     overflow: hidden;
-    height: 90px;
-    display: flex;
-    align-items: center;
 }
-
 .brand-link {
     display: flex;
     align-items: center;
@@ -40,28 +35,24 @@
     text-decoration: none;
     color: var(--text-primary);
 }
-
 .brand-icon {
     font-size: 24px;
     color: var(--primary-color);
     min-width: 32px;
     display: flex;
     justify-content: center;
-    flex-shrink: 0;
 }
-
 .brand-text {
     font-size: 18px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    white-space: nowrap;
+    color: var(--text-primary);
 }
-
 /* Collapse button */
 .collapse-btn {
     position: absolute;
-    top: 32px;
+    top: 40px;
     right: -12px;
     width: 24px;
     height: 24px;
@@ -75,23 +66,18 @@
     color: var(--primary-color);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: 0.2s;
-    z-index: 10;
 }
-
 .collapse-btn:hover {
     transform: scale(1.1);
     background: var(--primary-color);
     color: #fff;
 }
-
 /* Nav links */
 .nav-links {
     flex: 1;
     padding: 20px 0;
-    overflow-y: auto; /* Исправлено на auto для длинных меню */
     overflow-x: hidden;
 }
-
 .nav-link {
     display: flex;
     align-items: center;
@@ -103,39 +89,32 @@
     font-weight: 500;
     border-left: 4px solid transparent;
     white-space: nowrap;
-    transition: all 0.2s ease;
+    transition: 0.2s;
 }
-
 .nav-icon {
     font-size: 20px;
     min-width: 32px;
     display: flex;
     justify-content: center;
-    flex-shrink: 0;
 }
-
 .nav-link:hover,
 .nav-link.active {
     background: var(--bg-tertiary);
     color: var(--primary-color);
 }
-
 .nav-link.active {
     border-left-color: var(--primary-color);
     font-weight: 600;
 }
-
 /* Nav footer */
 .nav-footer {
     padding: 20px 0;
     border-top: 1px solid var(--border-color);
     margin-top: auto;
 }
-
 .btn-logout-sidebar {
     display: flex;
     align-items: center;
-    gap: 16px; /* Добавлено */
     width: 100%;
     padding: 14px 24px;
     background: transparent;
@@ -145,23 +124,19 @@
     font-weight: 500;
     cursor: pointer;
     transition: 0.2s;
-    white-space: nowrap;
 }
-
 .btn-logout-sidebar:hover {
     background: var(--bg-tertiary);
     color: var(--primary-color);
 }
-
 /* ================================ */
-/* TOP NAVBAR                       */
+/* TOP NAVBAR */
 /* ================================ */
-
 .top-navbar {
     position: fixed;
     top: 0;
     right: 0;
-    left: var(--nav-width); /* Зависит от переменной из JS */
+    left: var(--nav-width);
     height: 70px;
     background: var(--bg-primary);
     border-bottom: 1px solid var(--border-color);
@@ -172,7 +147,6 @@
     z-index: 999;
     transition: left var(--transition-base), background var(--transition-base);
 }
-
 /* Search */
 .top-search {
     display: flex;
@@ -182,7 +156,11 @@
     border-radius: 10px;
     width: 320px;
 }
-
+.top-search .search-icon {
+    margin-right: 12px;
+    font-size: 18px;
+    color: var(--text-light);
+}
 .top-search input {
     border: none;
     background: transparent;
@@ -191,28 +169,77 @@
     font-size: 14px;
     color: var(--text-primary);
 }
-
 /* Action buttons */
 .top-right-actions {
     display: flex;
     align-items: center;
-    gap: 16px; /* Немного уменьшено для плотности */
+    gap: 24px;
 }
-
+.top-action-btn {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 22px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: 0.2s;
+}
+.top-action-btn:hover {
+    color: var(--primary-color);
+}
+.notification-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-primary);
+}
+/* Theme toggle */
+.theme-toggle-btn {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 8px;
+    transition: var(--transition-base);
+}
+.theme-toggle-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--primary-color);
+}
 /* Profile section */
 .top-profile-section {
     display: flex;
     align-items: center;
     gap: 12px;
-    position: relative; /* Для Dropdown */
 }
-
-/* Контейнер аватара теперь контролирует Dropdown */
-.top-avatar-container {
-    position: relative;
-    padding: 5px 0; /* Буферная зона для ховера */
+.top-user-info {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
 }
-
+.top-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.top-user-role {
+    font-size: 11px;
+    color: #48bb5f;
+}
 .top-avatar {
     width: 42px;
     height: 42px;
@@ -225,43 +252,48 @@
     font-weight: 700;
     cursor: pointer;
 }
-
-/* Исправлен Dropdown: позиционирование и отображение */
+/* Dropdown */
 .top-dropdown {
     position: absolute;
-    top: 100%; /* Сразу под аватаром */
+    top: calc(70% + 10px);
     right: 0;
     background: var(--bg-primary);
-    min-width: 180px;
+    min-width: 200px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    box-shadow: var(--shadow-main);
     border: 1px solid var(--border-color);
     padding: 8px;
     display: none;
-    z-index: 1002;
-    margin-top: 5px;
 }
-
 .top-avatar-container:hover .top-dropdown {
     display: block;
 }
-
-.top-dropdown hr {
-    margin: 8px 0;
-    border: none;
-    border-top: 1px solid var(--border-color);
-}
-
-/* ================================ */
-/* NOTIFICATION POPOVER             */
-/* ================================ */
-
-.notif-wrapper {
-    position: relative;
+.top-dropdown a,
+.logout-btn-dropdown {
     display: flex;
     align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    border-radius: 8px;
+    width: 100%;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: 0.2s;
 }
-
+.top-dropdown a:hover {
+    background: var(--bg-tertiary);
+    color: var(--primary-color);
+}
+.logout-btn-dropdown {
+    color: #e53e3e !important;
+}
+/* ================================ */
+/* NOTIFICATION POPOVER */
+/* ================================ */
 .notification-popover {
     position: absolute;
     top: calc(100% + 15px);
@@ -277,30 +309,110 @@
     z-index: 1000;
     animation: popoverFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-/* Стили для скролла в уведомлениях */
-.popover-content::-webkit-scrollbar {
-    width: 4px;
+@keyframes popoverFadeIn {
+    from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
-.popover-content::-webkit-scrollbar-thumb {
-    background: var(--border-color);
-    border-radius: 4px;
+.popover-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-primary);
 }
-
-/* Адаптивность для мобилок */
-@media (max-width: 768px) {
-    .top-navbar {
-        left: 0;
-        padding: 0 16px;
-    }
-    .top-search {
-        display: none; /* Скрываем поиск на мобилках */
-    }
-    .main-nav {
-        transform: translateX(-100%);
-    }
-    .main-nav.mobile-open {
-        transform: translateX(0);
-        width: 250px;
-    }
+.popover-header span {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text-primary);
+}
+/* Items list */
+.popover-content {
+    max-height: 400px;
+    overflow-y: auto;
+    background: var(--bg-primary);
+}
+.popover-content::-webkit-scrollbar { width: 6px; }
+.popover-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+.popover-item {
+    position: relative;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.popover-item:last-child { border-bottom: none; }
+.popover-item:hover { background: var(--bg-tertiary); }
+.popover-item.unread {
+    background: rgba(227, 0, 0, 0.03);
+}
+.popover-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--primary-color);
+}
+.popover-item-text {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+.popover-item.unread .popover-item-text {
+    font-weight: 600;
+}
+.popover-time {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+/* Empty state */
+.popover-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    min-height: 25px;
+    background: var(--bg-primary);
+    color: var(--text-muted);
+    text-align: center;
+}
+.popover-empty-icon {
+    font-size: 36px;
+    opacity: 0.4;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+.popover-empty-text {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+/* Footer */
+.popover-footer {
+    display: block;
+    padding: 14px;
+    text-align: center;
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    color: var(--primary-color);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+.popover-footer:hover {
+    background: var(--bg-tertiary);
+    text-decoration: underline;
 }

@@ -1,175 +1,303 @@
-:root {
-    --primary-red: #e30000;
-    /* Ультра-прозрачный красный с сильным размытием */
-    --glass-bg: rgba(227, 0, 0, 0.03);
-    --accent-red: #e30000; /* Насыщенный красный для аватара */
+/* ================================ */
+/*     PROFILE — GLASSMORPHISM      */
+/* ================================ */
 
-    --radius: 24px;
-    /* Неоновый ободок */
-    --border-glass: 2px solid rgba(227, 0, 0, 0.4);
-    --red-glow: 0 0 25px rgba(227, 0, 0, 0.15);
-
-    --bg-card: #ffffff;
-    --text-main: #1a202c;
-    --text-sub: #64748b;
-    --border-light: #edf2f7;
+.profile-page {
+    position: relative;
+    min-height: 100%;
+    padding: var(--spacing-lg);
+    animation: fadeIn 0.5s ease;
 }
 
-body.dark-mode {
-    --bg-card: #1e293b;
-    --text-main: #f8fafc;
-    --text-sub: #94a3b8;
-    --border-light: #334155;
-    --glass-bg: rgba(227, 0, 0, 0.06);
-}
-
-.profile-container {
-    max-width: 1100px;
-    margin: 80px auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 30px;
-    align-items: start;
-}
-
-/* --- SIDEBAR (КРАСНОЕ СТЕКЛО) --- */
-.profile-sidebar-glass {
-    background: var(--glass-bg);
-    border-radius: var(--radius);
-    padding: 60px 30px;
+.profile-state {
     text-align: center;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    padding: var(--spacing-2xl);
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+.profile-state.error { color: var(--primary-gradient-start); }
 
-    border: var(--border-glass);
-    box-shadow: var(--red-glow);
-
-    position: sticky;
-    top: 100px;
+/* ── INNER ── */
+.profile-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
 }
 
-.profile-avatar {
-    width: 120px;
-    height: 120px;
-    background: var(--accent-red); /* Сочный красный круг */
-    border: 4px solid rgba(255, 255, 255, 0.2);
+/* ── GLASS CARD BASE ── */
+.glass-card {
+    background: var(--bg-primary);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-base);
+}
+
+.glass-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+/* Dark mode — слегка прозрачные карточки */
+body.dark-mode .glass-card {
+    background: rgba(33, 33, 33, 0.85);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .glass-card:hover {
+    background: rgba(44, 44, 44, 0.9);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ── HERO CARD ── */
+.glass-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xl);
+    flex-wrap: wrap;
+}
+
+.glass-avatar {
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    margin: 0 auto 25px;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    border: 3px solid rgba(255, 255, 255, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 52px;
+    font-size: 38px;
     font-weight: 800;
     color: white;
-    box-shadow: 0 10px 30px rgba(227, 0, 0, 0.3);
+    flex-shrink: 0;
+    box-shadow: 0 0 30px rgba(227, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.15);
+    letter-spacing: -1px;
 }
 
-.profile-sidebar-info h1 {
-    font-size: 22px;
-    color: var(--text-main);
-    margin: 0;
-    font-weight: 800;
-}
-
-.profile-username {
-    color: var(--primary-red);
-    font-weight: 600;
-    font-size: 14px;
-    margin-top: 8px;
-    opacity: 0.9;
-}
-
-/* --- ПРАВАЯ ЧАСТЬ --- */
-.profile-main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-}
-
-.user-info-card, .role-card, .stats-card {
-    background: var(--bg-card);
-    border-radius: var(--radius);
-    padding: 30px;
-    border: 1px solid var(--border-light);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
-}
-
-.user-info-card h2, .role-card h2, .stats-card h2 {
-    font-size: 18px;
-    margin-bottom: 20px;
-    color: var(--text-main);
-    font-weight: 700;
-}
-
-.profile-info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.profile-info-item label {
-    display: block;
-    font-size: 12px;
-    color: var(--text-sub);
-    margin-bottom: 6px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.profile-info-item p {
-    font-size: 16px;
-    color: var(--text-main);
-    font-weight: 600;
-    margin: 0;
-}
-
-/* --- НИЖНИЙ РЯД (РОЛЬ И СТАТИСТИКА) --- */
-.bottom-row {
-    display: grid;
-    grid-template-columns: 1fr 1.5fr;
-    gap: 25px;
-}
-
-.stats-grid {
-    display: flex;
-    justify-content: space-between;
-}
-
-.stat-item {
-    text-align: center;
+.glass-hero-info {
     flex: 1;
+    min-width: 200px;
 }
 
-.stat-value {
-    display: block;
+.glass-name {
+    margin: 0 0 4px;
     font-size: 28px;
     font-weight: 800;
-    color: var(--primary-red);
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
 }
 
-.stat-label {
-    font-size: 11px;
-    color: var(--text-sub);
+.glass-username {
+    display: block;
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+}
+
+.glass-roles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.glass-role-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--rc, #64748b);
+    background: color-mix(in srgb, var(--rc, #64748b) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--rc, #64748b) 30%, transparent);
 }
 
-/* Стилизация бейджа роли */
-.role-badge {
-    display: inline-block;
-    padding: 10px 20px;
-    background: var(--glass-bg);
-    color: var(--primary-red);
-    border: 1px solid rgba(227, 0, 0, 0.2);
-    border-radius: 12px;
+.glass-role-pill.small {
+    padding: 3px 9px;
+    font-size: 11px;
+}
+
+/* Статистика */
+.glass-stats {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    background: color-mix(in srgb, var(--primary-gradient-start) 6%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-gradient-start) 20%, transparent);
+    border-radius: 14px;
+    padding: 14px var(--spacing-lg);
+    margin-left: auto;
+}
+
+.glass-stat { text-align: center; }
+
+.glass-stat-value {
+    display: block;
+    font-size: 24px;
     font-weight: 800;
-    font-size: 12px;
-    text-transform: uppercase;
+    color: var(--primary-gradient-start);
+    line-height: 1;
+    margin-bottom: 4px;
 }
 
-@media (max-width: 900px) {
-    .profile-container { grid-template-columns: 1fr; }
-    .bottom-row { grid-template-columns: 1fr; }
-    .profile-sidebar-glass { position: static; }
+.glass-stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.glass-stat-sep {
+    width: 1px;
+    height: 32px;
+    background: var(--border-color);
+}
+
+/* ── НИЖНЯЯ СЕТКА ── */
+.glass-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.glass-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary-gradient-start);
+    margin: 0 0 var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Info grid */
+.glass-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.glass-info-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-secondary);
+    margin-bottom: 5px;
+}
+
+.glass-info-item p {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.glass-verified {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid rgba(22, 163, 74, 0.3);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+body.dark-mode .glass-verified {
+    background: rgba(22, 163, 74, 0.15);
+    color: #4ade80;
+}
+
+/* Status list */
+.glass-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    margin-bottom: var(--spacing-md);
+}
+
+.glass-status-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.glass-status-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.glass-roles-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.glass-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.glass-badge.active {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid rgba(22, 163, 74, 0.2);
+}
+
+.glass-badge.pending {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+body.dark-mode .glass-badge.active  { background: rgba(22, 163, 74, 0.15);  color: #4ade80; }
+body.dark-mode .glass-badge.pending { background: rgba(217, 119, 6, 0.15);  color: #fbbf24; }
+
+.glass-no-role {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.glass-role-desc {
+    margin: var(--spacing-md) 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+    .glass-hero      { flex-direction: column; text-align: center; }
+    .glass-roles     { justify-content: center; }
+    .glass-stats     { margin-left: 0; width: 100%; justify-content: center; }
+    .glass-grid      { grid-template-columns: 1fr; }
+    .glass-info-grid { grid-template-columns: 1fr; }
 }

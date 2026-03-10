@@ -30,21 +30,20 @@
 
 /* --- DARK THEME --- */
 body.dark-mode {
-    --bg-primary: #1e293b;      /* Карточки становятся темными */
-    --bg-secondary: #0f172a;    /* Фон страницы становится очень темным */
-    --bg-tertiary: #334155;
+    --bg-primary: #212121;      /* Карточки — тёмно-серый */
+    --bg-secondary: #181818;    /* Фон страницы — почти чёрный */
+    --bg-tertiary: #2c2c2c;     /* Вторичные поверхности */
 
-    --text-primary: #f8fafc;    /* Текст становится белым */
-    --text-secondary: #94a3b8;
-    --text-light: #64748b;
-    --border-color: #334155;
+    --text-primary: #e8e8e8;    /* Текст — мягкий белый */
+    --text-secondary: #9a9a9a;
+    --text-light: #6b6b6b;
+    --border-color: #2f2f2f;
 
-    /* Профиль Glass Effect (Темный) */
-    --glass-bg: rgba(227, 0, 0, 0.1);
-    --border-glass: 2px solid rgba(227, 0, 0, 0.6);
-    --red-glow: 0 0 25px rgba(227, 0, 0, 0.25);
+    /* Профиль Glass Effect (Тёмный) */
+    --glass-bg: rgba(227, 0, 0, 0.08);
+    --border-glass: 2px solid rgba(227, 0, 0, 0.4);
+    --red-glow: 0 0 25px rgba(227, 0, 0, 0.15);
 }
-
 /* Глобальные сбросы */
 * {
     margin: 0;

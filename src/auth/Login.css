@@ -15,13 +15,13 @@
 
 /* Темная тема */
 body.dark-mode {
-    --bg-page: #0f172a;       /* Глубокий темный фон */
-    --bg-container: #1e293b;  /* Цвет карточки */
-    --text-dark: #f1f5f9;
-    --text-gray: #94a3b8;
-    --border-color: #334155;
-    --input-bg: #0f172a;
-    --shadow-soft: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --bg-page:        #181818;   /* Фон страницы */
+    --bg-container:   #212121;   /* Цвет карточки */
+    --text-dark:      #e8e8e8;
+    --text-gray:      #9a9a9a;
+    --border-color:   #2f2f2f;
+    --input-bg:       #181818;
+    --shadow-soft:    0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 /* Добавьте это, чтобы переключение было плавным, а не резким */

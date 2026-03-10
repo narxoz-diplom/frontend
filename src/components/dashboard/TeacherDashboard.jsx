@@ -7,11 +7,20 @@ import {
     FiBarChart2,
     FiArrowRight,
     FiBookOpen,
-    FiPlus
+    FiPlus,
+    FiMoreVertical,
+    FiEye,
+    FiFileText
 } from 'react-icons/fi'
 import api from '../../services/api'
 import CreateCourseModal from '../CreateCourseModal'
 import './Dashboard.css'
+
+const statusConfig = {
+    PUBLISHED: { label: 'Опубликован', color: '#16a34a', bg: '#dcfce7' },
+    DRAFT:     { label: 'Черновик',    color: '#d97706', bg: '#fef3c7' },
+    ARCHIVED:  { label: 'Архив',       color: '#64748b', bg: '#f1f5f9' },
+}
 
 const TeacherDashboard = () => {
     const [courses, setCourses] = useState([])
@@ -34,9 +43,13 @@ const TeacherDashboard = () => {
         }
     }
 
+    const getStatusCfg = (status) =>
+        statusConfig[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
+
     return (
         <div className="dashboard">
-            {/* Hero Section */}
+
+            {/* Hero */}
             <div className="dashboard-hero">
                 <div className="hero-content">
                     <h1 className="hero-title">Панель преподавателя 👨‍🏫</h1>
@@ -49,7 +62,7 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            {/* Statistics Grid */}
+            {/* Stats */}
             <div className="dashboard-stats">
                 <div className="stat-card">
                     <div className="stat-icon stat-icon-primary"><FiBook /></div>
@@ -58,7 +71,6 @@ const TeacherDashboard = () => {
                         <p className="stat-label">Мои курсы</p>
                     </div>
                 </div>
-
                 <div className="stat-card">
                     <div className="stat-icon stat-icon-success"><FiUsers /></div>
                     <div className="stat-content">
@@ -66,7 +78,6 @@ const TeacherDashboard = () => {
                         <p className="stat-label">Студентов</p>
                     </div>
                 </div>
-
                 <div className="stat-card">
                     <div className="stat-icon stat-icon-warning"><FiEdit /></div>
                     <div className="stat-content">
@@ -74,7 +85,6 @@ const TeacherDashboard = () => {
                         <p className="stat-label">На проверке</p>
                     </div>
                 </div>
-
                 <div className="stat-card">
                     <div className="stat-icon stat-icon-info"><FiBarChart2 /></div>
                     <div className="stat-content">
@@ -84,7 +94,7 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            {/* Actions Grid */}
+            {/* Actions */}
             <div className="dashboard-section">
                 <div className="section-header">
                     <h2 className="section-title">Управление</h2>
@@ -96,41 +106,89 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            {/* Создать курс и список курсов */}
-            <div className="dashboard-section teacher-courses-section">
-                <div className="section-header">
-                    <h2 className="section-title">Мои курсы</h2>
+            {/* ── Мои курсы ── */}
+            <div className="dashboard-section">
+                <div className="section-header courses-header">
+                    <div>
+                        <h2 className="section-title">Мои курсы</h2>
+                        <p className="section-subtitle">{courses.length} {courses.length === 1 ? 'курс' : 'курсов'} создано</p>
+                    </div>
                     <button
-                        className="btn btn-primary"
+                        className="btn-create-course"
                         onClick={() => setShowCreateModal(true)}
                     >
-                        <FiPlus /> Создать курс
+                        <FiPlus size={16} />
+                        Создать курс
                     </button>
                 </div>
+
                 {loading ? (
-                    <p className="courses-loading">Загрузка курсов...</p>
+                    <div className="courses-loading">
+                        <div className="courses-skeleton" />
+                        <div className="courses-skeleton" />
+                        <div className="courses-skeleton" />
+                    </div>
                 ) : courses.length === 0 ? (
-                    <div className="teacher-courses-empty">
-                        <p>У вас пока нет курсов. Нажмите «Создать курс», чтобы создать первый.</p>
+                    <div className="courses-empty">
+                        <div className="courses-empty-icon"><FiBook size={40} /></div>
+                        <h3>Курсов пока нет</h3>
+                        <p>Нажмите «Создать курс», чтобы добавить первый.</p>
                     </div>
                 ) : (
-                    <div className="teacher-courses-list">
-                        {courses.map((course) => (
-                            <Link
-                                key={course.id}
-                                to={`/courses/${course.id}/edit`}
-                                className="teacher-course-card"
-                            >
-                                <div className="teacher-course-info">
-                                    <h3>{course.title}</h3>
-                                    <p className="teacher-course-desc">
-                                        {course.description || 'Без описания'}
-                                    </p>
-                                    <span className="teacher-course-status">{course.status}</span>
+                    <div className="courses-grid">
+                        {courses.map((course) => {
+                            const cfg = getStatusCfg(course.status)
+                            return (
+                                <div key={course.id} className="course-card">
+                                    {/* Верхняя цветная полоска */}
+                                    <div className="course-card-top" />
+
+                                    <div className="course-card-body">
+                                        {/* Статус */}
+                                        <span
+                                            className="course-status-badge"
+                                            style={{ color: cfg.color, background: cfg.bg }}
+                                        >
+                                            {cfg.label}
+                                        </span>
+
+                                        {/* Название */}
+                                        <h3 className="course-title">{course.title}</h3>
+
+                                        {/* Описание */}
+                                        <p className="course-desc">
+                                            {course.description || 'Описание не добавлено'}
+                                        </p>
+                                    </div>
+
+                                    {/* Футер карточки */}
+                                    <div className="course-card-footer">
+                                        <div className="course-meta">
+                                            <span className="course-meta-item">
+                                                <FiFileText size={13} />
+                                                {course.lessonsCount ?? '—'} уроков
+                                            </span>
+                                        </div>
+                                        <div className="course-card-actions">
+                                            <Link
+                                                to={`/courses/${course.id}`}
+                                                className="course-action-btn"
+                                                title="Просмотр"
+                                            >
+                                                <FiEye size={15} />
+                                            </Link>
+                                            <Link
+                                                to={`/courses/${course.id}/edit`}
+                                                className="course-action-btn primary"
+                                                title="Редактировать"
+                                            >
+                                                <FiEdit size={15} />
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
-                                <FiArrowRight className="teacher-course-arrow" />
-                            </Link>
-                        ))}
+                            )
+                        })}
                     </div>
                 )}
             </div>

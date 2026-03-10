@@ -1,3 +1,7 @@
+/* ================================ */
+/*           DASHBOARD              */
+/* ================================ */
+
 .dashboard {
     padding: var(--spacing-lg);
     max-width: 1400px;
@@ -7,10 +11,10 @@
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Hero Section (Твой фирменный градиент) --- */
+/* ── Hero ── */
 .dashboard-hero {
     background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
     border-radius: var(--radius-xl);
@@ -25,7 +29,6 @@
     box-shadow: 0 10px 30px rgba(227, 0, 0, 0.15);
 }
 
-/* Декоративный круг на фоне */
 .dashboard-hero::after {
     content: '';
     position: absolute;
@@ -37,26 +40,22 @@
     right: -50px;
 }
 
-.hero-content {
-    position: relative;
-    z-index: 2;
-}
+.hero-content { position: relative; z-index: 2; }
 
 .hero-title {
     font-size: 32px;
     font-weight: 800;
     margin-bottom: 12px;
-    color: #ffffff;
+    color: #fff;
 }
 
 .hero-subtitle {
     font-size: 17px;
     opacity: 0.9;
-    font-weight: 400;
     max-width: 600px;
 }
 
-/* --- Stats Grid (Карточки как на скриншоте) --- */
+/* ── Stats ── */
 .dashboard-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -65,7 +64,7 @@
 }
 
 .stat-card {
-    background-color: var(--bg-primary);
+    background: var(--bg-primary);
     border-radius: var(--radius-lg);
     padding: var(--spacing-lg);
     display: flex;
@@ -78,7 +77,7 @@
 
 .stat-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.06);
+    box-shadow: var(--shadow-lg);
 }
 
 .stat-icon {
@@ -92,11 +91,10 @@
     flex-shrink: 0;
 }
 
-/* Иконки в твоих цветах */
 .stat-icon-primary { background: rgba(227, 0, 0, 0.1); color: var(--primary-color); }
 .stat-icon-success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
 .stat-icon-info    { background: rgba(0, 123, 255, 0.1); color: #007bff; }
-.stat-icon-warning { background: rgba(255, 193, 7, 0.1); color: #ffc107; }
+.stat-icon-warning { background: rgba(255, 193, 7, 0.1);  color: #ffc107; }
 
 .stat-value {
     font-size: 28px;
@@ -111,7 +109,9 @@
     font-weight: 500;
 }
 
-/* --- Быстрые действия --- */
+/* ── Section ── */
+.dashboard-section { margin-bottom: var(--spacing-2xl); }
+
 .section-header {
     margin-bottom: var(--spacing-lg);
 }
@@ -120,8 +120,23 @@
     font-size: 22px;
     font-weight: 700;
     color: var(--text-primary);
+    margin: 0;
 }
 
+.section-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+}
+
+/* Header с кнопкой */
+.courses-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+/* ── Actions grid ── */
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -148,34 +163,231 @@
     background: var(--bg-tertiary);
 }
 
-/* --- Список курсов (Teacher) --- */
-.teacher-course-card {
+/* ── Кнопка создать курс ── */
+.btn-create-course {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: var(--transition-base);
+    box-shadow: 0 4px 12px rgba(227, 0, 0, 0.25);
+    white-space: nowrap;
+}
+
+.btn-create-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(227, 0, 0, 0.35);
+}
+
+/* ── Courses grid ── */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+/* ── Course card ── */
+.course-card {
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(227, 0, 0, 0.25);
+}
+
+/* Красная верхняя полоска */
+.course-card-top {
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
+}
+
+.course-card-body {
     padding: var(--spacing-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Статус */
+.course-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: fit-content;
+}
+
+/* Название */
+.course-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Описание */
+.course-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+}
+
+/* Футер */
+.course-card-footer {
+    padding: 12px var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-md);
+}
+
+.course-meta {
+    display: flex;
+    gap: 12px;
+}
+
+.course-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Кнопки действий */
+.course-card-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.course-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-decoration: none;
+    cursor: pointer;
     transition: 0.2s;
 }
 
-.teacher-course-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--primary-color);
-}
-
-.teacher-course-info h3 {
+.course-action-btn:hover {
+    border-color: var(--border-color);
+    background: var(--bg-hover, #f5f5f5);
     color: var(--text-primary);
-    margin-bottom: 4px;
 }
 
-.teacher-course-status {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 700;
+.course-action-btn.primary {
+    background: rgba(227, 0, 0, 0.08);
+    border-color: rgba(227, 0, 0, 0.2);
     color: var(--primary-color);
+}
+
+.course-action-btn.primary:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* ── Empty state ── */
+.courses-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--spacing-2xl);
+    background: var(--bg-primary);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    gap: var(--spacing-md);
+}
+
+.courses-empty-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(227, 0, 0, 0.08);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.courses-empty h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.courses-empty p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ── Skeleton loading ── */
+.courses-loading {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+}
+
+.courses-skeleton {
+    height: 200px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(90deg, var(--border-color) 25%, var(--bg-primary) 50%, var(--border-color) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .dashboard-hero { flex-direction: column; gap: var(--spacing-lg); }
+    .courses-header  { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
+    .courses-grid    { grid-template-columns: 1fr; }
 }
