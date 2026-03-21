@@ -9,17 +9,18 @@ import {
   FiCheckCircle,
   FiClock,
   FiBook,
-  FiEdit3,
   FiTrash2,
   FiEye,
   FiCheckSquare
 } from 'react-icons/fi'
 import api from '../services/api'
+import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import './CourseDetail.css'
 
 const CourseDetail = () => {
   const { id } = useParams()
+  const { confirm, toast } = useAlert()
   const [course, setCourse] = useState(null)
   const [lessons, setLessons] = useState([])
   const [tests, setTests] = useState([])
@@ -105,16 +106,21 @@ const CourseDetail = () => {
   }
 
   const handleStatusChange = async (newStatus) => {
-    if (!window.confirm(`Изменить статус курса на "${newStatus}"?`)) {
-      return
-    }
-    
+    const ok = await confirm({
+      title: 'Статус курса',
+      message: `Изменить статус курса на «${newStatus}»?`,
+      confirmText: 'Изменить',
+      cancelText: 'Отмена',
+      variant: 'default'
+    })
+    if (!ok) return
+
     setStatusChanging(true)
     try {
       const response = await api.patch(`/courses/${id}/status`, { status: newStatus })
       setCourse(response.data)
       setError(null)
-      alert(`Статус курса успешно изменен на "${newStatus}"`)
+      toast(`Статус курса изменён на «${newStatus}»`, 'success')
     } catch (err) {
       console.error('Error changing course status:', err)
       setError('Ошибка при изменении статуса курса')
@@ -239,24 +245,15 @@ const CourseDetail = () => {
     }
   }
 
-  const handleDeleteLesson = async (lessonId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот урок? Все связанные видео и файлы также будут удалены.')) {
-      return
-    }
-    try {
-      await api.delete(`/courses/lessons/${lessonId}`)
-      loadLessons()
-      setError(null)
-    } catch (err) {
-      console.error('Error deleting lesson:', err)
-      setError('Ошибка при удалении урока')
-    }
-  }
-
   const handleDeleteFile = async (fileId, lessonId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удаление файла',
+      message: 'Удалить этот файл?',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
     try {
       await api.delete(`/files/${fileId}`)
       // Обновляем список файлов для урока
@@ -345,7 +342,14 @@ const CourseDetail = () => {
       <div className="course-content-section">
         <div className="lessons-section">
           <div className="lessons-header">
-            <h2>Уроки</h2>
+            <div className="lessons-header-titles">
+              <h2>Уроки</h2>
+              {canUpload(window.keycloak) && (
+                <p className="lessons-manage-hint">
+                  Удаление уроков и курса — в «Редактировать курс».
+                </p>
+              )}
+            </div>
             {canUpload(window.keycloak) && (
               <>
                 <Link to={`/courses/${id}/edit`} className="btn btn-secondary">
@@ -431,13 +435,14 @@ const CourseDetail = () => {
             <div className="lessons-list">
               {lessons.map((lesson, index) => {
                 const progress = lessonProgress[lesson.id] || { completed: false, progress: 0 }
+                const isCompleted = progress.completed === true
                 return (
                   <div key={lesson.id} className="lesson-card">
                     <div className="lesson-number">
-                      {progress.completed ? (
+                      {isCompleted ? (
                         <FiCheckCircle className="lesson-completed-icon" />
                       ) : (
-                        <span>{index + 1}</span>
+                        <span className="lesson-number-text">{index + 1}</span>
                       )}
                     </div>
                     <div className="lesson-content">
@@ -471,15 +476,6 @@ const CourseDetail = () => {
                         >
                           <FiBook /> Study Lesson
                         </Link>
-                        {canUpload(window.keycloak) && (
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleDeleteLesson(lesson.id)}
-                            title="Удалить урок"
-                          >
-                            <FiTrash2 />
-                          </button>
-                        )}
                       </div>
                       
                       {/* Видео урока (краткий список) */}

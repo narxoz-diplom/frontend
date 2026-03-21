@@ -33,29 +33,21 @@
 
 .notifications-title-section h1 {
   margin: 0;
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 600;
   color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .unread-badge {
-  background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+  background: var(--primary-color);
   color: white;
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 13px;
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  box-shadow: none;
+  border: 1px solid rgba(184, 56, 72, 0.35);
 }
 
 .notifications-header-actions {
@@ -82,7 +74,6 @@
   background: var(--bg-secondary);
   border-color: var(--primary-color);
   color: var(--primary-color);
-  transform: translateY(-2px);
 }
 
 .btn-icon:disabled {
@@ -158,14 +149,13 @@
 .filter-btn:hover {
   border-color: var(--primary-color);
   background: var(--bg-primary);
-  transform: translateY(-2px);
 }
 
 .filter-btn.active {
-  background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+  background: var(--primary-color);
   color: white;
-  border-color: transparent;
-  box-shadow: var(--shadow-sm);
+  border-color: var(--primary-color);
+  box-shadow: none;
 }
 
 /* Content */
@@ -178,9 +168,9 @@
 /* Notification Group */
 .notification-group {
   background: var(--bg-primary);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
 }
 
@@ -234,7 +224,6 @@
 
 .notification-card:hover {
   background: var(--bg-secondary);
-  transform: translateX(4px);
 }
 
 .notification-card.unread {

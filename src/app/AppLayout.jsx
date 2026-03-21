@@ -28,6 +28,7 @@ const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
             <div className="main-content">
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/stats" element={<Dashboard />} />
                     <Route path="/courses" element={<Courses />} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
                     <Route path="/courses/:id/edit" element={<CourseEdit />} />

@@ -19,14 +19,17 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary, #718096);
+  color: var(--text-primary);
+  font-weight: 600;
   text-decoration: none;
   font-size: 14px;
   margin-bottom: 12px;
+  border-bottom: 1px solid transparent;
 }
 
 .test-detail-header .back-link:hover {
-  color: #e30000;
+  color: #b83848;
+  border-bottom-color: rgba(184, 56, 72, 0.45);
 }
 
 .test-detail-header h1 {
@@ -41,8 +44,8 @@
 }
 
 .test-detail-error-banner {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(184, 56, 72, 0.08);
+  color: #b83848;
   padding: 12px 16px;
   border-radius: 10px;
   margin-bottom: 24px;
@@ -96,15 +99,15 @@
 }
 
 .option-label:hover {
-  border-color: #e30000;
-  background: #fffafa;
+  border-color: #b83848;
+  background: rgba(184, 56, 72, 0.04);
 }
 
 .option-label input[type="radio"],
 .option-label input[type="checkbox"] {
   width: 20px;
   height: 20px;
-  accent-color: #e30000;
+  accent-color: #b83848;
 }
 
 .open-answer-input {
@@ -117,7 +120,7 @@
 
 .open-answer-input:focus {
   outline: none;
-  border-color: #e30000;
+  border-color: #b83848;
 }
 
 .test-submit-section {
@@ -148,7 +151,7 @@
 
 .result-icon {
   font-size: 64px;
-  color: #16a34a;
+  color: #b83848;
   margin-bottom: 16px;
 }
 

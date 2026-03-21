@@ -15,9 +15,11 @@ import {
   FiRefreshCw
 } from 'react-icons/fi'
 import api from '../services/api'
+import { useAlert } from '../context/AlertProvider'
 import './Notifications.css'
 
 const Notifications = () => {
+  const { confirm } = useAlert()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -90,9 +92,14 @@ const Notifications = () => {
     if (e) {
       e.stopPropagation()
     }
-    if (!window.confirm('Удалить это уведомление?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удаление',
+      message: 'Удалить это уведомление?',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
     try {
       // Если нет эндпоинта для удаления, просто скрываем из списка
       setNotifications(prev => prev.filter(n => n.id !== id))

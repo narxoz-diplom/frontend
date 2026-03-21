@@ -24,9 +24,9 @@
   position: relative;
   width: 100%;
   background: #000;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
 }
 
 .video-element {
@@ -326,7 +326,6 @@
 .nav-btn:hover {
   background: var(--primary-color);
   color: white;
-  transform: translateY(-2px);
 }
 
 .next-btn {
@@ -564,17 +563,19 @@
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-sm);
-  color: var(--primary-color);
+  color: var(--text-primary);
   text-decoration: none;
   margin-bottom: var(--spacing-md);
   font-weight: 600;
   font-size: 14px;
-  transition: all var(--transition-base);
+  transition: opacity var(--transition-base), gap var(--transition-base);
+  border-bottom: 1px solid transparent;
 }
 
 .course-link:hover {
-  color: var(--primary-hover);
+  opacity: 0.88;
   gap: var(--spacing-md);
+  border-bottom-color: rgba(184, 56, 72, 0.35);
 }
 
 .course-info h3 {
@@ -623,7 +624,7 @@
 }
 
 .lesson-item.active {
-  background: rgba(52, 152, 219, 0.05);
+  background: rgba(184, 56, 72, 0.08);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin: calc(-1 * var(--spacing-md));

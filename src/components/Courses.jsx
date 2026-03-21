@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiEye } from 'react-icons/fi'
+import { FiEye, FiTrash2 } from 'react-icons/fi'
 import api from '../services/api'
+import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import './Courses.css'
 
 const Courses = () => {
+  const { confirm, toast } = useAlert()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -16,6 +18,7 @@ const Courses = () => {
   const [enrolling, setEnrolling] = useState(new Set())
   const [filter, setFilter] = useState('all') // 'all' или 'enrolled'
   const [courseViews, setCourseViews] = useState({}) // { courseId: views }
+  const [deletingCourseId, setDeletingCourseId] = useState(null)
 
   useEffect(() => {
     if (filter === 'enrolled') {
@@ -158,6 +161,36 @@ const Courses = () => {
     return enrolledCourses.has(courseId)
   }
 
+  const canDeleteCourse = (course) => {
+    if (!canUpload(window.keycloak)) return false
+    const sub = window.keycloak?.tokenParsed?.sub
+    if (isAdmin(window.keycloak)) return true
+    return sub && course.instructorId === sub
+  }
+
+  const handleDeleteCourse = async (course) => {
+    const ok = await confirm({
+      title: 'Удаление курса',
+      message: `Удалить курс «${course.title}»? Действие необратимо.`,
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
+    setDeletingCourseId(course.id)
+    setError(null)
+    try {
+      await api.delete(`/courses/${course.id}`)
+      setCourses((prev) => prev.filter((c) => c.id !== course.id))
+      toast('Курс удалён', 'success')
+    } catch (err) {
+      console.error('Error deleting course:', err)
+      setError(err.response?.data?.message || 'Не удалось удалить курс')
+    } finally {
+      setDeletingCourseId(null)
+    }
+  }
+
   if (loading) {
     return <div className="loading">Loading courses...</div>
   }
@@ -269,6 +302,17 @@ const Courses = () => {
                   <Link to={`/courses/${course.id}`} className="btn btn-primary">
                     View Course
                   </Link>
+                  {canDeleteCourse(course) && (
+                    <button
+                      type="button"
+                      className="btn btn-danger-outline"
+                      onClick={() => handleDeleteCourse(course)}
+                      disabled={deletingCourseId === course.id}
+                      title="Удалить курс"
+                    >
+                      {deletingCourseId === course.id ? '…' : <FiTrash2 />}
+                    </button>
+                  )}
                   {!isTeacher(window.keycloak) && !isAdmin(window.keycloak) && (
                     <button
                       className={`btn ${isEnrolled(course.id) ? 'btn-secondary' : 'btn-success'}`}
@@ -279,7 +323,7 @@ const Courses = () => {
                       {enrolling.has(course.id) 
                         ? 'Запись...' 
                         : isEnrolled(course.id) 
-                        ? '✓ Записан' 
+                        ? 'Записан' 
                         : 'Enroll'}
                     </button>
                   )}

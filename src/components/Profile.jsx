@@ -1,170 +1,280 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { getRoles, isAdmin, isTeacher, isClient } from '../utils/roles'
+import api from '../services/api'
 import './Profile.css'
+
+const formatField = (value) => {
+    if (value == null || String(value).trim() === '') return '—'
+    return String(value).trim()
+}
+
+const buildFullName = (firstName, lastName, username) => {
+    const parts = [firstName, lastName].filter((p) => p && String(p).trim() !== '' && String(p) !== '—')
+    if (parts.length > 0) return parts.join(' ')
+    return username || '—'
+}
+
+const buildInitials = (firstName, lastName, username) => {
+    const f = firstName && String(firstName).trim() && firstName !== '—' ? firstName.trim().charAt(0) : ''
+    const l = lastName && String(lastName).trim() && lastName !== '—' ? lastName.trim().charAt(0) : ''
+    if (f && l) return `${f}${l}`.toUpperCase()
+    const u = (username || '').trim()
+    if (u.length >= 2) return u.slice(0, 2).toUpperCase()
+    if (u.length === 1) return `${u}${u}`.toUpperCase()
+    return '?'
+}
 
 const Profile = () => {
     const [userInfo, setUserInfo] = useState(null)
     const [roles, setRoles] = useState([])
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
     useEffect(() => {
-        if (window.keycloak && window.keycloak.tokenParsed) {
+        let cancelled = false
+
+        const fromToken = () => {
+            if (!window.keycloak?.tokenParsed) return null
             const token = window.keycloak.tokenParsed
             const userRoles = getRoles(window.keycloak)
-            setUserInfo({
+            return {
                 username: token.preferred_username || token.sub,
-                email: token.email || 'N/A',
-                firstName: token.given_name || token.name?.split(' ')[0] || 'N/A',
-                lastName: token.family_name || token.name?.split(' ')[1] || 'N/A',
-                fullName: token.name || `${token.given_name || ''} ${token.family_name || ''}`.trim() || 'N/A',
-                emailVerified: token.email_verified || false
+                email: formatField(token.email),
+                firstName: formatField(token.given_name),
+                lastName: formatField(token.family_name),
+                fullName:
+                    token.name ||
+                    [token.given_name, token.family_name].filter(Boolean).join(' ').trim() ||
+                    token.preferred_username ||
+                    '—',
+                emailVerified: Boolean(token.email_verified),
+                accountEnabled: true,
+            }
+        }
+
+        const applyUserPayload = (data, fallbackRoles) => {
+            const first = data.firstName != null ? formatField(data.firstName) : null
+            const last = data.lastName != null ? formatField(data.lastName) : null
+            const username = data.username || window.keycloak?.tokenParsed?.preferred_username || '—'
+            const fn = first === '—' ? null : first
+            const ln = last === '—' ? null : last
+            setUserInfo({
+                username,
+                email: formatField(data.email),
+                firstName: fn != null ? fn : '—',
+                lastName: ln != null ? ln : '—',
+                fullName: buildFullName(fn, ln, username),
+                emailVerified: Boolean(data.emailVerified),
+                accountEnabled: data.enabled !== false,
+                userId: data.id || null,
             })
-            setRoles(userRoles)
-            setLoading(false)
+            const r = Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : fallbackRoles
+            setRoles(r.length ? r : fallbackRoles)
+        }
+
+        const load = async () => {
+            setError(null)
+            try {
+                const { data } = await api.get('/auth/user')
+                if (!cancelled) {
+                    applyUserPayload(data, getRoles(window.keycloak))
+                    setLoading(false)
+                }
+            } catch {
+                const fallback = fromToken()
+                if (!cancelled) {
+                    if (fallback) {
+                        setUserInfo({
+                            ...fallback,
+                            firstName: fallback.firstName === 'N/A' ? '—' : fallback.firstName,
+                            lastName: fallback.lastName === 'N/A' ? '—' : fallback.lastName,
+                            fullName:
+                                fallback.fullName === 'N/A'
+                                    ? buildFullName(
+                                          fallback.firstName === 'N/A' ? null : fallback.firstName,
+                                          fallback.lastName === 'N/A' ? null : fallback.lastName,
+                                          fallback.username
+                                      )
+                                    : fallback.fullName,
+                        })
+                        setRoles(getRoles(window.keycloak))
+                    } else {
+                        setError('Unable to load profile')
+                    }
+                    setLoading(false)
+                }
+            }
+        }
+
+        if (window.keycloak?.token) {
+            load()
         } else {
+            const fallback = fromToken()
+            if (fallback) {
+                setUserInfo({
+                    ...fallback,
+                    firstName: fallback.firstName === 'N/A' ? '—' : fallback.firstName,
+                    lastName: fallback.lastName === 'N/A' ? '—' : fallback.lastName,
+                })
+                setRoles(getRoles(window.keycloak))
+            }
             setLoading(false)
+        }
+
+        return () => {
+            cancelled = true
         }
     }, [])
 
-    if (loading) return <div className="profile-state">Loading...</div>
-    if (!userInfo) return <div className="profile-state error">Unable to load profile</div>
-
-    const roleConfig = {
-        admin:   { label: 'Admin',   color: '#ff6b6b' },
-        teacher: { label: 'Teacher', color: '#74b9ff' },
-        client:  { label: 'Student', color: '#55efc4' },
-    }
+    const roleConfig = useMemo(
+        () => ({
+            admin: { label: 'Administrator' },
+            teacher: { label: 'Teacher' },
+            client: { label: 'Student' },
+            ROLE_ADMIN: { label: 'Administrator' },
+            ROLE_TEACHER: { label: 'Teacher' },
+            ROLE_CLIENT: { label: 'Student' },
+        }),
+        []
+    )
 
     const getRoleDescription = () => {
-        if (isAdmin(window.keycloak))   return 'Full access to all platform features, user management, and system settings.'
-        if (isTeacher(window.keycloak)) return 'Create and manage courses, upload materials, and track student progress.'
-        if (isClient(window.keycloak))  return 'Browse and enroll in courses, access materials, and track your learning.'
-        return 'No role assigned. Contact an administrator for access.'
+        if (isAdmin(window.keycloak)) return 'Full access to platform administration and user management.'
+        if (isTeacher(window.keycloak)) return 'Course authoring, materials, and student progress.'
+        if (isClient(window.keycloak)) return 'Course access, materials, and learning progress.'
+        return 'No role assigned. Contact an administrator if you need access.'
     }
 
-    const initials = `${userInfo.firstName.charAt(0)}${userInfo.lastName.charAt(0)}`.toUpperCase()
+    const initials = userInfo
+        ? buildInitials(userInfo.firstName, userInfo.lastName, userInfo.username)
+        : ''
+
+    if (loading) {
+        return (
+            <div className="profile-page profile-page--formal">
+                <div className="profile-state">Loading…</div>
+            </div>
+        )
+    }
+    if (error || !userInfo) {
+        return (
+            <div className="profile-page profile-page--formal">
+                <div className="profile-state error">{error || 'Unable to load profile'}</div>
+            </div>
+        )
+    }
 
     return (
-        <div className="profile-page">
-
-            {/* Декоративные фоновые пятна */}
-            <div className="glass-bg">
-                <div className="glass-orb orb-1" />
-                <div className="glass-orb orb-2" />
-                <div className="glass-orb orb-3" />
-            </div>
-
+        <div className="profile-page profile-page--formal">
             <div className="profile-inner">
+                <header className="profile-doc-header">
+                    <h1 className="profile-doc-title">User profile</h1>
+                    <p className="profile-doc-subtitle">Account details on the learning platform</p>
+                </header>
 
-                {/* ── Верхняя карточка: аватар + имя ── */}
-                <div className="glass-card glass-hero">
-                    <div className="glass-avatar">
+                <section className="profile-card profile-card--hero" aria-labelledby="profile-identity">
+                    <div className="profile-avatar" aria-hidden="true">
                         {initials}
                     </div>
-                    <div className="glass-hero-info">
-                        <h1 className="glass-name">{userInfo.fullName}</h1>
-                        <span className="glass-username">@{userInfo.username}</span>
-                {/*        <div className="glass-roles">*/}
-                {/*            {roles.length > 0 ? roles.map(role => (*/}
-                {/*                <span*/}
-                {/*                    key={role}*/}
-                {/*                    className="glass-role-pill"*/}
-                {/*                    style={{ '--rc': roleConfig[role]?.color || '#fff' }}*/}
-                {/*                >*/}
-                {/*  {roleConfig[role]?.label || role}*/}
-                {/*</span>*/}
-                {/*            )) : (*/}
-                {/*                <span className="glass-role-pill" style={{ '--rc': '#aaa' }}>No Role</span>*/}
-                {/*            )}*/}
-                {/*        </div>*/}
+                    <div className="profile-identity" id="profile-identity">
+                        <h2 className="profile-display-name">{userInfo.fullName}</h2>
+                        <p className="profile-meta-line">
+                            <span className="profile-label-inline">Username</span>
+                            <span className="profile-value-inline">@{userInfo.username}</span>
+                        </p>
+                        {userInfo.userId && (
+                            <p className="profile-meta-line profile-meta-line--muted">
+                                <span className="profile-label-inline">User ID</span>
+                                <span className="profile-value-inline profile-value-mono">{userInfo.userId}</span>
+                            </p>
+                        )}
                     </div>
+                </section>
 
-                    {/* Статистика */}
-                    <div className="glass-stats">
-                        <div className="glass-stat">
-                            <span className="glass-stat-value">—</span>
-                            <span className="glass-stat-label">Courses</span>
-                        </div>
-                        <div className="glass-stat-sep" />
-                        <div className="glass-stat">
-                            <span className="glass-stat-value">—</span>
-                            <span className="glass-stat-label">Lessons</span>
-                        </div>
-                        <div className="glass-stat-sep" />
-                        <div className="glass-stat">
-                            <span className="glass-stat-value">—</span>
-                            <span className="glass-stat-label">Files</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ── Нижние карточки ── */}
-                <div className="glass-grid">
-
-                    {/* Personal Info */}
-                    <div className="glass-card">
-                        <h2 className="glass-card-title">Personal Information</h2>
-                        <div className="glass-info-grid">
-                            <div className="glass-info-item">
-                                <label>First Name</label>
-                                <p>{userInfo.firstName}</p>
+                <div className="profile-grid">
+                    <section className="profile-card" aria-labelledby="personal-heading">
+                        <h2 id="personal-heading" className="profile-section-title">
+                            Personal information
+                        </h2>
+                        <dl className="profile-dl">
+                            <div className="profile-dl-row">
+                                <dt>First name</dt>
+                                <dd>{userInfo.firstName}</dd>
                             </div>
-                            <div className="glass-info-item">
-                                <label>Last Name</label>
-                                <p>{userInfo.lastName}</p>
+                            <div className="profile-dl-row">
+                                <dt>Last name</dt>
+                                <dd>{userInfo.lastName}</dd>
                             </div>
-                            <div className="glass-info-item">
-                                <label>Username</label>
-                                <p>@{userInfo.username}</p>
+                            <div className="profile-dl-row">
+                                <dt>Username</dt>
+                                <dd>@{userInfo.username}</dd>
                             </div>
-                            <div className="glass-info-item">
-                                <label>Email</label>
-                                <p>
-                                    {userInfo.email}
+                            <div className="profile-dl-row">
+                                <dt>Email</dt>
+                                <dd className="profile-dd-with-badge">
+                                    <span>{userInfo.email}</span>
                                     {userInfo.emailVerified && (
-                                        <span className="glass-verified">✓</span>
+                                        <span className="profile-badge profile-badge--ok" title="Verified">
+                                            Verified
+                                        </span>
                                     )}
-                                </p>
+                                </dd>
                             </div>
-                        </div>
-                    </div>
+                        </dl>
+                    </section>
 
-                    {/* Account Status */}
-                    <div className="glass-card">
-                        <h2 className="glass-card-title">Account Status</h2>
-                        <div className="glass-status-list">
-                            <div className="glass-status-row">
-                                <span className="glass-status-label">Account</span>
-                                <span className="glass-badge active">Active</span>
+                    <section className="profile-card" aria-labelledby="status-heading">
+                        <h2 id="status-heading" className="profile-section-title">
+                            Account status
+                        </h2>
+                        <dl className="profile-dl profile-dl--status">
+                            <div className="profile-dl-row">
+                                <dt>Account</dt>
+                                <dd>
+                                    <span
+                                        className={`profile-badge ${userInfo.accountEnabled ? 'profile-badge--ok' : 'profile-badge--warn'}`}
+                                    >
+                                        {userInfo.accountEnabled ? 'Active' : 'Disabled'}
+                                    </span>
+                                </dd>
                             </div>
-                            <div className="glass-status-row">
-                                <span className="glass-status-label">Email</span>
-                                <span className={`glass-badge ${userInfo.emailVerified ? 'active' : 'pending'}`}>
-                  {userInfo.emailVerified ? 'Verified' : 'Not verified'}
-                </span>
+                            <div className="profile-dl-row">
+                                <dt>Email</dt>
+                                <dd>
+                                    <span
+                                        className={`profile-badge ${userInfo.emailVerified ? 'profile-badge--ok' : 'profile-badge--pending'}`}
+                                    >
+                                        {userInfo.emailVerified ? 'Verified' : 'Not verified'}
+                                    </span>
+                                </dd>
                             </div>
-                            <div className="glass-status-row">
-                                <span className="glass-status-label">Auth</span>
-                                <span className="glass-badge active">Keycloak SSO</span>
+                            <div className="profile-dl-row">
+                                <dt>Authentication</dt>
+                                <dd>
+                                    <span className="profile-badge profile-badge--neutral">Platform (JWT)</span>
+                                </dd>
                             </div>
-                            <div className="glass-status-row">
-                                <span className="glass-status-label">Role</span>
-                                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                    {roles.length > 0 ? roles.map(role => (
-                                        <span
-                                            key={role}
-                                            className="glass-role-pill small"
-                                            style={{ '--rc': roleConfig[role]?.color || '#fff' }}
-                                        >
-                      {roleConfig[role]?.label || role}
-                    </span>
-                                    )) : <span className="glass-no-role">No role</span>}
-                                </div>
+                            <div className="profile-dl-row profile-dl-row--roles">
+                                <dt>Roles</dt>
+                                <dd>
+                                    {roles.length > 0 ? (
+                                        <ul className="profile-role-list">
+                                            {roles.map((role) => (
+                                                <li key={role}>
+                                                    <span className="profile-role-pill">
+                                                        {roleConfig[role]?.label || role}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <span className="profile-empty-note">No role assigned</span>
+                                    )}
+                                </dd>
                             </div>
-                        </div>
-                        <p className="glass-role-desc">{getRoleDescription()}</p>
-                    </div>
-
+                        </dl>
+                        <p className="profile-role-desc">{getRoleDescription()}</p>
+                    </section>
                 </div>
             </div>
         </div>

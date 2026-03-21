@@ -1,5 +1,5 @@
 .courses-page {
-  padding: 0;
+  padding: 0 0 var(--spacing-xl);
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -7,10 +7,12 @@
 .courses-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-bottom: var(--spacing-xl);
   flex-wrap: wrap;
   gap: var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .courses-header-actions {
@@ -22,14 +24,16 @@
 
 .filter-buttons {
   display: flex;
-  gap: var(--spacing-sm);
-  background: var(--bg-tertiary);
-  padding: var(--spacing-xs);
+  gap: 4px;
+  background: var(--bg-primary);
+  padding: 5px;
   border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 2px rgba(92, 32, 42, 0.04);
 }
 
 .filter-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -37,26 +41,28 @@
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: all var(--transition-base);
+  transition: background var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
   font-family: inherit;
 }
 
 .filter-btn:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
 .filter-btn.active {
   background: var(--primary-color);
-  color: white;
-  box-shadow: var(--shadow-sm);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(184, 56, 72, 0.25);
 }
 
 .courses-header h1 {
-  margin: 0;
+  margin: 0 0 4px 0;
   color: var(--text-primary);
-  font-size: 32px;
-  font-weight: 700;
+  font-size: 1.65rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .create-course-form {
@@ -71,17 +77,27 @@
   display: block;
   margin-bottom: 5px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--text-primary);
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
   font-family: inherit;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: rgba(184, 56, 72, 0.45);
+  box-shadow: 0 0 0 3px rgba(184, 56, 72, 0.08);
 }
 
 .form-group textarea {
@@ -91,47 +107,68 @@
 .courses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
 }
 
 .course-card {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  transition: all var(--transition-base);
+  transition:
+    border-color var(--transition-smooth),
+    box-shadow var(--transition-smooth);
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.course-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), rgba(184, 56, 72, 0.75));
+  z-index: 1;
 }
 
 .course-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-xl);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(184, 56, 72, 0.28);
 }
 
 .course-image {
   width: 100%;
   height: 180px;
   overflow: hidden;
-  background: #ecf0f1;
+  background: linear-gradient(145deg, #ece8ea 0%, #dfe6e9 100%);
 }
 
 .course-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.course-card:hover .course-image img {
+  transform: scale(1.04);
 }
 
 .course-content {
-  padding: 20px;
+  padding: 22px 22px 20px;
 }
 
 .course-content h3 {
   margin: 0 0 var(--spacing-sm) 0;
   color: var(--text-primary);
-  font-size: 20px;
+  font-size: 1.15rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
 }
 
 .course-description {
@@ -142,7 +179,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.6;
+  line-height: 1.62;
 }
 
 .course-meta {
@@ -175,26 +212,36 @@
 }
 
 .course-status {
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  background: var(--primary-color);
-  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: #b83848;
+  color: #ffffff !important;
   text-transform: uppercase;
   font-weight: 600;
   font-size: 11px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.04em;
+  box-shadow: none;
+  border: 1px solid #b83848;
 }
 
 .course-status.DRAFT {
-  background: var(--text-light);
+  background: #ffffff !important;
+  color: #b83848 !important;
+  border: 2px solid #b83848 !important;
+  box-shadow: none;
 }
 
 .course-status.PUBLISHED {
-  background: var(--success-color);
+  background: #b83848 !important;
+  color: #ffffff !important;
+  border: 1px solid #b83848 !important;
 }
 
 .course-status.ARCHIVED {
-  background: var(--danger-color);
+  background: #ffffff !important;
+  color: #b83848 !important;
+  border: 2px dashed #b83848 !important;
+  box-shadow: none;
 }
 
 .course-lessons {
@@ -204,7 +251,9 @@
 
 .course-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
+  align-items: center;
 }
 
 .course-actions .btn {
@@ -213,58 +262,90 @@
   text-decoration: none;
 }
 
+.course-actions .btn-danger-outline {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding: 10px 14px;
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b83848;
+  background: #ffffff;
+  border: 1px solid #b83848;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s, box-shadow 0.2s;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(184, 56, 72, 0.07);
+  box-shadow: 0 2px 8px rgba(184, 56, 72, 0.12);
+}
+
+.btn-danger-outline:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .course-actions .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .success {
-  background-color: #d4edda;
-  color: #155724;
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: 1px solid #c3e6cb;
+  background-color: rgba(184, 56, 72, 0.06);
+  color: #b83848;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(184, 56, 72, 0.22);
+  border-left: 4px solid var(--primary-color);
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.success::before {
-  content: "✓";
-  font-size: 18px;
-  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(92, 32, 42, 0.05);
 }
 
 .error {
-  background-color: #f8d7da;
-  color: #721c24;
-  padding: 12px 20px;
-  border-radius: 6px;
-  border: 1px solid #f5c6cb;
+  background-color: rgba(184, 56, 72, 0.06);
+  color: #b83848;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(184, 56, 72, 0.28);
+  border-left: 4px solid rgba(184, 56, 72, 0.65);
   margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(92, 32, 42, 0.05);
 }
 
 .btn-success {
-  background-color: #28a745;
-  color: white;
-  border: none;
+  background: #b83848;
+  color: #ffffff;
+  border: 1px solid #b83848;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: opacity var(--transition-base), box-shadow var(--transition-base);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(184, 56, 72, 0.2);
 }
 
 .btn-success:hover:not(:disabled) {
-  background-color: #218838;
+  opacity: 0.94;
+  box-shadow: 0 4px 14px rgba(184, 56, 72, 0.28);
 }
 
 .btn-secondary {
-  background-color: #6c757d;
-  color: white;
-  border: none;
+  background-color: #ffffff;
+  color: #b83848;
+  border: 1px solid #b83848;
   padding: 10px 20px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: default;
 }
 

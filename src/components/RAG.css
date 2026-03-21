@@ -1,22 +1,7 @@
 :root {
-    --ai-bg-1: #f6f8fc;
-    --ai-bg-2: #eef3f9;
-
-    /* Новый основной цвет */
-    --ai-primary: #1e40af;        /* глубокий синий */
-    --ai-primary-soft: #2563eb;   /* мягкий акцентный синий */
-
-    --ai-success: #16a34a;
-    --ai-danger: #dc2626;
-
-    --ai-text-main: #0f172a;
-    --ai-text-secondary: #64748b;
-}
-
-body {
-    background: linear-gradient(135deg, #f6f8fc 0%, #eef2ff 100%);
-    min-height: 100vh;
-    font-family: 'Inter', sans-serif;
+    --ai-primary: #b83848;
+    --ai-text-main: #b83848;
+    --ai-text-secondary: rgba(184, 56, 72, 0.72);
 }
 
 .rag-page {
@@ -26,84 +11,115 @@ body {
 }
 
 .rag-header h1 {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 1.75rem;
+    font-weight: 600;
     color: var(--ai-text-main);
 }
 
 .rag-subtitle {
     color: var(--ai-text-secondary);
     margin-top: 0.5rem;
+    line-height: 1.5;
 }
 
 .rag-toolbar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 1rem;
-    margin: 2rem 0;
+    gap: 12px;
+    margin: 1.5rem 0 2rem;
 }
 
 .rag-role-badge {
-    padding: 0.4rem 1rem;
-    border-radius: 999px;
-    font-weight: 500;
-    font-size: 0.85rem;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid #b83848;
 }
 
 .rag-role-badge.teacher {
-    background: rgba(79, 70, 229, 0.15);
-    color: var(--ai-primary);
+    background: #b83848;
+    color: #ffffff;
 }
 
 .rag-role-badge.student {
-    background: rgba(22, 163, 74, 0.15);
-    color: var(--ai-success);
+    background: #ffffff;
+    color: #b83848;
+}
+
+.rag-toolbar-label {
+    font-size: 14px;
+    color: var(--ai-text-secondary);
 }
 
 .rag-function-select {
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(184, 56, 72, 0.35);
+    background: #ffffff;
+    color: #b83848;
+    font-size: 14px;
 }
 
 .rag-card {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    background: #ffffff;
+    border: 1px solid rgba(184, 56, 72, 0.22);
+    border-radius: 8px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(184, 56, 72, 0.07);
 }
 
 .rag-card h2 {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 10px;
+    font-size: 1.25rem;
+    color: #b83848;
+    margin: 0 0 1.25rem;
+}
+
+.rag-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .rag-card label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(184, 56, 72, 0.9);
 }
 
-.rag-card input,
+.rag-card input[type="text"],
+.rag-card input[type="number"],
 .rag-card textarea {
-    width: 100%;
-    margin-top: 0.4rem;
-    padding: 0.75rem;
-    border-radius: 12px;
-    border: 1px solid #ddd;
+    padding: 10px 14px;
+    border: 1px solid rgba(184, 56, 72, 0.3);
+    border-radius: 10px;
+    font-size: 15px;
+    color: #b83848;
+    background: #ffffff;
 }
 
-.rag-card button {
-    margin-top: 1.5rem;
-    background: linear-gradient(135deg, var(--ai-primary), var(--ai-primary-soft));
-    border: none;
-    color: white;
-    padding: 0.8rem 1.4rem;
-    border-radius: 12px;
+.rag-card input:focus,
+.rag-card textarea:focus {
+    outline: none;
+    border-color: #b83848;
+}
+
+.rag-card button[type="submit"],
+.rag-card button.btn-finish-quiz {
+    margin-top: 8px;
+    padding: 12px 20px;
+    background: #b83848;
+    color: #ffffff;
+    border: 1px solid #b83848;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
 .rag-card button:disabled {
@@ -111,37 +127,22 @@ body {
     cursor: not-allowed;
 }
 
-/* FILE UPLOAD */
-.file-upload {
-    margin-top: 1.5rem;
-    /* Центрируем содержимое самого контейнера */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    border: 2px dashed rgba(79, 70, 229, 0.3);
-    border-radius: 20px;
-    padding: 3rem 2rem;
-    text-align: center;
-    background: rgba(255, 255, 255, 0.5);
-    backdrop-filter: blur(10px); /* Эффект стекла */
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    cursor: pointer;
-    position: relative;
+.rag-card button[type="submit"]:hover:not(:disabled),
+.rag-card button.btn-finish-quiz:hover:not(:disabled) {
+    opacity: 0.92;
 }
 
-.file-upload:hover {
-    border-color: #4f46e5;
-    background: rgba(79, 70, 229, 0.04);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(79, 70, 229, 0.1);
+.file-upload {
+    border: 2px dashed rgba(184, 56, 72, 0.4);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
 }
 
 .file-upload.active {
-    background: rgba(79, 70, 229, 0.1);
-    border-color: #4f46e5;
-    border-style: solid;
+    border-color: #b83848;
+    background: rgba(184, 56, 72, 0.04);
 }
 
 .file-input {
@@ -149,49 +150,135 @@ body {
 }
 
 .file-label {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* ЭТОТ ПУНКТ ЦЕНТРИРУЕТ ТЕКСТ ВНУТРИ LABEL */
-    gap: 0.8rem;
     cursor: pointer;
-    width: 100%;
+    display: block;
 }
 
 .file-main {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1f2937;
-    white-space: pre;
+    font-size: 16px;
+    font-weight: 600;
+    color: #b83848;
 }
 
 .file-sub {
-    font-size: 0.95rem;
-    color: #6b7280;
-    max-width: 250px;
-    line-height: 1.4;
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--ai-text-secondary);
 }
 
 .file-name {
-    font-size: 1.1rem;
     font-weight: 600;
-    color: #4f46e5;
-    background: rgba(79, 70, 229, 0.1);
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
+    color: #b83848;
 }
 
 .rag-out {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border-radius: 12px;
+    margin-top: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .rag-out.success {
-    background: rgba(22,163,74,0.1);
-    color: var(--ai-success);
+    border: 1px solid rgba(184, 56, 72, 0.35);
+    background: rgba(184, 56, 72, 0.06);
+    color: #b83848;
 }
 
 .rag-out.error {
-    background: rgba(220,38,38,0.1);
-    color: var(--ai-danger);
+    border: 1px solid rgba(184, 56, 72, 0.45);
+    background: rgba(184, 56, 72, 0.08);
+    color: #b83848;
+}
+
+.rag-out.text {
+    border: 1px solid rgba(184, 56, 72, 0.22);
+    color: #b83848;
+    white-space: pre-wrap;
+}
+
+.rag-meta {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ai-text-secondary);
+}
+
+.quiz-item {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(184, 56, 72, 0.2);
+    border-radius: 10px;
+}
+
+.quiz-item.correct {
+    border-color: #b83848;
+    background: rgba(184, 56, 72, 0.06);
+}
+
+.quiz-item.incorrect {
+    border-style: dashed;
+}
+
+.quiz-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.quiz-item input[type="radio"] {
+    accent-color: #b83848;
+}
+
+.btn-quiz-hint {
+    padding: 6px 12px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #b83848;
+    border: 1px solid #b83848;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.quiz-hint-text {
+    margin-top: 8px;
+    font-size: 14px;
+    color: var(--ai-text-secondary);
+}
+
+.quiz-feedback-correct,
+.quiz-feedback-incorrect {
+    font-weight: 600;
+    margin-top: 8px;
+    color: #b83848;
+}
+
+.correct-answer,
+.quiz-your-answer,
+.quiz-explanation {
+    font-size: 14px;
+    margin: 4px 0 0;
+    color: var(--ai-text-secondary);
+}
+
+.btn-finish-quiz {
+    width: 100%;
+    max-width: 280px;
+}
+
+.quiz-result {
+    margin-top: 1rem;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid rgba(184, 56, 72, 0.35);
+}
+
+.quiz-result.good,
+.quiz-result.bad {
+    background: rgba(184, 56, 72, 0.08);
+    color: #b83848;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import {
     FiBook,
@@ -8,21 +8,21 @@ import {
     FiArrowRight,
     FiBookOpen,
     FiPlus,
-    FiMoreVertical,
     FiEye,
-    FiFileText
+    FiFileText,
 } from 'react-icons/fi'
 import api from '../../services/api'
 import CreateCourseModal from '../CreateCourseModal'
+import HomeNewsFeed from './HomeNewsFeed'
 import './Dashboard.css'
 
 const statusConfig = {
     PUBLISHED: { label: 'Опубликован', color: '#16a34a', bg: '#dcfce7' },
-    DRAFT:     { label: 'Черновик',    color: '#d97706', bg: '#fef3c7' },
-    ARCHIVED:  { label: 'Архив',       color: '#64748b', bg: '#f1f5f9' },
+    DRAFT: { label: 'Черновик', color: '#d97706', bg: '#fef3c7' },
+    ARCHIVED: { label: 'Архив', color: '#64748b', bg: '#f1f5f9' },
 }
 
-const TeacherDashboard = () => {
+const TeacherDashboard = ({ view = 'home' }) => {
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
     const [showCreateModal, setShowCreateModal] = useState(false)
@@ -43,17 +43,77 @@ const TeacherDashboard = () => {
         }
     }
 
+    const totalLessons = useMemo(
+        () => courses.reduce((sum, c) => sum + (Number(c.lessonsCount) || 0), 0),
+        [courses]
+    )
+
     const getStatusCfg = (status) =>
         statusConfig[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
 
+    const statsBlock = (
+        <div className="dashboard-stats" id="dashboard-stats">
+            <div className="stat-card">
+                <div className="stat-icon stat-icon-primary">
+                    <FiBook />
+                </div>
+                <div className="stat-content">
+                    <p className="stat-value">{courses.length}</p>
+                    <p className="stat-label">Мои курсы</p>
+                </div>
+            </div>
+            <div className="stat-card">
+                <div className="stat-icon stat-icon-success">
+                    <FiFileText />
+                </div>
+                <div className="stat-content">
+                    <p className="stat-value">{totalLessons || '—'}</p>
+                    <p className="stat-label">Уроков (всего)</p>
+                </div>
+            </div>
+            <div className="stat-card">
+                <div className="stat-icon stat-icon-warning">
+                    <FiUsers />
+                </div>
+                <div className="stat-content">
+                    <p className="stat-value">—</p>
+                    <p className="stat-label">Студентов</p>
+                </div>
+            </div>
+            <div className="stat-card">
+                <div className="stat-icon stat-icon-info">
+                    <FiBarChart2 />
+                </div>
+                <div className="stat-content">
+                    <p className="stat-value">—</p>
+                    <p className="stat-label">Средний прогресс</p>
+                </div>
+            </div>
+        </div>
+    )
+
+    if (view === 'stats') {
+        return (
+            <div className="dashboard dashboard--stats-only">
+                <div className="dashboard-page-header">
+                    <h1 className="dashboard-page-title">Статистика</h1>
+                    <p className="dashboard-page-desc">
+                        Сводные показатели по вашим курсам и материалам на платформе
+                    </p>
+                </div>
+                {loading ? <div className="dashboard-loading-inline">Загрузка…</div> : statsBlock}
+            </div>
+        )
+    }
+
     return (
         <div className="dashboard">
-
-            {/* Hero */}
             <div className="dashboard-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">Панель преподавателя 👨‍🏫</h1>
-                    <p className="hero-subtitle">Создавайте контент, управляйте доступом и следите за успехами студентов в реальном времени.</p>
+                    <h1 className="hero-title">Панель преподавателя</h1>
+                    <p className="hero-subtitle">
+                        Новости, быстрый доступ и управление курсами. Подробная статистика — в разделе «Статистика».
+                    </p>
                 </div>
                 <div className="hero-illustration">
                     <div className="illustration-circle">
@@ -62,39 +122,8 @@ const TeacherDashboard = () => {
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="dashboard-stats">
-                <div className="stat-card">
-                    <div className="stat-icon stat-icon-primary"><FiBook /></div>
-                    <div className="stat-content">
-                        <p className="stat-value">{courses.length}</p>
-                        <p className="stat-label">Мои курсы</p>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon stat-icon-success"><FiUsers /></div>
-                    <div className="stat-content">
-                        <p className="stat-value">—</p>
-                        <p className="stat-label">Студентов</p>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon stat-icon-warning"><FiEdit /></div>
-                    <div className="stat-content">
-                        <p className="stat-value">—</p>
-                        <p className="stat-label">На проверке</p>
-                    </div>
-                </div>
-                <div className="stat-card">
-                    <div className="stat-icon stat-icon-info"><FiBarChart2 /></div>
-                    <div className="stat-content">
-                        <p className="stat-value">—</p>
-                        <p className="stat-label">Средний прогресс</p>
-                    </div>
-                </div>
-            </div>
+            <HomeNewsFeed />
 
-            {/* Actions */}
             <div className="dashboard-section">
                 <div className="section-header">
                     <h2 className="section-title">Управление</h2>
@@ -103,17 +132,23 @@ const TeacherDashboard = () => {
                     <Link to="/notifications" className="dashboard-card">
                         Объявления <FiArrowRight />
                     </Link>
+                    <Link to="/stats" className="dashboard-card">
+                        Сводная статистика <FiArrowRight />
+                    </Link>
                 </div>
             </div>
 
-            {/* ── Мои курсы ── */}
             <div className="dashboard-section">
                 <div className="section-header courses-header">
                     <div>
                         <h2 className="section-title">Мои курсы</h2>
-                        <p className="section-subtitle">{courses.length} {courses.length === 1 ? 'курс' : 'курсов'} создано</p>
+                        <p className="section-subtitle">
+                            {courses.length}{' '}
+                            {courses.length === 1 ? 'курс' : 'курсов'} создано
+                        </p>
                     </div>
                     <button
+                        type="button"
                         className="btn-create-course"
                         onClick={() => setShowCreateModal(true)}
                     >
@@ -130,7 +165,9 @@ const TeacherDashboard = () => {
                     </div>
                 ) : courses.length === 0 ? (
                     <div className="courses-empty">
-                        <div className="courses-empty-icon"><FiBook size={40} /></div>
+                        <div className="courses-empty-icon">
+                            <FiBook size={40} />
+                        </div>
                         <h3>Курсов пока нет</h3>
                         <p>Нажмите «Создать курс», чтобы добавить первый.</p>
                     </div>
@@ -140,11 +177,9 @@ const TeacherDashboard = () => {
                             const cfg = getStatusCfg(course.status)
                             return (
                                 <div key={course.id} className="course-card">
-                                    {/* Верхняя цветная полоска */}
                                     <div className="course-card-top" />
 
                                     <div className="course-card-body">
-                                        {/* Статус */}
                                         <span
                                             className="course-status-badge"
                                             style={{ color: cfg.color, background: cfg.bg }}
@@ -152,16 +187,13 @@ const TeacherDashboard = () => {
                                             {cfg.label}
                                         </span>
 
-                                        {/* Название */}
                                         <h3 className="course-title">{course.title}</h3>
 
-                                        {/* Описание */}
                                         <p className="course-desc">
                                             {course.description || 'Описание не добавлено'}
                                         </p>
                                     </div>
 
-                                    {/* Футер карточки */}
                                     <div className="course-card-footer">
                                         <div className="course-meta">
                                             <span className="course-meta-item">

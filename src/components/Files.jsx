@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FiEdit3, FiTrash2, FiSave, FiX, FiDownload } from 'react-icons/fi'
 import api from '../services/api'
+import { useAlert } from '../context/AlertProvider'
 import { canDelete, isAdmin, canUpload } from '../utils/roles'
 import './Files.css'
 
 const Files = () => {
+  const { confirm, toast } = useAlert()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -54,12 +56,17 @@ const Files = () => {
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удаление файла',
+      message: 'Удалить этот файл?',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
     try {
       await api.delete(`/files/${id}`)
-      setSuccess('Файл успешно удален')
+      toast('Файл удалён', 'success')
       loadFiles()
     } catch (err) {
       setError('Ошибка при удалении файла')
@@ -113,7 +120,7 @@ const Files = () => {
 
       <div className="card" style={{ backgroundColor: '#e3f2fd', border: '1px solid #2196f3', marginBottom: '20px' }}>
         <p style={{ margin: 0, color: '#1565c0' }}>
-          💡 <strong>Информация:</strong> Файлы теперь загружаются к урокам. 
+          <strong>Информация:</strong> Файлы теперь загружаются к урокам. 
           Перейдите к нужному курсу и уроку, чтобы загрузить файлы.
         </p>
         <Link 

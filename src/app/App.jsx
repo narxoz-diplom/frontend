@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
 import auth from '../config/auth'
 import { getRoles } from '../utils/roles'
+import { AlertProvider } from '../context/AlertProvider'
 import AppRoutes from './routes'
 
 const App = () => {
@@ -43,13 +44,14 @@ const App = () => {
 
     return (
         <Router>
-            {/* Передаем тему в роуты */}
-            <AppRoutes
-                authenticated={authenticated}
-                userRoles={userRoles}
-                isDarkMode={isDarkMode}
-                setIsDarkMode={setIsDarkMode}
-            />
+            <AlertProvider>
+                <AppRoutes
+                    authenticated={authenticated}
+                    userRoles={userRoles}
+                    isDarkMode={isDarkMode}
+                    setIsDarkMode={setIsDarkMode}
+                />
+            </AlertProvider>
         </Router>
     )
 }

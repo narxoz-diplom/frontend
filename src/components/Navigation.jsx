@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
-    FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor
+    FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor,
+    FiBarChart2, FiFolder, FiCpu
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
@@ -124,7 +125,12 @@ const Navigation = ({ userRoles = [] }) => {
     }
 
     const isActive = useCallback(
-        (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path),
+        (path) => {
+            if (path === '/') {
+                return location.pathname === '/'
+            }
+            return location.pathname === path || location.pathname.startsWith(`${path}/`)
+        },
         [location.pathname]
     )
 
@@ -212,7 +218,12 @@ const Navigation = ({ userRoles = [] }) => {
                 </button>
 
                 <div className="nav-links">
-                    <NavItem to="/" icon={<FiHome />} label="Dashboard" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/" icon={<FiHome />} label="Главная" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/courses" icon={<FiBook />} label="Курсы" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/stats" icon={<FiBarChart2 />} label="Статистика" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/files" icon={<FiFolder />} label="Файлы" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/rag" icon={<FiCpu />} label="Поиск (RAG)" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/notifications" icon={<FiBell />} label="Уведомления" isActive={isActive} isCollapsed={isCollapsed} />
                 </div>
 
                 <div className="nav-footer">

@@ -32,19 +32,57 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-secondary, #718096);
+  color: var(--text-primary);
+  font-weight: 600;
   text-decoration: none;
   font-size: 14px;
   margin-bottom: 12px;
+  border-bottom: 1px solid transparent;
 }
 
 .back-link:hover {
-  color: #e30000;
+  color: #b83848;
+  border-bottom-color: rgba(184, 56, 72, 0.45);
 }
 
-.course-edit-header h1 {
-  margin: 0 0 8px 0;
+.course-edit-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.course-edit-title-row h1 {
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
   font-size: 28px;
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b83848;
+  background: #ffffff;
+  border: 1px solid #b83848;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: rgba(184, 56, 72, 0.06);
+}
+
+.btn-danger-outline:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .course-edit-description {
@@ -54,8 +92,8 @@
 }
 
 .course-edit-error-banner {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(184, 56, 72, 0.08);
+  color: #b83848;
   padding: 12px 16px;
   border-radius: 10px;
   margin-bottom: 24px;
@@ -121,9 +159,9 @@
 }
 
 .allowed-emails-trigger:hover {
-  border-color: #e30000;
+  border-color: #b83848;
   background: #fffafa;
-  color: #e30000;
+  color: #b83848;
 }
 
 .allowed-emails-badge {
@@ -135,7 +173,7 @@
   padding: 0 6px;
   font-size: 12px;
   font-weight: 600;
-  background: #e30000;
+  background: #b83848;
   color: #fff;
   border-radius: 11px;
 }
@@ -176,8 +214,9 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-primary, #fff);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  border: 1px solid var(--border-color, rgba(184, 56, 72, 0.15));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
   animation: modalDialogIn 0.25s ease-out;
 }
 
@@ -188,11 +227,11 @@
 @keyframes modalDialogIn {
   from {
     opacity: 0;
-    transform: scale(0.96) translateY(-10px);
+    transform: scale(0.98);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1);
   }
 }
 
@@ -231,8 +270,8 @@
 }
 
 .modal-close:hover {
-  background: #f1f5f9;
-  color: #1a202c;
+  background: rgba(184, 56, 72, 0.08);
+  color: var(--text-primary);
 }
 
 .modal-body {
@@ -264,7 +303,7 @@
   padding: 12px 16px;
   margin-bottom: 16px;
   font-size: 14px;
-  color: #dc2626;
+  color: #b83848;
   background: #fee2e2;
   border-radius: 10px;
 }
@@ -295,7 +334,7 @@
 
 .modal-emails-textarea:focus {
   outline: none;
-  border-color: #e30000;
+  border-color: #b83848;
   box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.15);
 }
 
@@ -379,7 +418,7 @@
 }
 
 .upload-zone:hover {
-  border-color: #e30000;
+  border-color: #b83848;
   background: #fffafa;
 }
 
@@ -433,7 +472,7 @@
 
 .btn-icon.danger:hover {
   background: #fee2e2;
-  color: #dc2626;
+  color: #b83848;
 }
 
 .empty-hint {
@@ -508,10 +547,18 @@
 }
 
 .lesson-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 12px 16px;
   background: var(--bg-primary, #fff);
   border: 1px solid var(--border-color, #edf2f7);
   border-radius: 10px;
+}
+
+.lesson-delete-btn {
+  flex-shrink: 0;
 }
 
 .lesson-check {
@@ -519,6 +566,8 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  flex: 1;
+  min-width: 0;
 }
 
 .lesson-check a {
@@ -527,7 +576,7 @@
 }
 
 .lesson-check a:hover {
-  color: #e30000;
+  color: #b83848;
 }
 
 .test-card {
@@ -544,10 +593,10 @@
 }
 
 .test-card:hover {
-  border-color: #e30000;
+  border-color: #b83848;
   background: #fffafa;
 }
 
 .test-card svg {
-  color: #16a34a;
+  color: #b83848;
 }

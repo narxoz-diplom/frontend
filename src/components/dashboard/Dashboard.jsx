@@ -106,7 +106,7 @@
 //       <div className="dashboard-hero">
 //         <div className="hero-content">
 //           <h1 className="hero-title">
-//             {getGreeting()}, {userName.split(' ')[0]}! 👋
+//             {getGreeting()}, {userName.split(' ')[0]}
 //           </h1>
 //           <p className="hero-subtitle">
 //             Ready to continue your learning journey?
@@ -272,48 +272,52 @@
 //
 // export default Dashboard
 
-import React, { useState, useEffect } from 'react';
-import StudentDashboard from './StudentDashboard';
-import TeacherDashboard from './TeacherDashboard';
-import auth from '../../config/auth';
+import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
+import StudentDashboard from './StudentDashboard'
+import TeacherDashboard from './TeacherDashboard'
+import auth from '../../config/auth'
 
 const Dashboard = () => {
-    const [userRole, setUserRole] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const location = useLocation()
+    const view = location.pathname === '/stats' ? 'stats' : 'home'
+
+    const [userRole, setUserRole] = useState(null)
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const determineRole = () => {
-            // Берем данные откуда угодно (Keycloak, auth config или localStorage)
-            const kc = window.keycloak || auth;
+            const kc = window.keycloak || auth
 
             if (kc && kc.tokenParsed) {
-                const roles = kc.tokenParsed.realm_access?.roles || [];
-                console.log("Проверка ролей:", roles); // Увидишь реальный список ролей в консоли
+                const roles = kc.tokenParsed.realm_access?.roles || []
 
-                const isTeacher = roles.some(r =>
+                const isTeacher = roles.some((r) =>
                     ['teacher', 'ROLE_TEACHER', 'Teacher'].includes(r)
-                );
+                )
 
-                setUserRole(isTeacher ? 'teacher' : 'student');
+                setUserRole(isTeacher ? 'teacher' : 'student')
             } else {
-                // Если токена нет, проверяем localStorage как запасной вариант
-                const savedUser = JSON.parse(localStorage.getItem('user'));
-                if (savedUser?.role === 'teacher') setUserRole('teacher');
-                else setUserRole('student');
+                const savedUser = JSON.parse(localStorage.getItem('user'))
+                if (savedUser?.role === 'teacher') setUserRole('teacher')
+                else setUserRole('student')
             }
-            setIsLoading(false);
-        };
+            setIsLoading(false)
+        }
 
-        // Небольшая задержка, чтобы auth успел инициализироваться
-        const timer = setTimeout(determineRole, 100);
-        return () => clearTimeout(timer);
-    }, []);
+        const timer = setTimeout(determineRole, 100)
+        return () => clearTimeout(timer)
+    }, [])
 
     if (isLoading) {
-        return <div className="dashboard-loading">Загрузка данных...</div>;
+        return <div className="dashboard-loading">Загрузка данных...</div>
     }
 
-    return userRole === 'teacher' ? <TeacherDashboard /> : <StudentDashboard />;
-};
+    return userRole === 'teacher' ? (
+        <TeacherDashboard view={view} />
+    ) : (
+        <StudentDashboard view={view} />
+    )
+}
 
 export default Dashboard;

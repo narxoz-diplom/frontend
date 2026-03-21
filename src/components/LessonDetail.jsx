@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -18,12 +18,45 @@ import {
   FiTrash2
 } from 'react-icons/fi'
 import api from '../services/api'
+import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import './LessonDetail.css'
+
+/** Извлекает вставки картинок из Markdown и HTML для редактора конспекта */
+function extractEmbeddedImages(text) {
+  if (!text || typeof text !== 'string') return []
+  const images = []
+  const mdRe = /!\[([^\]]*)\]\(([^)]+)\)/g
+  let m
+  while ((m = mdRe.exec(text)) !== null) {
+    images.push({
+      fullMatch: m[0],
+      alt: m[1],
+      url: m[2].trim()
+    })
+  }
+  const htmlRe = /<img\s[^>]*src=["']([^"']+)["'][^>]*\/?>/gi
+  while ((m = htmlRe.exec(text)) !== null) {
+    images.push({
+      fullMatch: m[0],
+      alt: '',
+      url: m[1].trim()
+    })
+  }
+  return images
+}
+
+function removeFirstOccurrence(haystack, needle) {
+  const i = haystack.indexOf(needle)
+  if (i === -1) return haystack
+  const next = haystack.slice(0, i) + haystack.slice(i + needle.length)
+  return next.replace(/\n{3,}/g, '\n\n')
+}
 
 const LessonDetail = () => {
   const { courseId, lessonId } = useParams()
   const navigate = useNavigate()
+  const { confirm } = useAlert()
   const [lesson, setLesson] = useState(null)
   const [course, setCourse] = useState(null)
   const [lessons, setLessons] = useState([])
@@ -221,9 +254,14 @@ const LessonDetail = () => {
   }
 
   const handleDeleteVideo = async (videoId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить это видео?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удаление видео',
+      message: 'Удалить это видео?',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
     try {
       await api.delete(`/courses/lessons/${lessonId}/videos/${videoId}`)
       // Перезагружаем видео
@@ -236,10 +274,24 @@ const LessonDetail = () => {
     }
   }
 
+  const embeddedImagesInEditor = useMemo(
+    () => extractEmbeddedImages(editedContent),
+    [editedContent]
+  )
+
+  const handleRemoveEmbeddedImage = (fullMatch) => {
+    setEditedContent((prev) => removeFirstOccurrence(prev, fullMatch))
+  }
+
   const handleDeleteFile = async (fileId) => {
-    if (!window.confirm('Вы уверены, что хотите удалить этот файл?')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Удаление файла',
+      message: 'Удалить этот файл?',
+      confirmText: 'Удалить',
+      cancelText: 'Отмена',
+      variant: 'danger'
+    })
+    if (!ok) return
     try {
       await api.delete(`/files/${fileId}`)
       // Перезагружаем файлы
@@ -268,11 +320,11 @@ const LessonDetail = () => {
   return (
     <div className="lesson-detail">
       {/* Header */}
-      <div className="lesson-header">
+      <div className="lesson-detail-hero">
         <Link to={`/courses/${courseId}`} className="back-link">
           <FiArrowLeft /> Back to Course
         </Link>
-        <div className="lesson-header-content">
+        <div className="lesson-detail-hero-content">
           <div className="lesson-title-section">
             <span className="lesson-number">Lesson {currentIndex + 1}</span>
             <h1>{lesson.title}</h1>
@@ -346,6 +398,45 @@ const LessonDetail = () => {
                   className="content-textarea"
                   rows="20"
                 />
+                {embeddedImagesInEditor.length > 0 && (
+                  <div className="markdown-embedded-images" aria-label="Картинки в тексте">
+                    <p className="markdown-embedded-images__title">
+                      Картинки в тексте — нажмите, чтобы удалить вставку из текста
+                    </p>
+                    <ul className="markdown-embedded-images__list">
+                      {embeddedImagesInEditor.map((img, idx) => (
+                        <li key={`embed-img-${idx}-${img.url.slice(0, 24)}`} className="markdown-embedded-images__item">
+                          <div className="markdown-embedded-images__preview">
+                            <img
+                              src={img.url}
+                              alt={img.alt || ''}
+                              loading="lazy"
+                              onError={(e) => {
+                                e.target.style.display = 'none'
+                              }}
+                            />
+                          </div>
+                          <div className="markdown-embedded-images__meta">
+                            <span className="markdown-embedded-images__url" title={img.url}>
+                              {img.url.length > 72 ? `${img.url.slice(0, 72)}…` : img.url}
+                            </span>
+                            {img.alt && (
+                              <span className="markdown-embedded-images__alt">alt: {img.alt}</span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-sm markdown-embedded-images__remove"
+                            onClick={() => handleRemoveEmbeddedImage(img.fullMatch)}
+                            title="Удалить эту картинку из текста"
+                          >
+                            <FiTrash2 /> Удалить
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 <div className="editor-actions">
                   <button className="btn btn-primary" onClick={handleSaveContent}>
                     <FiSave /> Save Notes
