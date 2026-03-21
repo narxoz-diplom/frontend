@@ -318,52 +318,51 @@ const LessonDetail = () => {
   const canEdit = canUpload(window.keycloak)
 
   return (
-    <div className="lesson-detail">
-      {/* Header */}
-      <div className="lesson-detail-hero">
-        <Link to={`/courses/${courseId}`} className="back-link">
-          <FiArrowLeft /> Back to Course
+    <div className="lesson-detail lesson-detail--v2">
+      <header className="lesson-page__intro">
+        <Link to={`/courses/${courseId}`} className="lesson-page__back">
+          <FiArrowLeft aria-hidden /> К курсу
         </Link>
-        <div className="lesson-detail-hero-content">
-          <div className="lesson-title-section">
-            <span className="lesson-number">Lesson {currentIndex + 1}</span>
-            <h1>{lesson.title}</h1>
-            {lessonProgress.completed && (
-              <span className="lesson-completed-badge">
-                <FiCheckCircle /> Completed
-              </span>
-            )}
-          </div>
-          {lesson.description && (
-            <p className="lesson-description">{lesson.description}</p>
-          )}
-          {videos.length > 0 && (
-            <div className="lesson-progress">
-              <div className="lesson-progress-bar">
-                <div 
-                  className="lesson-progress-fill" 
-                  style={{ width: `${lessonProgress.progress}%` }}
-                />
-              </div>
-              <span className="lesson-progress-text">
-                {Math.round(lessonProgress.progress)}% complete
-              </span>
-            </div>
+        <p className="lesson-page__kicker">
+          Урок {currentIndex + 1} из {lessons.length}
+          {course?.title ? ` · ${course.title}` : ''}
+        </p>
+        <div className="lesson-page__title-row">
+          <h1 className="lesson-page__title">{lesson.title}</h1>
+          {lessonProgress.completed && (
+            <span className="lesson-page__badge lesson-page__badge--done">
+              <FiCheckCircle aria-hidden /> Пройдено
+            </span>
           )}
         </div>
-      </div>
+        {lesson.description && <p className="lesson-page__lead">{lesson.description}</p>}
+        {videos.length > 0 && (
+          <div className="lesson-page__progress" aria-label="Прогресс по видео">
+            <div className="lesson-page__progress-track">
+              <div
+                className="lesson-page__progress-fill"
+                style={{ width: `${lessonProgress.progress}%` }}
+              />
+            </div>
+            <span className="lesson-page__progress-label">{Math.round(lessonProgress.progress)}%</span>
+          </div>
+        )}
+      </header>
 
-      {error && <div className="error-message">{error}</div>}
+      {error && <div className="lesson-page__error">{error}</div>}
 
       <div className="lesson-content-wrapper">
         {/* Main Content */}
         <div className="lesson-main-content">
           {/* Конспект урока */}
-          <div className="lesson-notes-section">
+          <div className="lesson-notes-section lesson-panel">
             <div className="section-header">
-              <h2>
-                <FiBook /> Lesson Notes
-              </h2>
+              <div className="section-header__text">
+                <span className="section-header__eyebrow">Материал</span>
+                <h2>
+                  <FiBook aria-hidden /> Конспект
+                </h2>
+              </div>
               {canEdit && (
                 <button
                   className="btn btn-secondary btn-sm"
@@ -480,11 +479,14 @@ const LessonDetail = () => {
           </div>
 
           {/* Видео */}
-          <div className="lesson-videos-section">
+          <div className="lesson-videos-section lesson-panel">
             <div className="section-header">
-              <h2>
-                <FiPlay /> Videos ({videos.length})
-              </h2>
+              <div className="section-header__text">
+                <span className="section-header__eyebrow">Медиа</span>
+                <h2>
+                  <FiPlay aria-hidden /> Видео ({videos.length})
+                </h2>
+              </div>
               {canEdit && (
                 <button
                   className="btn btn-primary btn-sm"
@@ -651,11 +653,14 @@ const LessonDetail = () => {
           </div>
 
           {/* Файлы */}
-          <div className="lesson-files-section">
+          <div className="lesson-files-section lesson-panel">
             <div className="section-header">
-              <h2>
-                <FiFile /> Files ({files.length})
-              </h2>
+              <div className="section-header__text">
+                <span className="section-header__eyebrow">Вложения</span>
+                <h2>
+                  <FiFile aria-hidden /> Файлы ({files.length})
+                </h2>
+              </div>
               {canEdit && (
                 <label className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
                   <FiUpload /> Add File
@@ -741,17 +746,18 @@ const LessonDetail = () => {
           </div>
         </div>
 
-        {/* Sidebar */}
-        <div className="lesson-sidebar">
-          <div className="sidebar-section">
-            <h3>Course: {course.title}</h3>
-            <Link to={`/courses/${courseId}`} className="course-link">
-              View Course
+        <aside className="lesson-sidebar lesson-rail">
+          <div className="sidebar-section lesson-rail__card">
+            <p className="lesson-rail__eyebrow">Курс</p>
+            <h3 className="lesson-rail__title">{course.title}</h3>
+            <Link to={`/courses/${courseId}`} className="lesson-rail__link">
+              Открыть страницу курса
             </Link>
           </div>
 
-          <div className="sidebar-section">
-            <h3>All Lessons</h3>
+          <div className="sidebar-section lesson-rail__card">
+            <p className="lesson-rail__eyebrow">Навигация</p>
+            <h3 className="lesson-rail__title lesson-rail__title--sm">Все уроки</h3>
             <div className="lessons-nav">
               {lessons.map((l, index) => (
                 <Link
@@ -767,13 +773,13 @@ const LessonDetail = () => {
           </div>
 
           {/* Navigation */}
-          <div className="lesson-navigation">
+          <div className="lesson-navigation lesson-rail__nav">
             {prevLesson && (
               <Link
                 to={`/courses/${courseId}/lessons/${prevLesson.id}`}
                 className="nav-btn prev-btn"
               >
-                <FiChevronLeft /> Previous Lesson
+                <FiChevronLeft aria-hidden /> Предыдущий
               </Link>
             )}
             {nextLesson && (
@@ -781,11 +787,11 @@ const LessonDetail = () => {
                 to={`/courses/${courseId}/lessons/${nextLesson.id}`}
                 className="nav-btn next-btn"
               >
-                Next Lesson <FiChevronRight />
+                Следующий <FiChevronRight aria-hidden />
               </Link>
             )}
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   )

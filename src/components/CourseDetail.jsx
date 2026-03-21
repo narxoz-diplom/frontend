@@ -11,7 +11,8 @@ import {
   FiBook,
   FiTrash2,
   FiEye,
-  FiCheckSquare
+  FiCheckSquare,
+  FiArrowLeft
 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
@@ -279,76 +280,92 @@ const CourseDetail = () => {
 
   const courseProgress = getCourseProgress()
 
+  const statusLabel =
+    course.status === 'PUBLISHED'
+      ? 'Опубликован'
+      : course.status === 'DRAFT'
+        ? 'Черновик'
+        : course.status === 'ARCHIVED'
+          ? 'В архиве'
+          : course.status
+
   return (
-    <div className="course-detail">
-      <div className="course-hero">
+    <div className="course-detail course-detail--v2">
+      <header className="course-page__intro">
+        <Link to="/courses" className="course-page__back">
+          <FiArrowLeft aria-hidden /> К каталогу курсов
+        </Link>
         {course.imageUrl && (
-          <img src={course.imageUrl} alt={course.title} className="course-hero-image" />
-        )}
-        <div className="course-hero-content">
-          <div className="course-hero-header">
-            <h1>{course.title}</h1>
-            <div className="course-status-section">
-              <span className={`course-status ${course.status}`}>{course.status}</span>
-              {(isTeacher(window.keycloak) || isAdmin(window.keycloak)) && (
-                <select
-                  className="status-select"
-                  value={course.status}
-                  onChange={(e) => handleStatusChange(e.target.value)}
-                  disabled={statusChanging}
-                  title="Изменить статус курса"
-                >
-                  <option value="DRAFT">DRAFT (Черновик)</option>
-                  <option value="PUBLISHED">PUBLISHED (Опубликован)</option>
-                  <option value="ARCHIVED">ARCHIVED (Архивирован)</option>
-                </select>
-              )}
-            </div>
+          <div className="course-page__cover-wrap">
+            <img src={course.imageUrl} alt="" className="course-page__cover" decoding="async" />
           </div>
-          <p className="course-hero-description">{course.description}</p>
-          <div className="course-hero-meta">
-            <div className="meta-item">
-              <FiBook />
-              <span>{lessons.length} {lessons.length === 1 ? 'урок' : 'уроков'}</span>
-            </div>
-            <div className="meta-item">
-              <FiCheckSquare />
-              <span>{tests.length} {tests.length === 1 ? 'тест' : 'тестов'}</span>
-            </div>
-            {lessons.length > 0 && (
-              <div className="meta-item">
-                <FiCheckCircle />
-                <span>{Math.round(courseProgress)}% завершено</span>
-              </div>
+        )}
+        <p className="course-page__kicker">Курс · {statusLabel}</p>
+        <div className="course-page__title-row">
+          <h1 className="course-page__title">{course.title}</h1>
+          <div className="course-page__status-block">
+            <span className={`course-status course-status--pill ${course.status}`}>{course.status}</span>
+            {(isTeacher(window.keycloak) || isAdmin(window.keycloak)) && (
+              <select
+                className="course-page__status-select"
+                value={course.status}
+                onChange={(e) => handleStatusChange(e.target.value)}
+                disabled={statusChanging}
+                title="Изменить статус курса"
+                aria-label="Статус курса"
+              >
+                <option value="DRAFT">DRAFT (Черновик)</option>
+                <option value="PUBLISHED">PUBLISHED (Опубликован)</option>
+                <option value="ARCHIVED">ARCHIVED (Архивирован)</option>
+              </select>
             )}
-            <div className="meta-item">
-              <FiEye />
-              <span>{courseViews} {courseViews === 1 ? 'просмотр' : courseViews < 5 ? 'просмотра' : 'просмотров'}</span>
-            </div>
+          </div>
+        </div>
+        {course.description && <p className="course-page__lead">{course.description}</p>}
+        <dl className="course-page__meta">
+          <div>
+            <dt>Уроков</dt>
+            <dd>{lessons.length}</dd>
+          </div>
+          <div>
+            <dt>Тестов</dt>
+            <dd>{tests.length}</dd>
           </div>
           {lessons.length > 0 && (
-            <div className="course-progress-bar">
-              <div 
-                className="course-progress-fill" 
-                style={{ width: `${courseProgress}%` }}
-              />
+            <div>
+              <dt>Прогресс</dt>
+              <dd>{Math.round(courseProgress)}%</dd>
             </div>
           )}
-        </div>
-      </div>
+          <div>
+            <dt>Просмотров</dt>
+            <dd>{courseViews}</dd>
+          </div>
+        </dl>
+        {lessons.length > 0 && (
+          <div className="course-page__progress" aria-label="Прогресс по урокам">
+            <div className="course-page__progress-track">
+              <div className="course-page__progress-fill" style={{ width: `${courseProgress}%` }} />
+            </div>
+          </div>
+        )}
+      </header>
 
-      {error && <div className="error">{error}</div>}
+      {error && <div className="course-page__error">{error}</div>}
 
       <div className="course-content-section">
-        <div className="lessons-section">
+        <section className="lessons-section course-panel">
           <div className="lessons-header">
-            <div className="lessons-header-titles">
-              <h2>Уроки</h2>
+            <div className="course-section-head__text">
+              <span className="course-section-head__eyebrow">Программа</span>
+              <div className="lessons-header-titles">
+                <h2>Уроки</h2>
               {canUpload(window.keycloak) && (
                 <p className="lessons-manage-hint">
                   Удаление уроков и курса — в «Редактировать курс».
                 </p>
               )}
+            </div>
             </div>
             {canUpload(window.keycloak) && (
               <>
@@ -591,11 +608,13 @@ const CourseDetail = () => {
               })}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Раздел тестов */}
-        <div className="tests-section">
-          <h2>Тесты</h2>
+        <section className="tests-section course-panel">
+          <div className="course-section-head__text course-section-head__text--tests">
+            <span className="course-section-head__eyebrow">Проверка знаний</span>
+            <h2>Тесты</h2>
+          </div>
           {tests.length === 0 ? (
             <div className="card empty-state">
               <div className="empty-state-icon">
@@ -617,7 +636,7 @@ const CourseDetail = () => {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
     </div>
   )
