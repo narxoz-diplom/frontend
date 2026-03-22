@@ -740,10 +740,6 @@
   gap: var(--spacing-lg);
 }
 
-.lesson-chat-section {
-  margin-top: var(--spacing-lg);
-}
-
 .sidebar-section {
   background: var(--bg-primary);
   border-radius: var(--radius-lg);

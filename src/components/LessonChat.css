@@ -1,121 +1,387 @@
-/* LessonChat — чат и генеративный UI теста в контексте урока */
+/* LessonChat — FAB, выезжающая панель справа на всю высоту, ресайз ширины */
+
+.lesson-chat-fab {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right, 0px));
+  bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  z-index: 11000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color);
+  color: #fff;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg, 0 8px 28px rgba(92, 32, 42, 0.2));
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.lesson-chat-fab:hover {
+  transform: scale(1.06);
+  box-shadow: var(--shadow-xl, 0 12px 40px rgba(92, 32, 42, 0.15));
+}
+
+.lesson-chat-fab:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 3px;
+}
+
+.lesson-chat-fab-icon {
+  font-size: 1.55rem;
+}
+
+.lesson-chat-fab-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.lesson-chat-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10980;
+  background: rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(2px);
+  animation: lesson-chat-backdrop-in 0.2s ease;
+}
+
+@keyframes lesson-chat-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.lesson-chat-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 92vw;
+  z-index: 10990;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  box-shadow: -12px 0 40px rgba(92, 32, 42, 0.12);
+  display: flex;
+  flex-direction: row;
+  animation: lesson-chat-panel-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes lesson-chat-panel-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-chat-panel,
+  .lesson-chat-backdrop {
+    animation: none;
+  }
+}
+
+.lesson-chat-panel-resize {
+  flex-shrink: 0;
+  width: 10px;
+  margin-left: -2px;
+  cursor: ew-resize;
+  background: transparent;
+  position: relative;
+  touch-action: none;
+}
+
+.lesson-chat-panel-resize::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--primary-color) 35%, transparent);
+  opacity: 0.6;
+  transition: opacity 0.15s, width 0.15s;
+}
+
+.lesson-chat-panel-resize:hover::after,
+.lesson-chat-panel-resize:focus-visible::after {
+  opacity: 1;
+  width: 4px;
+}
+
+.lesson-chat-panel-inner {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.lesson-chat-panel-header {
+  flex-shrink: 0;
+  align-items: flex-start;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.lesson-chat-panel-header h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+.lesson-chat-panel-close {
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.lesson-chat-panel-close:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
+.lesson-chat-panel-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--primary-color) 3%, var(--bg-canvas, #fefefe));
+}
+
+.lesson-chat-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
+}
+
+.lesson-chat-toolbar-btn:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--primary-color);
+}
+
+.lesson-chat-toolbar-btn--ghost {
+  background: transparent;
+}
+
+.lesson-chat-toolbar-btn svg {
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.lesson-chat-panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.lesson-chat-panel-chat-area {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 0 var(--spacing-md);
+}
+
+.lesson-chat-panel .lesson-chat.ag-ui-chat,
+.lesson-chat-panel .lesson-chat.simple-chat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--spacing-md);
+  margin-top: 0;
+}
+
+.lesson-chat-panel .lesson-chat.ag-ui-chat .lesson-chat-messages,
+.lesson-chat-panel .lesson-chat.simple-chat .lesson-chat-messages {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  margin-bottom: var(--spacing-sm);
+  background: linear-gradient(
+    180deg,
+    var(--bg-canvas, #fefefe) 0%,
+    color-mix(in srgb, var(--primary-color) 2.5%, var(--bg-canvas, #fefefe)) 100%
+  );
+}
+
+.lesson-chat-panel .lesson-chat.direct-ag-ui .lesson-chat-messages {
+  min-height: 0;
+  max-height: none;
+}
+
+.lesson-chat-panel .lesson-chat-input-wrap {
+  flex-shrink: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.lesson-chat-messages-anchor {
+  height: 1px;
+  margin-top: 0.25rem;
+}
+
+.lesson-chat-typing-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary-color) 55%, #94a3b8);
+  animation: lesson-chat-typing-bounce 1.1s ease-in-out infinite;
+}
+
+.lesson-chat-typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.lesson-chat-typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes lesson-chat-typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.lesson-chat-msg.typing {
+  display: flex;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  min-height: 2.5rem;
+}
+
+.lesson-chat-input-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: var(--spacing-sm);
+}
+
+.lesson-chat-input-meta {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0.15rem;
+}
+
+.lesson-chat-char-count {
+  font-size: 0.7rem;
+  color: var(--text-light, rgba(184, 56, 72, 0.55));
+  font-variant-numeric: tabular-nums;
+}
+
+.lesson-chat-input-shell .lesson-chat-input-wrap {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.35rem 0.35rem 0.65rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.lesson-chat-input-shell .lesson-chat-textarea {
+  border: none;
+  box-shadow: none;
+}
+
+.lesson-chat-input-shell .lesson-chat-textarea:focus {
+  box-shadow: none;
+}
+
+.lesson-chat-input-shell .lesson-chat-send {
+  border-radius: var(--radius-sm);
+}
 
 .lesson-chat-container {
-  margin-top: 2rem;
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 12px;
+  margin-top: var(--spacing-lg, 1.5rem);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 12px);
   overflow: hidden;
-  background: var(--card-bg, #fff);
+  background: var(--bg-primary, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(92, 32, 42, 0.06));
 }
 
 .lesson-chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
+  padding: var(--spacing-md, 1rem) var(--spacing-lg, 1.25rem);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary-color) 6%, var(--bg-canvas, #fefefe)) 0%,
+    var(--bg-tertiary, rgba(184, 56, 72, 0.05)) 100%
+  );
+  border-bottom: 1px solid var(--border-color);
 }
 
 .lesson-chat-header h2 {
   margin: 0;
   font-size: 1.1rem;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.btn-create-test {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: var(--btn-color, #2d5016);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.btn-create-test:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(45, 80, 22, 0.35);
-}
-
-.btn-create-test:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.lesson-quiz-block {
-  padding: 1.25rem;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-  background: linear-gradient(180deg, rgba(45, 80, 22, 0.04) 0%, transparent 100%);
-}
-
-.lesson-quiz-error {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 1rem 1rem 1rem 1.25rem;
-  color: #dc2626;
-  background: #fef2f2;
-  border-bottom: 1px solid #fecaca;
-}
-
-.lesson-quiz-error-close {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #b91c1c;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.lesson-quiz-error-close:hover {
-  background: rgba(185, 28, 28, 0.1);
-}
-
-.lesson-chat-toggle {
-  padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid var(--border-color, #e5e7eb);
-}
-
-.btn-toggle-chat {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: transparent;
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.15s;
-}
-
-.btn-toggle-chat:hover,
-.btn-toggle-chat.active {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
 }
 
 .lesson-chat-badge {
   font-size: 0.7rem;
   padding: 0.15rem 0.4rem;
   margin-left: 0.35rem;
-  background: #6366f1;
+  background: var(--primary-color);
   color: #fff;
-  border-radius: 4px;
+  border-radius: var(--radius-sm, 4px);
   font-weight: 600;
 }
 
@@ -125,8 +391,7 @@
 }
 
 .lesson-chat.direct-ag-ui .lesson-chat-messages {
-  min-height: 200px;
-  max-height: 360px;
+  min-height: 120px;
 }
 
 .lesson-chat-error {
@@ -157,13 +422,13 @@
 
 /* Резюме — генеративный UI с темой */
 .ag-ui-summary-card {
-  --theme-primary: #6366f1;
-  --theme-accent: #a5b4fc;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  --theme-primary: var(--primary-color);
+  --theme-accent: color-mix(in srgb, var(--primary-color) 42%, white);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .ag-ui-summary-header {
@@ -189,7 +454,7 @@
 .ag-ui-subtitle {
   display: block;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--text-light, rgba(184, 56, 72, 0.62));
 }
 
 .ag-ui-summary-body {
@@ -199,11 +464,42 @@
 .ag-ui-summary-body p {
   margin: 0 0 0.75rem 0;
   line-height: 1.6;
-  color: #334155;
+  color: var(--text-secondary);
 }
 
 .ag-ui-summary-body p:last-child {
   margin-bottom: 0;
+}
+
+.ag-ui-summary-body--md h2,
+.ag-ui-summary-body--md h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.35;
+}
+
+.ag-ui-summary-body--md h2:first-child,
+.ag-ui-summary-body--md h3:first-child {
+  margin-top: 0;
+}
+
+.ag-ui-summary-body--md ul,
+.ag-ui-summary-body--md ol {
+  margin: 0 0 0.75rem 0;
+  padding-left: 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.ag-ui-summary-body--md li {
+  margin-bottom: 0.35rem;
+}
+
+.ag-ui-summary-body--md strong {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 .ag-ui-card-close {
@@ -230,13 +526,13 @@
 
 /* Аналитика — генеративный UI с темой */
 .ag-ui-analytics-card {
-  --theme-primary: #6366f1;
-  --theme-accent: #a5b4fc;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  --theme-primary: var(--primary-color);
+  --theme-accent: color-mix(in srgb, var(--primary-color) 42%, white);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border-color);
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
 }
 
 .ag-ui-analytics-header {
@@ -452,6 +748,12 @@
   max-height: 320px;
   overflow-y: auto;
   margin-bottom: 1rem;
+  scroll-behavior: smooth;
+  scroll-padding-bottom: 1rem;
+  background: var(--bg-canvas, #fefefe);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  padding: var(--spacing-md);
 }
 
 .lesson-chat-empty {
@@ -460,8 +762,12 @@
   align-items: center;
   justify-content: center;
   min-height: 160px;
-  color: #94a3b8;
+  color: var(--text-light, #94a3b8);
   gap: 0.5rem;
+  border: 1px dashed color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin: var(--spacing-sm) 0;
 }
 
 .lesson-chat-empty svg {
@@ -474,21 +780,28 @@
   margin-bottom: 0.5rem;
   border-radius: 10px;
   max-width: 90%;
+  box-shadow: 0 1px 2px rgba(92, 32, 42, 0.04);
 }
 
 .lesson-chat-msg.user {
   margin-left: auto;
-  background: #3b82f6;
+  max-width: 92%;
+  background: var(--primary-color);
   color: #fff;
+  border-radius: var(--radius-md) var(--radius-sm) var(--radius-md) var(--radius-md);
 }
 
 .lesson-chat-msg.assistant {
-  background: #f1f5f9;
-  color: #1e293b;
+  max-width: 100%;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm) var(--radius-md) var(--radius-md) var(--radius-md);
+  border-left: 3px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
 }
 
-.lesson-chat-msg.typing {
-  opacity: 0.7;
+.lesson-chat-msg.assistant.typing {
+  border-left-color: color-mix(in srgb, var(--border-color) 60%, transparent);
 }
 
 .lesson-chat-input-wrap {
@@ -503,19 +816,21 @@
   min-height: 44px;
   max-height: 120px;
   padding: 0.6rem 1rem;
-  border: 1px solid var(--border-color, #e5e7eb);
-  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 10px);
   font-size: 0.95rem;
   font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-primary);
   resize: none;
   overflow-y: auto;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .lesson-chat-textarea:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 22%, transparent);
 }
 
 .lesson-chat-textarea::placeholder {
@@ -529,16 +844,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: #3b82f6;
+  background: var(--primary-color);
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 10px);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background var(--transition-base), box-shadow var(--transition-base);
 }
 
 .lesson-chat-send:hover:not(:disabled) {
-  background: #2563eb;
+  background: color-mix(in srgb, var(--primary-color) 88%, black);
+  box-shadow: var(--shadow-sm);
 }
 
 .lesson-chat-send:disabled {
@@ -548,8 +864,8 @@
 
 /* Генеративный UI теста */
 .quiz-generative-ui {
-  --theme-primary: #2d5016;
-  --theme-accent: #7cb342;
+  --theme-primary: var(--primary-color);
+  --theme-accent: color-mix(in srgb, var(--primary-color) 40%, white);
 }
 
 .quiz-gen-header {

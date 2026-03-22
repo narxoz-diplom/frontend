@@ -3,9 +3,18 @@
  * Интегрирован с RAG: вопросы по уроку, генерация тестов с тематическим оформлением.
  * При заданном VITE_AG_UI_URL чат идёт через AG-UI агент (Google ADK).
  */
-import React, { useState, useRef, useEffect, useMemo } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from 'react'
+import { createPortal } from 'react-dom'
 import axios from 'axios'
-import { FiMessageCircle, FiHelpCircle, FiSend, FiX } from 'react-icons/fi'
+import { FiMessageCircle, FiSend, FiX, FiTrash2, FiChevronDown } from 'react-icons/fi'
 import { HttpAgent, randomUUID } from '@ag-ui/client'
 import {
   ResponsiveContainer,
@@ -21,11 +30,51 @@ import {
   LineChart,
   Line,
 } from 'recharts'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import api from '../services/api'
 import './LessonChat.css'
 
+/** Убирает подряд идущие почти одинаковые блоки (частый артефакт LLM в резюме). */
+function dedupeSummaryBlocks(text) {
+  const raw = text.split(/\n\n+/).map(s => s.trim()).filter(Boolean)
+  if (raw.length <= 1) return text
+  const norm = s => s.replace(/\s+/g, ' ').toLowerCase()
+  const kept = []
+  for (const block of raw) {
+    const n = norm(block)
+    if (n.length < 12) {
+      kept.push(block)
+      continue
+    }
+    const dup = kept.some(prev => {
+      const p = norm(prev)
+      if (n === p) return true
+      const a = n.length >= p.length ? n : p
+      const b = n.length >= p.length ? p : n
+      if (b.length < 40) return false
+      return a.includes(b.slice(0, Math.min(120, b.length)))
+    })
+    if (!dup) kept.push(block)
+  }
+  return kept.join('\n\n')
+}
+
 const RAG_DIRECT_URL = String(import.meta.env.VITE_RAG_URL || '').trim()
 const AG_UI_URL = String(import.meta.env.VITE_AG_UI_URL || '').trim().replace(/\/$/, '')
+
+/** Совпадает с ag-ui-agent LESSON_PAGE_TEXT_MAX_CHARS (по умолчанию 48000) */
+const LESSON_CONTENT_MAX_CHARS = Number(import.meta.env.VITE_LESSON_CONTENT_MAX_CHARS) || 48000
+
+const PANEL_WIDTH_STORAGE_KEY = 'lesson-chat-panel-width'
+const PANEL_MIN_WIDTH = 300
+const PANEL_DEFAULT_WIDTH = 420
+
+function clampPanelWidth(w) {
+  if (typeof window === 'undefined') return w
+  const max = Math.max(PANEL_MIN_WIDTH, Math.floor(window.innerWidth * 0.92))
+  return Math.min(max, Math.max(PANEL_MIN_WIDTH, Math.round(w)))
+}
 
 function ragPost(gatewayPath, body) {
   if (RAG_DIRECT_URL) {
@@ -51,7 +100,7 @@ function renderAGUIMessage(msg) {
     if (result?.questions?.length) {
       return (
         <div key={msg.id} className="lesson-chat ag-ui-inline-quiz">
-          <QuizGenerativeUI result={result} theme={result?.theme || { primary: '#2d5016', accent: '#7cb342' }} />
+          <QuizGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
         </div>
       )
     }
@@ -59,13 +108,13 @@ function renderAGUIMessage(msg) {
       if (result?.ui_type === 'analytics') {
         return (
           <div key={msg.id} className="lesson-chat ag-ui-inline-gen">
-            <AnalyticsGenerativeUI result={result} theme={result?.theme || { primary: '#6366f1', accent: '#a5b4fc' }} />
+            <AnalyticsGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
           </div>
         )
       }
       return (
         <div key={msg.id} className="lesson-chat ag-ui-inline-gen">
-          <SummaryGenerativeUI result={result} theme={result?.theme || { primary: '#6366f1', accent: '#a5b4fc' }} />
+          <SummaryGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
         </div>
       )
     }
@@ -83,28 +132,58 @@ function renderAGUIMessage(msg) {
 /**
  * Чат через AG-UI агент по протоколу AG-UI (HttpAgent). Запросы идут напрямую на VITE_AG_UI_URL.
  */
-function AGUIChat({ lessonId, courseId, lessonTitle, courseTitle }) {
+const AGUIChat = forwardRef(function AGUIChat(
+  { lessonId, courseId, lessonTitle, courseTitle, lessonContent },
+  ref
+) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const threadId = `lesson-${String(lessonId ?? '')}-${String(courseId ?? '')}`
   const textareaRef = useRef(null)
+  const messagesEndRef = useRef(null)
 
   const agent = useMemo(
     () => (AG_UI_URL ? new HttpAgent({ url: AG_UI_URL, threadId }) : null),
     [AG_UI_URL, threadId]
   )
 
-  const lessonState = useMemo(
-    () => ({
+  const lessonState = useMemo(() => {
+    const raw = typeof lessonContent === 'string' ? lessonContent : ''
+    const trimmed = raw.length > LESSON_CONTENT_MAX_CHARS
+      ? `${raw.slice(0, LESSON_CONTENT_MAX_CHARS)}\n\n[…текст обрезан для чата]`
+      : raw
+    return {
       lesson_id: lessonId ? String(lessonId) : null,
       course_id: courseId ? String(courseId) : null,
       lesson_title: lessonTitle || '',
       course_title: courseTitle || '',
       collection_name: courseId ? `course_${courseId}` : 'default',
+      lesson_content: trimmed,
+    }
+  }, [lessonId, courseId, lessonTitle, courseTitle, lessonContent])
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' })
+  }, [])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      clear: () => {
+        setMessages([])
+        setError(null)
+        setInput('')
+        try {
+          agent?.setMessages([])
+        } catch {
+          /* ignore */
+        }
+      },
+      scrollToBottom: () => scrollToBottom(true),
     }),
-    [lessonId, courseId, lessonTitle, courseTitle]
+    [agent, scrollToBottom]
   )
 
   useEffect(() => {
@@ -113,6 +192,10 @@ function AGUIChat({ lessonId, courseId, lessonTitle, courseTitle }) {
     el.style.height = 'auto'
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }, [input])
+
+  useEffect(() => {
+    scrollToBottom(true)
+  }, [messages, loading, error, scrollToBottom])
 
   const sendMessage = async () => {
     if (!input.trim() || loading || !agent) return
@@ -154,42 +237,75 @@ function AGUIChat({ lessonId, courseId, lessonTitle, courseTitle }) {
           </div>
         )}
         {messages.map(renderAGUIMessage)}
-        {loading && <div className="lesson-chat-msg assistant typing">...</div>}
+        {loading && (
+          <div className="lesson-chat-msg assistant typing" aria-hidden>
+            <span className="lesson-chat-typing-dot" />
+            <span className="lesson-chat-typing-dot" />
+            <span className="lesson-chat-typing-dot" />
+          </div>
+        )}
+        <div ref={messagesEndRef} className="lesson-chat-messages-anchor" />
       </div>
       {error && <div className="lesson-chat-error">{error}</div>}
-      <div className="lesson-chat-input-wrap">
-        <textarea
-          ref={textareaRef}
-          className="lesson-chat-textarea"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              sendMessage()
-            }
-          }}
-          placeholder="Сообщение... (Enter — отправить)"
-          disabled={loading}
-          rows={1}
-          maxLength={4000}
-        />
-        <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
-          <FiSend />
-        </button>
+      <div className="lesson-chat-input-shell">
+        <div className="lesson-chat-input-meta">
+          <span className="lesson-chat-char-count">{input.length}/4000</span>
+        </div>
+        <div className="lesson-chat-input-wrap">
+          <textarea
+            ref={textareaRef}
+            className="lesson-chat-textarea"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                sendMessage()
+              }
+            }}
+            placeholder="Сообщение… Shift+Enter — новая строка"
+            disabled={loading}
+            rows={1}
+            maxLength={4000}
+          />
+          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
+            <FiSend />
+          </button>
+        </div>
       </div>
     </div>
   )
-}
+})
+AGUIChat.displayName = 'AGUIChat'
 
 /**
  * Простой чат — прямые запросы к RAG (без AG-UI агента).
  */
-function SimpleLessonChat({ lessonId, courseId, lessonTitle, courseTitle }) {
+const SimpleLessonChat = forwardRef(function SimpleLessonChat(
+  { lessonId, courseId, lessonTitle: _lessonTitle, courseTitle: _courseTitle },
+  ref
+) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const textareaRef = useRef(null)
+  const messagesEndRef = useRef(null)
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' })
+  }, [])
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      clear: () => {
+        setMessages([])
+        setInput('')
+      },
+      scrollToBottom: () => scrollToBottom(true),
+    }),
+    [scrollToBottom]
+  )
 
   useEffect(() => {
     const el = textareaRef.current
@@ -237,6 +353,10 @@ function SimpleLessonChat({ lessonId, courseId, lessonTitle, courseTitle }) {
     }
   }
 
+  useEffect(() => {
+    scrollToBottom(true)
+  }, [messages, loading, scrollToBottom])
+
   return (
     <div className="lesson-chat simple-chat">
       <div className="lesson-chat-messages">
@@ -251,40 +371,53 @@ function SimpleLessonChat({ lessonId, courseId, lessonTitle, courseTitle }) {
             {m.content}
           </div>
         ))}
-        {loading && <div className="lesson-chat-msg assistant typing">...</div>}
+        {loading && (
+          <div className="lesson-chat-msg assistant typing" aria-hidden>
+            <span className="lesson-chat-typing-dot" />
+            <span className="lesson-chat-typing-dot" />
+            <span className="lesson-chat-typing-dot" />
+          </div>
+        )}
+        <div ref={messagesEndRef} className="lesson-chat-messages-anchor" />
       </div>
-      <div className="lesson-chat-input-wrap">
-        <textarea
-          ref={textareaRef}
-          className="lesson-chat-textarea"
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              sendMessage()
-            }
-          }}
-          placeholder="Сообщение... (Enter — отправить)"
-          disabled={loading}
-          rows={1}
-          maxLength={4000}
-        />
-        <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
-          <FiSend />
-        </button>
+      <div className="lesson-chat-input-shell">
+        <div className="lesson-chat-input-meta">
+          <span className="lesson-chat-char-count">{input.length}/4000</span>
+        </div>
+        <div className="lesson-chat-input-wrap">
+          <textarea
+            ref={textareaRef}
+            className="lesson-chat-textarea"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                sendMessage()
+              }
+            }}
+            placeholder="Сообщение… Shift+Enter — новая строка"
+            disabled={loading}
+            rows={1}
+            maxLength={4000}
+          />
+          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
+            <FiSend />
+          </button>
+        </div>
       </div>
     </div>
   )
-}
+})
+SimpleLessonChat.displayName = 'SimpleLessonChat'
 
 /**
  * Генеративный UI для резюме урока — карточка с темой по курсу.
  */
 function SummaryGenerativeUI({ result, theme = {}, onClose }) {
-  const summary = result?.summary || ''
-  const primary = theme.primary || '#6366f1'
-  const accent = theme.accent || '#a5b4fc'
+  const summary = dedupeSummaryBlocks(String(result?.summary || ''))
+  const primary = theme.primary || '#b83848'
+  const accent = theme.accent || '#dc8a95'
   if (!summary) return null
   return (
     <div className="ag-ui-summary-card" style={{ '--theme-primary': primary, '--theme-accent': accent }}>
@@ -300,10 +433,8 @@ function SummaryGenerativeUI({ result, theme = {}, onClose }) {
           </button>
         )}
       </div>
-      <div className="ag-ui-summary-body">
-        {summary.split(/\n\n+/).map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
+      <div className="ag-ui-summary-body ag-ui-summary-body--md">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
       </div>
     </div>
   )
@@ -320,8 +451,8 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
   const topList = result?.top_list || null
   const trend = result?.trend_line || null
   const insights = Array.isArray(result?.insights) ? result.insights.filter(Boolean) : []
-  const primary = theme.primary || '#6366f1'
-  const accent = theme.accent || '#a5b4fc'
+  const primary = theme.primary || '#b83848'
+  const accent = theme.accent || '#dc8a95'
   if (!summary && !pie && !bar && !insights.length && !statCards.length && !topList && !trend) return null
 
   const pieData = pie && Array.isArray(pie.items)
@@ -336,7 +467,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
     ? trend.points.map(p => ({ name: p.label, value: Number(p.value) || 0 }))
     : []
 
-  const chartColors = ['#6366f1', '#a855f7', '#22c55e', '#f97316', '#0ea5e9', '#e11d48']
+  const chartColors = ['#b83848', '#8f2d39', '#dc8a95', '#5c2030', '#c85a68', '#7a2430']
 
   return (
     <div className="ag-ui-analytics-card" style={{ '--theme-primary': primary, '--theme-accent': accent }}>
@@ -509,7 +640,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
  */
 function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
   const questions = result?.questions || []
-  const t = theme.primary || '#2d5016'
+  const t = theme.primary || '#b83848'
   const [answers, setAnswers] = useState({})
   const [checked, setChecked] = useState(false)
   const [score, setScore] = useState(null)
@@ -541,7 +672,7 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
   if (!questions.length) return null
 
   return (
-    <div className="quiz-generative-ui" style={{ '--theme-primary': t, '--theme-accent': theme.accent || '#7cb342' }}>
+    <div className="quiz-generative-ui" style={{ '--theme-primary': t, '--theme-accent': theme.accent || '#dc8a95' }}>
       <div className="quiz-gen-header">
         <div className="quiz-gen-header-text">
           <h3>Тест по уроку</h3>
@@ -618,113 +749,200 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
 /**
  * Основной компонент: AG-UI чат или простой fallback.
  */
-export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitle, onCreateTest }) {
-  const [showChat, setShowChat] = useState(false)
-  const [quizData, setQuizData] = useState(null)
-  const [quizLoading, setQuizLoading] = useState(false)
-  const [quizTheme, setQuizTheme] = useState({ primary: '#2d5016', accent: '#7cb342' })
-  const [quizKey, setQuizKey] = useState(0)
-
-  const getThemeForCourse = title => {
-    if (!title) return { primary: '#2d5016', accent: '#7cb342' }
-    const t = title.toLowerCase()
-    if (t.includes('биолог') || t.includes('biology')) return { primary: '#2d5016', accent: '#7cb342' }
-    if (t.includes('хими') || t.includes('chemistry')) return { primary: '#1565c0', accent: '#42a5f5' }
-    if (t.includes('математ') || t.includes('math')) return { primary: '#6a1b9a', accent: '#ab47bc' }
-    if (t.includes('истори') || t.includes('history')) return { primary: '#bf360c', accent: '#ff7043' }
-     // Agile / управление проектами — отдельная тема
-    if (t.includes('agile') || t.includes('scrum') || t.includes('канбан') || t.includes('управление проект') || t.includes('project management')) {
-      return { primary: '#4c1d95', accent: '#22c55e' }
-    }
-    return { primary: '#6366f1', accent: '#a5b4fc' }
-  }
-
-  const handleCreateTest = async () => {
-    if (quizLoading) return
-    setQuizLoading(true)
-    setQuizTheme(getThemeForCourse(courseTitle))
+export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitle, lessonContent }) {
+  const chatRef = useRef(null)
+  const [panelOpen, setPanelOpen] = useState(false)
+  const [panelWidth, setPanelWidth] = useState(() => {
     try {
-      const r = await ragPost('generate-quiz-lms', {
-        collection_name: courseId ? `course_${courseId}` : 'default',
-        prompt: 'Создай тест по материалу урока для подготовки.',
-        top_k: 20,
-        lesson_ids: lessonId ? [String(lessonId)] : undefined,
-      })
-      setQuizData(r.data)
-      setQuizKey(k => k + 1)
-      onCreateTest?.(r.data)
-    } catch (err) {
-      const status = err.response?.status
-      const detail = err.response?.data?.detail || err.message || 'Неизвестная ошибка'
-      let errorMsg = detail
-      if (status === 502) errorMsg = 'RAG недоступен или ошибка генерации. Проверьте RAG (порт 8000) и LLM API key.'
-      else if (status === 503) errorMsg = 'Векторная база RAG недоступна.'
-      else if (err.code === 'ERR_NETWORK') errorMsg = 'Сеть недоступна. Запустите Gateway (8083) и RAG (8000).'
-      setQuizData({ error: errorMsg })
-    } finally {
-      setQuizLoading(false)
+      const raw = localStorage.getItem(PANEL_WIDTH_STORAGE_KEY)
+      const n = raw ? parseInt(raw, 10) : PANEL_DEFAULT_WIDTH
+      return Number.isFinite(n) ? n : PANEL_DEFAULT_WIDTH
+    } catch {
+      return PANEL_DEFAULT_WIDTH
     }
-  }
+  })
+  const panelWidthRef = useRef(panelWidth)
+  useEffect(() => {
+    panelWidthRef.current = panelWidth
+  }, [panelWidth])
 
-  return (
-    <div className="lesson-chat-container">
-      <div className="lesson-chat-header">
-        <h2><FiMessageCircle /> Помощник по уроку</h2>
+  useEffect(() => {
+    setPanelWidth(w => clampPanelWidth(w))
+  }, [])
+
+  useEffect(() => {
+    const onWinResize = () => setPanelWidth(w => clampPanelWidth(w))
+    window.addEventListener('resize', onWinResize)
+    return () => window.removeEventListener('resize', onWinResize)
+  }, [])
+
+  useEffect(() => {
+    if (!panelOpen) return
+    const onKey = e => {
+      if (e.key === 'Escape') setPanelOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [panelOpen])
+
+  useEffect(() => {
+    if (!panelOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [panelOpen])
+
+  const beginPanelResize = useCallback(clientX => {
+    const startX = clientX
+    const startW = panelWidthRef.current
+    const onMove = cx => {
+      const delta = startX - cx
+      const next = clampPanelWidth(startW + delta)
+      panelWidthRef.current = next
+      setPanelWidth(next)
+    }
+    const onMouseMove = e => onMove(e.clientX)
+    const onTouchMove = e => {
+      if (e.touches.length === 1) {
+        e.preventDefault()
+        onMove(e.touches[0].clientX)
+      }
+    }
+    const end = () => {
+      document.removeEventListener('mousemove', onMouseMove)
+      document.removeEventListener('mouseup', end)
+      document.removeEventListener('touchmove', onTouchMove)
+      document.removeEventListener('touchend', end)
+      document.removeEventListener('touchcancel', end)
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
+      try {
+        localStorage.setItem(PANEL_WIDTH_STORAGE_KEY, String(panelWidthRef.current))
+      } catch {
+        /* ignore */
+      }
+    }
+    document.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mouseup', end)
+    document.addEventListener('touchmove', onTouchMove, { passive: false })
+    document.addEventListener('touchend', end)
+    document.addEventListener('touchcancel', end)
+    document.body.style.cursor = 'ew-resize'
+    document.body.style.userSelect = 'none'
+  }, [])
+
+  const portalContent = (
+    <>
+      {!panelOpen && (
         <button
-          className="btn-create-test"
-          onClick={handleCreateTest}
-          disabled={quizLoading}
-          style={{ '--btn-color': quizTheme.primary }}
+          type="button"
+          className="lesson-chat-fab"
+          onClick={() => setPanelOpen(true)}
+          aria-label="Открыть чат помощника по уроку"
+          title="Чат помощника"
         >
-          <FiHelpCircle /> {quizLoading ? 'Создаю тест...' : 'Создать тест'}
+          <FiMessageCircle className="lesson-chat-fab-icon" aria-hidden />
+          {AG_UI_URL && <span className="lesson-chat-fab-badge" aria-hidden>AG</span>}
         </button>
-      </div>
-
-      {quizData && !quizData.error && (
-        <div className="lesson-quiz-block" style={{ '--theme-primary': quizTheme.primary }}>
-          <QuizGenerativeUI
-            key={quizKey}
-            result={{ ...quizData, lesson_title: lessonTitle }}
-            theme={quizTheme}
-            onClose={() => setQuizData(null)}
-          />
-        </div>
-      )}
-      {quizData?.error && (
-        <div className="lesson-quiz-error">
-          <span>{quizData.error}</span>
-          <button type="button" className="lesson-quiz-error-close" onClick={() => setQuizData(null)} aria-label="Закрыть">
-            <FiX />
-          </button>
-        </div>
       )}
 
-      <div className="lesson-chat-toggle">
-        <button
-          className={`btn-toggle-chat ${showChat ? 'active' : ''}`}
-          onClick={() => setShowChat(!showChat)}
-        >
-          <FiMessageCircle /> {showChat ? 'Скрыть чат' : 'Открыть чат'}
-          {AG_UI_URL && <span className="lesson-chat-badge">AG-UI</span>}
-        </button>
-      </div>
+      {panelOpen && (
+        <>
+          <div
+            className="lesson-chat-backdrop"
+            aria-hidden
+            onClick={() => setPanelOpen(false)}
+          />
+          <aside
+            className="lesson-chat-panel"
+            style={{ width: panelWidth }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lesson-chat-panel-title"
+          >
+            <div
+              className="lesson-chat-panel-resize"
+              onMouseDown={e => {
+                e.preventDefault()
+                beginPanelResize(e.clientX)
+              }}
+              onTouchStart={e => {
+                if (e.touches.length === 1) {
+                  beginPanelResize(e.touches[0].clientX)
+                }
+              }}
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Потяните, чтобы изменить ширину панели"
+            />
+            <div className="lesson-chat-panel-inner">
+              <div className="lesson-chat-header lesson-chat-panel-header">
+                <h2 id="lesson-chat-panel-title">
+                  <FiMessageCircle aria-hidden /> Помощник по уроку
+                  {AG_UI_URL && <span className="lesson-chat-badge">AG-UI</span>}
+                </h2>
+                <button
+                  type="button"
+                  className="lesson-chat-panel-close"
+                  onClick={() => setPanelOpen(false)}
+                  aria-label="Закрыть чат"
+                  title="Закрыть"
+                >
+                  <FiX aria-hidden />
+                </button>
+              </div>
 
-      {showChat &&
-        (AG_UI_URL ? (
-          <AGUIChat
-            lessonId={lessonId}
-            courseId={courseId}
-            lessonTitle={lessonTitle}
-            courseTitle={courseTitle}
-          />
-        ) : (
-          <SimpleLessonChat
-            lessonId={lessonId}
-            courseId={courseId}
-            lessonTitle={lessonTitle}
-            courseTitle={courseTitle}
-          />
-        ))}
-    </div>
+              <div className="lesson-chat-panel-toolbar" role="toolbar" aria-label="Действия чата">
+                <button
+                  type="button"
+                  className="lesson-chat-toolbar-btn"
+                  onClick={() => chatRef.current?.clear()}
+                  title="Очистить историю сообщений"
+                >
+                  <FiTrash2 aria-hidden />
+                  <span>Очистить</span>
+                </button>
+                <button
+                  type="button"
+                  className="lesson-chat-toolbar-btn lesson-chat-toolbar-btn--ghost"
+                  onClick={() => chatRef.current?.scrollToBottom()}
+                  title="Прокрутить к последним сообщениям"
+                >
+                  <FiChevronDown aria-hidden />
+                  <span>Вниз</span>
+                </button>
+              </div>
+
+              <div className="lesson-chat-panel-body">
+                <div className="lesson-chat-panel-chat-area">
+                  {AG_UI_URL ? (
+                    <AGUIChat
+                      ref={chatRef}
+                      lessonId={lessonId}
+                      courseId={courseId}
+                      lessonTitle={lessonTitle}
+                      courseTitle={courseTitle}
+                      lessonContent={lessonContent}
+                    />
+                  ) : (
+                    <SimpleLessonChat
+                      ref={chatRef}
+                      lessonId={lessonId}
+                      courseId={courseId}
+                      lessonTitle={lessonTitle}
+                      courseTitle={courseTitle}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          </aside>
+        </>
+      )}
+    </>
   )
+
+  return createPortal(portalContent, document.body)
 }

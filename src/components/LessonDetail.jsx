@@ -773,15 +773,14 @@ const LessonDetail = () => {
             </div>
           </div>
 
-          {/* Lesson Chat (AG-UI + RAG) */}
-          <div className="lesson-chat-section">
-            <LessonChat
-              lessonId={lessonId}
-              courseId={courseId}
-              lessonTitle={lesson.title}
-              courseTitle={course.title}
-            />
-          </div>
+          {/* Lesson Chat: рендер в document.body (FAB + панель) */}
+          <LessonChat
+            lessonId={lessonId}
+            courseId={courseId}
+            lessonTitle={lesson.title}
+            courseTitle={course.title}
+            lessonContent={lesson.content || ''}
+          />
 
           {/* Navigation */}
           <div className="lesson-navigation lesson-rail__nav">
