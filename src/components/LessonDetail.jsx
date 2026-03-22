@@ -20,6 +20,7 @@ import {
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
+import LessonChat from './LessonChat'
 import './LessonDetail.css'
 
 /** Извлекает вставки картинок из Markdown и HTML для редактора конспекта */
@@ -770,6 +771,16 @@ const LessonDetail = () => {
                 </Link>
               ))}
             </div>
+          </div>
+
+          {/* Lesson Chat (AG-UI + RAG) */}
+          <div className="lesson-chat-section">
+            <LessonChat
+              lessonId={lessonId}
+              courseId={courseId}
+              lessonTitle={lesson.title}
+              courseTitle={course.title}
+            />
           </div>
 
           {/* Navigation */}
