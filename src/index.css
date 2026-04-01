@@ -1,70 +1,49 @@
 :root {
-    /* Палитра: белый и красновато-бордовый акцент */
-    --color-white: #ffffff;
-    --color-burgundy: #b83848;
+    /* --- LIGHT THEME (Базовая светлая тема) --- */
+    --primary-color: #e41616;
+    --primary-gradient-start: rgba(237, 90, 90, 0.8);
+    --primary-gradient-end: rgba(209, 5, 5, 0.93);
+    --primary-hover: #b31212;
 
-    --primary-color: #b83848;
-    --primary-gradient-start: #b83848;
-    --primary-gradient-end: #b83848;
-    --primary-hover: #b83848;
+    --bg-primary: #ffffff;      /* Фон карточек, навбара, сайдбара */
+    --bg-secondary: #f5f7fa;    /* Основной фон страницы */
+    --bg-tertiary: #ecf0f1;     /* Ховеры и второстепенные блоки */
 
-    --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+    --text-primary: #2c3e50;    /* Основной текст */
+    --text-secondary: #7f8c8d;
+    --text-light: #95a5a6;
+    --border-color: #e8ecef;
 
-    --bg-primary: #ffffff;
-    --bg-secondary: #ffffff;
-    /* Почти белый фон области контента */
-    --bg-canvas: #fefefe;
-    --bg-tertiary: rgba(184, 56, 72, 0.034);
+    /* Профиль Glass Effect (Светлый) */
+    --glass-bg: rgba(227, 0, 0, 0.03);
+    --border-glass: 2px solid rgba(227, 0, 0, 0.3);
+    --red-glow: 0 0 20px rgba(227, 0, 0, 0.1);
 
-    --text-primary: #b83848;
-    --text-secondary: rgba(184, 56, 72, 0.88);
-    --text-light: rgba(184, 56, 72, 0.62);
-    --border-color: rgba(184, 56, 72, 0.18);
-
-    --glass-bg: rgba(184, 56, 72, 0.024);
-    --border-glass: 1px solid rgba(184, 56, 72, 0.35);
-    --red-glow: 0 0 24px rgba(184, 56, 72, 0.12);
-
+    /* Константы (не меняются) */
     --spacing-xs: 4px; --spacing-sm: 8px; --spacing-md: 16px;
     --spacing-lg: 24px; --spacing-xl: 32px; --spacing-2xl: 48px;
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 14px;
-    --radius-xl: 22px;
-    --transition-base: 0.25s ease;
-    --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    --radius-md: 8px; --radius-lg: 12px; --radius-xl: 24px;
+    --transition-base: 0.3s ease;
     --nav-width: 250px;
-    --shadow-md: 0 4px 20px rgba(92, 32, 42, 0.08);
-    --shadow-sm: 0 1px 3px rgba(92, 32, 42, 0.06), 0 6px 16px rgba(92, 32, 42, 0.06);
-    --shadow-lg: 0 8px 28px rgba(92, 32, 42, 0.1);
-    --shadow-xl: 0 12px 40px rgba(92, 32, 42, 0.12);
-    --success-color: #b83848;
-    --success-hover: #b83848;
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Тёмная тема: бордовый фон, белый текст */
+/* --- DARK THEME --- */
 body.dark-mode {
-    --bg-primary: #b83848;
-    --bg-secondary: #b83848;
-    --bg-tertiary: rgba(255, 255, 255, 0.08);
+    --bg-primary: #212121;      /* Карточки — тёмно-серый */
+    --bg-secondary: #181818;    /* Фон страницы — почти чёрный */
+    --bg-tertiary: #2c2c2c;     /* Вторичные поверхности */
 
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.82);
-    --text-light: rgba(255, 255, 255, 0.55);
-    --border-color: rgba(255, 255, 255, 0.25);
+    --text-primary: #e8e8e8;    /* Текст — мягкий белый */
+    --text-secondary: #9a9a9a;
+    --text-light: #6b6b6b;
+    --border-color: #2f2f2f;
 
-    --glass-bg: rgba(255, 255, 255, 0.06);
-    --border-glass: 1px solid rgba(255, 255, 255, 0.3);
-    --red-glow: 0 0 28px rgba(255, 255, 255, 0.08);
-
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.2);
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.22);
-    --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.28);
-    --success-color: #ffffff;
-    --success-hover: rgba(255, 255, 255, 0.9);
+    /* Профиль Glass Effect (Тёмный) */
+    --glass-bg: rgba(227, 0, 0, 0.08);
+    --border-glass: 2px solid rgba(227, 0, 0, 0.4);
+    --red-glow: 0 0 25px rgba(227, 0, 0, 0.15);
 }
-
 /* Глобальные сбросы */
 * {
     margin: 0;
@@ -72,16 +51,16 @@ body.dark-mode {
     box-sizing: border-box;
 }
 
+/* Окрашиваем само тело документа */
 body {
-    font-family: var(--font-sans);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
-    line-height: 1.58;
+    line-height: 1.6;
     transition: background-color var(--transition-base), color var(--transition-base);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
 }
 
+/* Контейнер всего приложения */
 .app-container {
     display: flex;
     min-height: 100vh;
@@ -89,6 +68,7 @@ body {
     transition: background-color var(--transition-base);
 }
 
+/* Главная область контента */
 .main-content {
     flex: 1;
     margin-left: var(--nav-width);
@@ -96,14 +76,11 @@ body {
     padding-top: 90px;
     max-width: calc(100% - var(--nav-width));
     min-height: 100vh;
-    background-color: var(--bg-canvas);
+    background-color: var(--bg-secondary); /* Фикс белого фона здесь */
     transition: margin-left var(--transition-base), background-color var(--transition-base);
 }
 
-body.dark-mode .main-content {
-    background-color: var(--bg-secondary);
-}
-
+/* Универсальный стиль карточек */
 .card,
 .user-info-card,
 .role-card,
@@ -114,11 +91,12 @@ body.dark-mode .main-content {
     background-color: var(--bg-primary) !important;
     border: 1px solid var(--border-color) !important;
     color: var(--text-primary) !important;
-    box-shadow: var(--shadow-sm);
-    border-radius: var(--radius-md);
-    transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base), box-shadow var(--transition-base);
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-lg);
+    transition: background-color var(--transition-base), border-color var(--transition-base), color var(--transition-base);
 }
 
+/* Стилизация уведомлений */
 .notification-card {
     background-color: var(--bg-primary) !important;
     border-bottom: 1px solid var(--border-color) !important;
@@ -135,10 +113,11 @@ body.dark-mode .main-content {
     transition: background-color var(--transition-base);
 }
 
+/* Кнопки */
 .btn-primary {
-    background: #b83848;
-    color: #ffffff !important;
-    border: 1px solid #b83848;
+    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
+    color: white !important;
+    border: none;
     padding: 12px 24px;
     border-radius: var(--radius-md);
     font-weight: 600;
@@ -147,94 +126,17 @@ body.dark-mode .main-content {
 }
 
 .btn-primary:hover {
-    opacity: 0.92;
-    box-shadow: 0 4px 14px rgba(184, 56, 72, 0.22);
+    opacity: 0.9;
 }
 
-.btn-primary:focus-visible {
-    outline: 2px solid rgba(184, 56, 72, 0.45);
-    outline-offset: 2px;
-}
-
-body.dark-mode .btn-primary {
-    background: #ffffff;
-    color: #b83848 !important;
-    border-color: #ffffff;
-}
-
-body.dark-mode .btn-primary:hover {
-    opacity: 0.92;
-}
-
-body.dark-mode .filter-btn.active {
-    background: #ffffff !important;
-    color: #b83848 !important;
-}
-
-/* Тёмная тема: на бордовом сайдбаре/шапке нельзя красить текст в тот же бордовый */
-body.dark-mode .main-nav .nav-link:hover,
-body.dark-mode .main-nav .nav-link.active {
-    color: #ffffff;
-}
-
-body.dark-mode .main-nav .nav-link.active {
-    border-left-color: #ffffff;
-}
-
-body.dark-mode .btn-logout-sidebar:hover {
-    color: #ffffff;
-}
-
-body.dark-mode .top-action-btn:hover,
-body.dark-mode .theme-toggle-btn:hover {
-    color: #ffffff;
-}
-
-body.dark-mode .top-dropdown a:hover {
-    color: #ffffff;
-}
-
-body.dark-mode .top-avatar {
-    background: #ffffff;
-    color: #b83848;
-}
-
-body.dark-mode .notification-badge {
-    background: #ffffff;
-    color: #b83848;
-    border: 2px solid #ffffff;
-}
-
-body.dark-mode .top-user-role {
-    color: rgba(255, 255, 255, 0.85);
-}
-
-/* Ссылки «К курсу» на бордовом фоне — всегда белые, без бордового hover */
-body.dark-mode .course-edit .back-link,
-body.dark-mode .test-detail-header .back-link {
-    color: #ffffff;
-}
-
-body.dark-mode .course-edit .back-link:hover,
-body.dark-mode .test-detail-header .back-link:hover {
-    color: #ffffff;
-    border-bottom-color: rgba(255, 255, 255, 0.45);
-}
-
-body.dark-mode .video-sidebar .course-link:hover {
-    border-bottom-color: rgba(255, 255, 255, 0.4);
-}
-
-body.dark-mode .popover-footer {
-    color: #ffffff;
-}
-
+/* Исправление автозаполнения в темной теме */
 input:-webkit-autofill {
     -webkit-text-fill-color: var(--text-primary) !important;
     -webkit-box-shadow: 0 0 0px 1000px var(--bg-primary) inset !important;
     transition: background-color 5000s ease-in-out 0s;
 }
 
+/* Настройки для мобилок (если навигация скрывается) */
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
