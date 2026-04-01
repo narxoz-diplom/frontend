@@ -1,24 +1,26 @@
 :root {
-    --primary-red: #b83848;
-    --primary-hover: #b83848;
-    --bg-page: #ffffff;
+    /* Светлая тема (по умолчанию) */
+    --primary-red: #e41616;
+    --primary-hover: #c91414;
+    --bg-page: #f4f6f7;
     --bg-container: #ffffff;
-    --text-dark: #b83848;
-    --text-gray: rgba(184, 56, 72, 0.7);
-    --border-color: rgba(184, 56, 72, 0.22);
-    --input-bg: #ffffff;
+    --text-dark: #1a202c;
+    --text-gray: #6b7280;
+    --border-color: #edf2f7;
+    --input-bg: #f8fafc;
     --shadow-soft: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
     --illustration-opacity: 0.45;
-    --radius-main: 12px;
+    --radius-main: 32px;
 }
 
+/* Темная тема */
 body.dark-mode {
-    --bg-page:        #b83848;
-    --bg-container:   #b83848;
-    --text-dark:      #ffffff;
-    --text-gray:      rgba(255, 255, 255, 0.75);
-    --border-color:   rgba(255, 255, 255, 0.25);
-    --input-bg:       rgba(255, 255, 255, 0.08);
+    --bg-page:        #181818;   /* Фон страницы */
+    --bg-container:   #212121;   /* Цвет карточки */
+    --text-dark:      #e8e8e8;
+    --text-gray:      #9a9a9a;
+    --border-color:   #2f2f2f;
+    --input-bg:       #181818;
     --shadow-soft:    0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
@@ -37,7 +39,7 @@ body.dark-mode {
     justify-content: center;
     background-color: var(--bg-page);
     padding: 20px;
-    font-family: var(--font-sans, 'Source Sans 3', -apple-system, sans-serif);
+    font-family: 'Inter', -apple-system, sans-serif;
     transition: background-color 0.3s ease;
 }
 
@@ -70,16 +72,16 @@ body.dark-mode {
     margin-bottom: 30px;
     transition: transform 0.5s ease;
     /* Мягкое свечение в темной теме */
-    filter: drop-shadow(0 0 15px rgba(184, 56, 72, 0.12));
+    filter: drop-shadow(0 0 15px rgba(228, 22, 22, 0.1));
 }
 
 .books-illustration:hover {
-    transform: none;
+    transform: translateY(-8px);
 }
 
 .illustration-text h2 {
-    font-size: 28px;
-    font-weight: 600;
+    font-size: 34px;
+    font-weight: 800;
     color: var(--text-dark);
     margin: 0 0 10px 0;
     letter-spacing: -1.5px;
@@ -108,8 +110,8 @@ body.dark-mode {
 }
 
 .login-card h1 {
-    font-size: 26px;
-    font-weight: 600;
+    font-size: 28px;
+    font-weight: 800;
     color: var(--text-dark);
     margin-bottom: 8px;
 }
@@ -151,7 +153,7 @@ body.dark-mode {
     outline: none;
     border-color: var(--primary-red);
     background: var(--bg-container);
-    box-shadow: 0 0 0 4px rgba(184, 56, 72, 0.18);
+    box-shadow: 0 0 0 4px rgba(228, 22, 22, 0.15);
 }
 
 /* Кнопка */
@@ -165,13 +167,13 @@ body.dark-mode {
     cursor: pointer;
     background: var(--primary-red);
     color: #ffffff;
-    box-shadow: 0 10px 20px rgba(184, 56, 72, 0.22);
+    box-shadow: 0 10px 20px rgba(228, 22, 22, 0.2);
     transition: all 0.3s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
     background: var(--primary-hover);
-    opacity: 0.94;
+    transform: translateY(-2px);
 }
 
 .login-help {
@@ -198,67 +200,4 @@ body.dark-mode {
         border-bottom: 1px solid var(--border-color);
         padding: 40px 20px;
     }
-}
-.error-alert {
-    background-color: #fff5f5; /* Очень светлый красный фон */
-    border-left: 4px solid #e53e3e; /* Яркая полоска слева */
-    padding: 12px 16px;
-    border-radius: 8px;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 20px;
-    animation: slideDown 0.3s ease-out;
-}
-
-.error-icon {
-    background-color: #e53e3e;
-    color: white;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 12px;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.error-text-wrapper {
-    display: flex;
-    flex-direction: column;
-}
-
-.error-text-wrapper strong {
-    color: #c53030;
-    font-size: 14px;
-    margin-bottom: 2px;
-}
-
-.error-text-wrapper p {
-    color: #742a2a;
-    font-size: 13px;
-    margin: 0;
-}
-
-/* Анимация плавного появления */
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Темная тема для ошибки */
-.dark-mode .error-alert {
-    background-color: rgba(229, 62, 62, 0.1);
-    border-color: #f56565;
-}
-
-.dark-mode .error-text-wrapper strong {
-    color: #feb2b2;
-}
-
-.dark-mode .error-text-wrapper p {
-    color: #fc8181;
 }
