@@ -27,11 +27,13 @@ const HomeNewsFeed = () => {
         let cancelled = false
         ;(async () => {
             try {
-                const res = await api.get('/notifications')
+                const res = await api.get('/news')
                 const list = Array.isArray(res.data) ? res.data : []
                 if (!cancelled) {
                     setItems(
-                        [...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 8)
+                        [...list]
+                            .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
+                            .slice(0, 8)
                     )
                 }
             } catch {
@@ -49,7 +51,7 @@ const HomeNewsFeed = () => {
         <div className="dashboard-section home-news-section">
             <div className="section-header">
                 <h2 className="section-title">Новости и объявления</h2>
-                <p className="section-subtitle">Последние уведомления платформы</p>
+                <p className="section-subtitle">Публикации от администрации платформы</p>
             </div>
 
             {loading ? (
@@ -57,23 +59,27 @@ const HomeNewsFeed = () => {
             ) : items.length === 0 ? (
                 <div className="home-news-empty">
                     <FiBell className="home-news-empty-icon" aria-hidden />
-                    <p>Пока нет новых объявлений. Загляните в раздел уведомлений позже.</p>
+                    <p>Пока нет опубликованных новостей.</p>
                     <Link to="/notifications" className="home-news-all-link">
-                        Перейти к уведомлениям <FiArrowRight />
+                        Личные уведомления <FiArrowRight />
                     </Link>
                 </div>
             ) : (
                 <ul className="home-news-list">
                     {items.map((n) => (
-                        <li key={n.id} className={`home-news-card ${!n.read ? 'home-news-card--unread' : ''}`}>
+                        <li key={n.id} className="home-news-card">
                             <div className="home-news-card-top">
-                                <span className="home-news-type">{n.type || 'Сообщение'}</span>
+                                <span className="home-news-type">Новость</span>
                                 <span className="home-news-time">
                                     <FiClock />
-                                    {formatTime(n.createdAt)}
+                                    {formatTime(n.publishedAt)}
                                 </span>
                             </div>
-                            <p className="home-news-message">{n.message}</p>
+                            <h3 className="home-news-title">{n.title}</h3>
+                            {n.authorName ? (
+                                <p className="home-news-author">{n.authorName}</p>
+                            ) : null}
+                            <p className="home-news-message">{n.shortDescription}</p>
                         </li>
                     ))}
                 </ul>
@@ -82,7 +88,7 @@ const HomeNewsFeed = () => {
             {!loading && items.length > 0 && (
                 <div className="home-news-footer">
                     <Link to="/notifications" className="home-news-all-link">
-                        Все уведомления <FiArrowRight />
+                        Личные уведомления <FiArrowRight />
                     </Link>
                 </div>
             )}

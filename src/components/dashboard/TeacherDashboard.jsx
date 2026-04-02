@@ -4,12 +4,13 @@ import {
     FiBook,
     FiUsers,
     FiEdit,
-    FiBarChart2,
     FiArrowRight,
     FiBookOpen,
     FiPlus,
     FiEye,
     FiFileText,
+    FiCheckCircle,
+    FiLayers,
 } from 'react-icons/fi'
 import api from '../../services/api'
 import CreateCourseModal from '../CreateCourseModal'
@@ -48,6 +49,22 @@ const TeacherDashboard = ({ view = 'home' }) => {
         [courses]
     )
 
+    const totalStudentEnrollments = useMemo(
+        () =>
+            courses.reduce((sum, c) => {
+                const ids = c.enrolledStudents
+                return sum + (Array.isArray(ids) ? ids.length : 0)
+            }, 0),
+        [courses]
+    )
+
+    const publishedCount = useMemo(
+        () => courses.filter((c) => c.status === 'PUBLISHED').length,
+        [courses]
+    )
+
+    const draftCount = useMemo(() => courses.filter((c) => c.status === 'DRAFT').length, [courses])
+
     const getStatusCfg = (status) =>
         statusConfig[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
 
@@ -67,8 +84,8 @@ const TeacherDashboard = ({ view = 'home' }) => {
                     <FiFileText />
                 </div>
                 <div className="stat-content">
-                    <p className="stat-value">{totalLessons || '—'}</p>
-                    <p className="stat-label">Уроков (всего)</p>
+                    <p className="stat-value">{totalLessons || 0}</p>
+                    <p className="stat-label">Уроков всего</p>
                 </div>
             </div>
             <div className="stat-card">
@@ -76,17 +93,26 @@ const TeacherDashboard = ({ view = 'home' }) => {
                     <FiUsers />
                 </div>
                 <div className="stat-content">
-                    <p className="stat-value">—</p>
-                    <p className="stat-label">Студентов</p>
+                    <p className="stat-value">{totalStudentEnrollments}</p>
+                    <p className="stat-label">Записей студентов</p>
                 </div>
             </div>
             <div className="stat-card">
                 <div className="stat-icon stat-icon-info">
-                    <FiBarChart2 />
+                    <FiCheckCircle />
                 </div>
                 <div className="stat-content">
-                    <p className="stat-value">—</p>
-                    <p className="stat-label">Средний прогресс</p>
+                    <p className="stat-value">{publishedCount}</p>
+                    <p className="stat-label">Опубликовано</p>
+                </div>
+            </div>
+            <div className="stat-card">
+                <div className="stat-icon stat-icon-primary">
+                    <FiLayers />
+                </div>
+                <div className="stat-content">
+                    <p className="stat-value">{draftCount}</p>
+                    <p className="stat-label">Черновиков</p>
                 </div>
             </div>
         </div>
@@ -98,7 +124,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 <div className="dashboard-page-header">
                     <h1 className="dashboard-page-title">Статистика</h1>
                     <p className="dashboard-page-desc">
-                        Сводные показатели по вашим курсам и материалам на платформе
+                        Ваши курсы, уроки, записи студентов и статусы публикации
                     </p>
                 </div>
                 {loading ? <div className="dashboard-loading-inline">Загрузка…</div> : statsBlock}

@@ -276,7 +276,9 @@ import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import StudentDashboard from './StudentDashboard'
 import TeacherDashboard from './TeacherDashboard'
+import AdminDashboard from './AdminDashboard'
 import auth from '../../config/auth'
+import { isAdmin, isTeacher } from '../../utils/roles'
 
 const Dashboard = () => {
     const location = useLocation()
@@ -286,38 +288,30 @@ const Dashboard = () => {
     const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
-        const determineRole = () => {
-            const kc = window.keycloak || auth
-
-            if (kc && kc.tokenParsed) {
-                const roles = kc.tokenParsed.realm_access?.roles || []
-
-                const isTeacher = roles.some((r) =>
-                    ['teacher', 'ROLE_TEACHER', 'Teacher'].includes(r)
-                )
-
-                setUserRole(isTeacher ? 'teacher' : 'student')
-            } else {
-                const savedUser = JSON.parse(localStorage.getItem('user'))
-                if (savedUser?.role === 'teacher') setUserRole('teacher')
-                else setUserRole('student')
-            }
-            setIsLoading(false)
+        const kc = typeof window !== 'undefined' ? window.keycloak || auth : auth
+        if (isAdmin(kc)) {
+            setUserRole('admin')
+        } else if (isTeacher(kc)) {
+            setUserRole('teacher')
+        } else {
+            const savedUser = JSON.parse(localStorage.getItem('user') || 'null')
+            if (savedUser?.role === 'teacher') setUserRole('teacher')
+            else setUserRole('student')
         }
-
-        const timer = setTimeout(determineRole, 100)
-        return () => clearTimeout(timer)
+        setIsLoading(false)
     }, [])
 
     if (isLoading) {
         return <div className="dashboard-loading">Загрузка данных...</div>
     }
 
-    return userRole === 'teacher' ? (
-        <TeacherDashboard view={view} />
-    ) : (
-        <StudentDashboard view={view} />
-    )
+    if (userRole === 'admin') {
+        return <AdminDashboard view={view} />
+    }
+    if (userRole === 'teacher') {
+        return <TeacherDashboard view={view} />
+    }
+    return <StudentDashboard view={view} />
 }
 
 export default Dashboard;

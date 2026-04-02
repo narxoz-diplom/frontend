@@ -4,10 +4,11 @@ import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
     FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor,
-    FiBarChart2, FiFolder, FiCpu
+    FiBarChart2, FiFolder, FiCpu, FiEdit3
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
+import { isAdmin } from '../utils/roles'
 import NotificationPopover from './NotificationPopover'
 import "./Navigation.css"
 
@@ -224,6 +225,15 @@ const Navigation = ({ userRoles = [] }) => {
                     <NavItem to="/files" icon={<FiFolder />} label="Файлы" isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/rag" icon={<FiCpu />} label="Поиск (RAG)" isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/notifications" icon={<FiBell />} label="Уведомления" isActive={isActive} isCollapsed={isCollapsed} />
+                    {isAdmin(window.keycloak || auth) && (
+                        <NavItem
+                            to="/admin/news"
+                            icon={<FiEdit3 />}
+                            label="Новости (админ)"
+                            isActive={isActive}
+                            isCollapsed={isCollapsed}
+                        />
+                    )}
                 </div>
 
                 <div className="nav-footer">

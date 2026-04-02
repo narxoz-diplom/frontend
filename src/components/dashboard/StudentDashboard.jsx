@@ -3,28 +3,29 @@ import { Link } from 'react-router-dom'
 import {
     FiBook,
     FiTrendingUp,
-    FiClock,
     FiCheckCircle,
     FiPlayCircle,
     FiArrowRight,
+    FiClipboard,
 } from 'react-icons/fi'
 import api from '../../services/api'
+import auth from '../../config/auth'
 import HomeNewsFeed from './HomeNewsFeed'
 import './Dashboard.css'
 
 const StudentDashboard = ({ view = 'home' }) => {
     const [stats, setStats] = useState({
-        totalCourses: 0,
+        catalogCourses: 0,
         enrolledCourses: 0,
         completedLessons: 0,
-        activeCourses: 0,
+        testAttempts: 0,
     })
     const [loading, setLoading] = useState(true)
     const [userName, setUserName] = useState('')
 
     useEffect(() => {
         loadDashboardData()
-        const kc = window.keycloak
+        const kc = window.keycloak || auth
         if (kc && kc.tokenParsed) {
             setUserName(
                 kc.tokenParsed.preferred_username || kc.tokenParsed.given_name || 'Student'
@@ -32,28 +33,41 @@ const StudentDashboard = ({ view = 'home' }) => {
         }
     }, [])
 
+    const countCompletedLessonsFromStorage = () => {
+        if (typeof Storage === 'undefined') return 0
+        try {
+            const raw = localStorage.getItem('videoProgress')
+            if (!raw) return 0
+            const progress = JSON.parse(raw)
+            return Object.values(progress).filter((p) => p && p.completed).length
+        } catch {
+            return 0
+        }
+    }
+
     const loadDashboardData = async () => {
         try {
             setLoading(true)
-            const coursesResponse = await api.get('/courses')
-            const allCourses = coursesResponse.data || []
-
-            let enrolledCount = 0
-            try {
-                const enrolledResponse = await api.get('/courses/enrolled')
-                enrolledCount = (enrolledResponse.data || []).length
-            } catch (err) {
-                console.error('Enrollment check failed', err)
-            }
-
+            const [publishedRes, enrolledRes, attemptsRes] = await Promise.all([
+                api.get('/courses/published'),
+                api.get('/courses/enrolled'),
+                api.get('/courses/my/test-attempts').catch(() => ({ data: [] })),
+            ])
+            const catalog = Array.isArray(publishedRes.data) ? publishedRes.data.length : 0
+            const enrolled = Array.isArray(enrolledRes.data) ? enrolledRes.data.length : 0
+            const attempts = Array.isArray(attemptsRes.data) ? attemptsRes.data.length : 0
             setStats({
-                totalCourses: allCourses.length,
-                enrolledCourses: enrolledCount,
-                completedLessons: 0,
-                activeCourses: enrolledCount,
+                catalogCourses: catalog,
+                enrolledCourses: enrolled,
+                completedLessons: countCompletedLessonsFromStorage(),
+                testAttempts: attempts,
             })
         } catch (err) {
             console.error(err)
+            setStats((s) => ({
+                ...s,
+                completedLessons: countCompletedLessonsFromStorage(),
+            }))
         } finally {
             setLoading(false)
         }
@@ -83,11 +97,11 @@ const StudentDashboard = ({ view = 'home' }) => {
 
             <div className="stat-card">
                 <div className="stat-icon stat-icon-info">
-                    <FiClock />
+                    <FiClipboard />
                 </div>
                 <div className="stat-content">
-                    <p className="stat-value">{stats.activeCourses}</p>
-                    <p className="stat-label">В процессе</p>
+                    <p className="stat-value">{stats.testAttempts}</p>
+                    <p className="stat-label">Попыток тестов</p>
                 </div>
             </div>
 
@@ -96,8 +110,8 @@ const StudentDashboard = ({ view = 'home' }) => {
                     <FiTrendingUp />
                 </div>
                 <div className="stat-content">
-                    <p className="stat-value">{stats.totalCourses}</p>
-                    <p className="stat-label">Всего в каталоге</p>
+                    <p className="stat-value">{stats.catalogCourses}</p>
+                    <p className="stat-label">Курсов в каталоге</p>
                 </div>
             </div>
         </div>
@@ -109,7 +123,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 <div className="dashboard-page-header">
                     <h1 className="dashboard-page-title">Статистика</h1>
                     <p className="dashboard-page-desc">
-                        Ваши обучающие показатели и доступные курсы
+                        Ваш прогресс, записи на курсы и доступный каталог
                     </p>
                 </div>
                 {loading ? (
@@ -133,10 +147,10 @@ const StudentDashboard = ({ view = 'home' }) => {
         <div className="dashboard">
             <div className="dashboard-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">Welcome back, {userName.split(' ')[0]}</h1>
+                    <h1 className="hero-title">С возвращением, {userName.split(' ')[0]}</h1>
                     <p className="hero-subtitle">
-                        У вас {stats.activeCourses} активных курсов. Ниже — новости платформы и быстрые
-                        действия. Детальная статистика — в разделе «Статистика».
+                        У вас {stats.enrolledCourses} курсов в обучении. Ниже — новости и быстрые действия.
+                        Цифры по урокам и тестам — в разделе «Статистика».
                     </p>
                 </div>
                 <div className="hero-illustration">

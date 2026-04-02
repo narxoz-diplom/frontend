@@ -11,6 +11,7 @@ import TestDetail from '../components/TestDetail'
 import VideoPlayer from '../components/VideoPlayer'
 import Files from '../components/Files'
 import Notifications from '../components/Notifications'
+import AdminNews from '../components/AdminNews'
 import Profile from '../components/Profile'
 import RAG from '../components/RAG'
 
@@ -38,6 +39,7 @@ const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
                     <Route path="/files" element={<Files />} />
                     <Route path="/rag" element={<RAG />} />
                     <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/admin/news" element={<AdminNews />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
