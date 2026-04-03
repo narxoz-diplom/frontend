@@ -1,5 +1,5 @@
 /* ================================ */
-/* SIDEBAR NAVIGATION */
+/* SIDEBAR NAVIGATION (PERFECT CENTER) */
 /* ================================ */
 .main-nav {
     position: fixed;
@@ -9,129 +9,154 @@
     height: 100vh;
     background: var(--bg-primary);
     border-right: 1px solid var(--border-color);
-    box-shadow: 4px 0 24px rgba(92, 32, 42, 0.06);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    transition: width var(--transition-base), background var(--transition-base);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .main-nav.collapsed {
     width: 80px;
 }
+
+/* Логика скрытия текста (не трогаем) */
 .collapsed .brand-text,
 .collapsed .nav-label {
     display: none;
 }
+
 /* Brand */
 .nav-brand {
-    padding: 32px 24px;
+    padding: 32px 0;
     border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
     overflow: hidden;
 }
+
 .brand-link {
     display: flex;
     align-items: center;
-    gap: 12px;
     text-decoration: none;
-    color: var(--text-primary);
+    width: 100%;
 }
+
 .brand-icon {
     font-size: 24px;
     color: var(--primary-color);
-    min-width: 32px;
+    min-width: 80px; /* Центровка в 80px */
     display: flex;
     justify-content: center;
 }
+
 .brand-text {
-    font-size: 17px;
-    font-weight: 600;
-    text-transform: none;
-    letter-spacing: -0.02em;
+    font-size: 18px;
+    font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
 }
+
 /* Collapse button */
 .collapse-btn {
     position: absolute;
-    top: 40px;
-    right: -12px;
-    width: 24px;
-    height: 24px;
+    top: 38px;
+    right: -11px;
+    width: 22px;
+    height: 22px;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    border-radius: 50%;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--primary-color);
+    color: var(--text-secondary);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 10;
     transition: 0.2s;
 }
+
 .collapse-btn:hover {
     background: var(--primary-color);
     color: #fff;
 }
+
+.collapsed .collapse-btn {
+    transform: rotate(180deg);
+}
+
 /* Nav links */
 .nav-links {
     flex: 1;
     padding: 20px 0;
     overflow-x: hidden;
     overflow-y: auto;
-    min-height: 0;
 }
+
 .nav-link {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 12px 22px;
-    margin: 2px 10px;
-    border-radius: var(--radius-sm, 6px);
+    padding: 12px 0;
+    margin: 4px 0;
     color: var(--text-secondary);
     text-decoration: none;
     font-size: 15px;
     font-weight: 500;
     border-left: 3px solid transparent;
     white-space: nowrap;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    transition: all 0.2s ease;
 }
+
 .nav-icon {
     font-size: 20px;
-    min-width: 32px;
+    min-width: 80px; /* Центровка иконки в 80px */
     display: flex;
     justify-content: center;
 }
+
 .nav-link:hover,
 .nav-link.active {
     background: var(--bg-tertiary);
     color: var(--primary-color);
 }
+
 .nav-link.active {
     border-left-color: var(--primary-color);
     font-weight: 600;
-    background: var(--bg-tertiary);
 }
-/* Nav footer */
+
+/* Nav footer & Logout */
 .nav-footer {
     padding: 20px 0;
     border-top: 1px solid var(--border-color);
     margin-top: auto;
 }
+
 .btn-logout-sidebar {
     display: flex;
     align-items: center;
     width: 100%;
-    padding: 14px 24px;
+    padding: 14px 0;
     background: transparent;
     border: none;
-    color: var(--text-secondary);
+    color: var(--text-secondary); /* Цвет как у обычных ссылок */
     font-size: 15px;
     font-weight: 500;
     cursor: pointer;
     transition: 0.2s;
 }
+
 .btn-logout-sidebar:hover {
     background: var(--bg-tertiary);
     color: var(--primary-color);
+}
+
+/* Центровка иконки выхода при закрытии */
+.btn-logout-sidebar .nav-icon {
+    min-width: 80px;
+    display: flex;
+    justify-content: center;
 }
 /* ================================ */
 /* TOP NAVBAR */

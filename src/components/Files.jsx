@@ -106,116 +106,108 @@ const Files = () => {
     return <div className="loading">Загрузка файлов...</div>
   }
 
-  return (
-    <div>
-      <div style={{ marginBottom: '20px' }}>
-        <h2>File Management</h2>
-        <p style={{ color: '#7f8c8d', marginTop: '10px' }}>
-          Просмотр и управление файлами. Для загрузки файлов перейдите к соответствующему уроку в курсе.
-        </p>
-      </div>
-      
-      {error && <div className="error">{error}</div>}
-      {success && <div className="success">{success}</div>}
+    return (
+        <div className="files-section"> {/* Добавили уникальный класс-обертку */}
+            <div className="files-header">
+                <h2>File Management</h2>
+                <p className="files-subtitle">
+                    Просмотр и управление файлами. Для загрузки файлов перейдите к соответствующему уроку в курсе.
+                </p>
+            </div>
 
-      <div className="card" style={{ backgroundColor: '#e3f2fd', border: '1px solid #2196f3', marginBottom: '20px' }}>
-        <p style={{ margin: 0, color: '#1565c0' }}>
-          <strong>Информация:</strong> Файлы теперь загружаются к урокам. 
-          Перейдите к нужному курсу и уроку, чтобы загрузить файлы.
-        </p>
-        <Link 
-          to="/courses" 
-          className="btn btn-primary"
-          style={{ marginTop: '10px', display: 'inline-block' }}
-        >
-          Перейти к курсам
-        </Link>
-      </div>
+            {error && <div className="error-banner">{error}</div>}
+            {success && <div className="success-banner">{success}</div>}
 
-      <div className="card">
-        <h3>{isAdmin(window.keycloak) ? 'Все файлы' : 'Мои файлы'} ({files.length})</h3>
-        {files.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#7f8c8d', padding: '40px' }}>
-            Файлы не найдены. Файлы загружаются к урокам в курсах.
-          </p>
-        ) : (
-          <ul className="file-list">
-            {files.map((file) => (
-              <li key={file.id} className="file-item">
-                <div className="file-info">
-                  {editingFile === file.id ? (
-                    <div className="file-edit-form">
-                      <input
-                        type="text"
-                        value={editFileName}
-                        onChange={(e) => setEditFileName(e.target.value)}
-                        className="file-edit-input"
-                        autoFocus
-                      />
+            {/* Убрали inline style, заменили на класс info-banner */}
+            <div className="info-banner">
+                <div className="info-content">
+                    <strong>Информация:</strong> Файлы теперь загружаются к урокам.
+                    Перейдите к нужному курсу и уроку, чтобы загрузить файлы.
+                </div>
+                <Link to="/courses" className="btn-primary">
+                    Перейти к курсам
+                </Link>
+            </div>
+
+            {/* Заменили "card" на "files-container-card", чтобы глобальный CSS не мешал */}
+            <div className="files-container-card">
+                <div className="card-header-flex">
+                    <h3>{isAdmin(window.keycloak) ? 'Все файлы' : 'Мои файлы'}</h3>
+                    <span className="file-count-badge">{files.length}</span>
+                </div>
+
+                {files.length === 0 ? (
+                    <div className="empty-files">
+                        <p>Файлы не найдены. Файлы загружаются к урокам в курсах.</p>
                     </div>
-                  ) : (
-                    <>
-                      <div className="file-name">{file.originalFileName}</div>
-                      <div className="file-meta">
-                        {formatFileSize(file.fileSize)} • {file.contentType} • 
-                        Загружено: {formatDate(file.uploadedAt)}
-                      </div>
-                    </>
-                  )}
-                </div>
-                <div className="file-actions">
-                  {editingFile === file.id ? (
-                    <>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleSaveEdit(file.id)}
-                      >
-                        <FiSave /> Сохранить
-                      </button>
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={handleCancelEdit}
-                      >
-                        <FiX /> Отмена
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => handleDownload(file.id, file.originalFileName)}
-                        title="Скачать"
-                      >
-                        <FiDownload />
-                      </button>
-                      {canUpload(window.keycloak) && (
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => handleEdit(file)}
-                          title="Редактировать"
-                        >
-                          <FiEdit3 />
-                        </button>
-                      )}
-                      {canUpload(window.keycloak) && (
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(file.id)}
-                          title="Удалить"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      )}
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  )
+                ) : (
+                    <ul className="file-list">
+                        {files.map((file) => (
+                            <li key={file.id} className="file-item">
+                                <div className="file-icon-wrapper">
+                                    <FiFileText />
+                                </div>
+
+                                <div className="file-content">
+                                    {editingFile === file.id ? (
+                                        <div className="file-edit-form">
+                                            <input
+                                                type="text"
+                                                value={editFileName}
+                                                onChange={(e) => setEditFileName(e.target.value)}
+                                                className="file-edit-input"
+                                                autoFocus
+                                            />
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className="file-name" title={file.originalFileName}>
+                                                {file.originalFileName}
+                                            </div>
+                                            <div className="file-meta">
+                                                <span>{formatFileSize(file.fileSize)}</span>
+                                                <span>{file.contentType.split('/')[1]?.toUpperCase() || 'FILE'}</span>
+                                                <span>{formatDate(file.uploadedAt)}</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div className="file-actions">
+                                    {editingFile === file.id ? (
+                                        <>
+                                            <button className="btn-icon" onClick={() => handleSaveEdit(file.id)} title="Сохранить">
+                                                <FiSave style={{ color: 'var(--primary-color)' }} />
+                                            </button>
+                                            <button className="btn-icon" onClick={handleCancelEdit} title="Отмена">
+                                                <FiX />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button className="btn-icon" onClick={() => handleDownload(file.id, file.originalFileName)} title="Скачать">
+                                                <FiDownload />
+                                            </button>
+                                            {canUpload(window.keycloak) && (
+                                                <button className="btn-icon" onClick={() => handleEdit(file)} title="Редактировать">
+                                                    <FiEdit3 />
+                                                </button>
+                                            )}
+                                            {canUpload(window.keycloak) && (
+                                                <button className="btn-icon danger" onClick={() => handleDelete(file.id)} title="Удалить">
+                                                    <FiTrash2 />
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </div>
+    );
 }
 
 export default Files

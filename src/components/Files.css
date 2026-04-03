@@ -1,77 +1,195 @@
-.file-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+/* --- FILES MANAGEMENT SYSTEM (MODERN REFINED) --- */
+
+.files-section {
+    max-width: 1100px; /* Чуть компактнее для лучшего восприятия */
+    margin: 0 auto;
+    padding: var(--spacing-xl) var(--spacing-md);
+    animation: fadeIn 0.4s ease-out;
 }
 
-.file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  border-bottom: 1px solid #e0e0e0;
-  transition: background-color 0.2s;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.file-item:hover {
-  background-color: #f5f5f5;
+.files-section .files-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
 }
 
-.file-info {
-  flex: 1;
-  min-width: 0;
+.files-section .files-header h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
 }
 
-.file-name {
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 5px;
-  word-break: break-word;
+/* СИНИЙ ИНФО-БАННЕР (Telegram style) */
+.files-section .info-banner {
+    background-color: rgba(33, 150, 243, 0.06); /* Мягкий синий фон */
+    color: #1565c0; /* Глубокий синий для текста */
+    padding: 16px 20px;
+    border-radius: var(--radius-lg); /* Скругленные углы */
+    margin-bottom: var(--spacing-xl);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
 }
 
-.file-meta {
-  font-size: 0.875rem;
-  color: #666;
+.files-section .info-banner p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
 }
 
-.file-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+/* Основная карточка-контейнер */
+.files-section .files-container-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl); /* Большие скругления */
+    padding: 24px;
+    box-shadow: var(--shadow-md); /* Мягкая тень */
 }
 
-.file-edit-form {
-  width: 100%;
+.files-section .card-header-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
-.file-edit-input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 1rem;
+.files-section .file-count-badge {
+    background: var(--bg-tertiary);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
 }
 
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 0.875rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .file-item {
+/* Список файлов */
+.files-section .file-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .file-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .file-edit-input {
-    width: 100%;
-  }
+    gap: 8px; /* Отступы между карточками файлов */
 }
 
+.files-section .file-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto; /* Сетка для выравнивания */
+    align-items: center;
+    padding: 12px 16px;
+    gap: 16px;
+    border-radius: var(--radius-md); /* Каждая строка — отдельная карточка */
+    background: var(--bg-primary);
+    border: 1px solid transparent; /* Граница только при ховере */
+    transition: all 0.2s ease;
+}
+
+.files-section .file-item:hover {
+    border-color: #2196f3; /* Подсветка синим при наведении */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: scale(1.01); /* Легкое увеличение */
+}
+
+/* Иконка файла */
+.files-section .file-icon-wrapper {
+    font-size: 1.5rem;
+    color: var(--text-light); /* Нейтральный цвет */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+}
+
+.files-section .file-name {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.files-section .file-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 10px;
+}
+
+/* СТИЛИЗАЦИЯ КНОПОК (Маленькие и компактные) */
+.files-section .file-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 16px;
+}
+
+.files-section .btn-icon {
+    width: 32px;  /* Маленькие кнопки */
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px; /* Квадратные скругления */
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.files-section .btn-icon:hover {
+    border-color: #2196f3;
+    color: #2196f3; /* Синий при ховере */
+    transform: translateY(-1px);
+}
+
+.files-section .btn-icon.danger:hover {
+    background: rgba(228, 22, 22, 0.06);
+    color: #e41616;
+    border-color: #ffcccc;
+}
+
+/* Форма редактирования */
+.files-section .file-edit-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #2196f3;
+    border-radius: 4px;
+    font-size: 14px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+/* Адаптив */
+@media (max-width: 768px) {
+    .files-section .file-item {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+
+    .files-section .file-icon-wrapper {
+        display: none;
+    }
+
+    .files-section .file-actions {
+        border-top: 1px solid var(--border-color);
+        padding-top: 10px;
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-end;
+    }
+
+    .files-section .info-banner {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
