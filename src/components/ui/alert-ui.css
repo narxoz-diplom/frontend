@@ -1,212 +1,213 @@
-/* Модальное подтверждение и тосты — только белый и бордовый */
+/* ==========================================================================
+   Модальное подтверждение и тосты — Чистый стиль (Белый + Бордовый)
+   ========================================================================== */
 
+/* Оверлей (фон за модальным окном) */
 .alert-modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-md);
-  background: rgba(184, 56, 72, 0.35);
-  backdrop-filter: blur(2px);
-  animation: alert-overlay-in 0.2s ease;
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+    /* ЗАМЕНА: Нейтральный темный фон вместо розового */
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(3px);
+    animation: alert-overlay-in 0.2s ease;
 }
 
 @keyframes alert-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
+/* Тело модального окна */
 .alert-modal {
-  width: 100%;
-  max-width: 420px;
-  background: #ffffff;
-  color: #b83848;
-  border: 1px solid #b83848;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(184, 56, 72, 0.15);
-  overflow: hidden;
-  animation: alert-modal-in 0.25s ease;
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    /* Текст по умолчанию теперь темный для чистоты интерфейса */
+    color: #1a1a1a;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    /* Чистая глубокая тень вместо красной */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: alert-modal-in 0.25s ease;
 }
 
 @keyframes alert-modal-in {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
+/* Акцентная полоска сверху */
 .alert-modal__accent {
-  height: 4px;
-  background: #b83848;
+    height: 4px;
+    background: rgba(209, 5, 5, 0.93);
 }
 
 .alert-modal__accent--danger {
-  background: #b83848;
+    background: #db3434;
 }
 
 .alert-modal__body {
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
+    padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-md);
 }
 
+/* Заголовок — Бордовый */
 .alert-modal__title {
-  margin: 0 0 var(--spacing-sm);
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: #b83848;
+    margin: 0 0 var(--spacing-sm);
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #e41616;
 }
 
+/* Основной текст — Нейтральный серый */
 .alert-modal__message {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: rgba(184, 56, 72, 0.82);
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+    color: #4b5563;
 }
 
+/* Секция действий (кнопок) */
 .alert-modal__actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  justify-content: flex-end;
-  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
-  border-top: 1px solid rgba(184, 56, 72, 0.2);
-  background: #ffffff;
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
+    /* Светлая разделительная линия */
+    border-top: 1px solid #f3f4f6;
+    background: #ffffff;
 }
 
+/* Общие стили кнопок */
 .alert-modal__btn {
-  padding: 10px 18px;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: opacity 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
+/* Кнопка "Отмена" (Ghost) */
 .alert-modal__btn--ghost {
-  background: #ffffff;
-  color: #b83848;
-  border-color: #b83848;
+    background: #ffffff;
+    color: #6b7280;
+    border-color: #d1d5db;
 }
 
 .alert-modal__btn--ghost:hover {
-  background: rgba(184, 56, 72, 0.06);
+    background: #f9fafb;
+    color: rgba(209, 5, 5, 0.93);
+    border-color: #db3434;
 }
 
-.alert-modal__btn--primary {
-  background: #b83848;
-  color: #ffffff;
-  border-color: #b83848;
-}
-
-.alert-modal__btn--primary:hover {
-  opacity: 0.92;
-}
-
+/* Кнопка "Изменить" (Primary/Danger) */
+.alert-modal__btn--primary,
 .alert-modal__btn--danger {
-  background: #b83848;
-  color: #ffffff;
-  border-color: #b83848;
+    background: #db3434;
+    color: #ffffff;
+    border-color: #db3434;
 }
 
+.alert-modal__btn--primary:hover,
 .alert-modal__btn--danger:hover {
-  opacity: 0.92;
+    background: rgba(209, 5, 5, 0.93); /* Затемненный бордовый при наведении */
+    box-shadow: 0 4px 12px rgba(184, 56, 72, 0.25);
 }
 
-/* Тосты */
+/* ==========================================================================
+   Тосты (Уведомления)
+   ========================================================================== */
+
 .toast-stack {
-  position: fixed;
-  z-index: 10001;
-  top: 88px;
-  right: var(--spacing-lg);
-  left: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-  pointer-events: none;
+    position: fixed;
+    z-index: 10001;
+    top: 88px;
+    right: var(--spacing-lg);
+    left: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    pointer-events: none;
 }
 
 @media (min-width: 640px) {
-  .toast-stack {
-    left: auto;
-    max-width: 400px;
-  }
+    .toast-stack {
+        left: auto;
+        max-width: 400px;
+    }
 }
 
 .toast {
-  pointer-events: auto;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid #b83848;
-  background: #ffffff;
-  color: #b83848;
-  box-shadow: 0 4px 20px rgba(184, 56, 72, 0.15);
-  animation: toast-in 0.28s ease;
-  max-width: 100%;
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-lg);
+    /* Акцентная рамка только слева для чистоты */
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #db3434;
+    background: #ffffff;
+    color: #1a1a1a;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    animation: toast-in 0.28s ease;
+    max-width: 100%;
 }
 
 @keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateX(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .toast__icon {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
-  color: #b83848;
-}
-
-.toast__icon--success,
-.toast__icon--error,
-.toast__icon--info {
-  color: #b83848;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    color: #db3434;
 }
 
 .toast__text {
-  flex: 1;
-  font-size: 14px;
-  line-height: 1.45;
-  min-width: 0;
-  color: #b83848;
-}
-
-.toast--success,
-.toast--error,
-.toast--info {
-  border-color: #b83848;
-  background: #ffffff;
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.45;
+    min-width: 0;
+    color: #374151;
 }
 
 .toast__close {
-  flex-shrink: 0;
-  padding: 2px;
-  border: none;
-  background: transparent;
-  color: #b83848;
-  cursor: pointer;
-  border-radius: 4px;
-  line-height: 0;
-  opacity: 0.75;
+    flex-shrink: 0;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
 }
 
 .toast__close:hover {
-  opacity: 1;
-  background: rgba(184, 56, 72, 0.08);
+    background: #f3f4f6;
+    color: rgba(209, 5, 5, 0.93);
 }

@@ -284,7 +284,7 @@ const Courses = () => {
                   {course.description || 'No description available'}
                 </p>
                 <div className="course-meta">
-                  <span className="course-status">{course.status}</span>
+                  <span className={`course-status ${course.status}`}>{course.status}</span>
                   <div className="course-stats">
                     {course.lessons && (
                       <span className="course-lessons">
