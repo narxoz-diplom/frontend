@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   FiFile,
@@ -45,6 +45,8 @@ const mapApiOutlineItem = (o, i) => {
   }
 }
 
+const courseEditGenSessionKey = (courseId) => `courseEditGen:${courseId}`
+
 const CourseEdit = () => {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -81,6 +83,7 @@ const CourseEdit = () => {
   const [outlineLoading, setOutlineLoading] = useState(false)
   const [lessonsJobId, setLessonsJobId] = useState(null)
   const [jobStatus, setJobStatus] = useState(null)
+  const [jobProgress, setJobProgress] = useState(null)
   const [urlInput, setUrlInput] = useState('')
   const [ingestingUrl, setIngestingUrl] = useState(false)
   const [questionCount, setQuestionCount] = useState(8)
@@ -90,6 +93,55 @@ const CourseEdit = () => {
   useEffect(() => {
     loadData()
   }, [id])
+
+  useLayoutEffect(() => {
+    if (!id) return
+    try {
+      const raw = sessionStorage.getItem(courseEditGenSessionKey(id))
+      if (!raw) return
+      const s = JSON.parse(raw)
+      if (Array.isArray(s.selectedFileIds) && s.selectedFileIds.length > 0) {
+        setSelectedFileIds(new Set(s.selectedFileIds))
+      }
+      if (s.outlineDraft && Array.isArray(s.outlineDraft) && s.outlineDraft.length > 0) {
+        setOutlineDraft(s.outlineDraft)
+      }
+      if (s.genParams && typeof s.genParams === 'object') {
+        setGenParams((prev) => ({ ...prev, ...s.genParams }))
+      }
+      if (s.lessonsJobId) {
+        setLessonsJobId(s.lessonsJobId)
+        setJobStatus(s.jobStatus || 'PENDING')
+      }
+    } catch (e) {
+      console.warn('course edit gen session restore', e)
+    }
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    const hasDraft = outlineDraft && outlineDraft.length > 0
+    const hasJob = !!lessonsJobId
+    const hasFiles = selectedFileIds.size > 0
+    if (!hasDraft && !hasJob && !hasFiles) {
+      sessionStorage.removeItem(courseEditGenSessionKey(id))
+      return
+    }
+    try {
+      sessionStorage.setItem(
+        courseEditGenSessionKey(id),
+        JSON.stringify({
+          selectedFileIds: Array.from(selectedFileIds),
+          outlineDraft,
+          genParams,
+          lessonsJobId,
+          jobStatus
+        })
+      )
+    } catch (e) {
+      console.warn('course edit gen session save', e)
+    }
+  }, [id, selectedFileIds, outlineDraft, genParams, lessonsJobId, jobStatus])
 
   useEffect(() => {
     if (!showEmailsModal) return
@@ -268,27 +320,50 @@ const CourseEdit = () => {
 
   useEffect(() => {
     if (!lessonsJobId) return undefined
-    const timer = setInterval(async () => {
+    let timerId
+    const tick = async () => {
       try {
         const { data } = await api.get(`/courses/${id}/lessons/generation-jobs/${lessonsJobId}`)
         setJobStatus(data.status)
+        setJobProgress({
+          total: data.totalLessons ?? null,
+          completed: data.completedLessons ?? null,
+          currentTitle: data.currentLessonTitle ?? null
+        })
         if (data.status === 'COMPLETED') {
-          clearInterval(timer)
+          clearInterval(timerId)
           setLessonsJobId(null)
           setJobStatus(null)
+          setJobProgress(null)
           setOutlineDraft(null)
+          try {
+            sessionStorage.removeItem(courseEditGenSessionKey(id))
+          } catch (_) {
+            /* ignore */
+          }
           loadData()
         }
         if (data.status === 'FAILED') {
-          clearInterval(timer)
+          clearInterval(timerId)
           setLessonsJobId(null)
-          setError(data.errorMessage || 'Фоновая генерация уроков завершилась с ошибкой')
+          setJobProgress(null)
+          const partial =
+            data.completedLessons != null &&
+            data.totalLessons != null &&
+            data.completedLessons > 0 ? ` Уже сохранено уроков: ${data.completedLessons} из ${data.totalLessons}.`
+              : ''
+          setError(
+            (data.errorMessage || 'Фоновая генерация уроков завершилась с ошибкой') + partial
+          )
+          loadData()
         }
       } catch (e) {
         console.error(e)
       }
-    }, 2000)
-    return () => clearInterval(timer)
+    }
+    timerId = setInterval(tick, 2000)
+    tick()
+    return () => clearInterval(timerId)
   }, [lessonsJobId, id])
 
   const handleApproveLessonsJob = async () => {
@@ -317,7 +392,7 @@ const CourseEdit = () => {
       })
       setLessonsJobId(data.jobId)
       setJobStatus('PENDING')
-      setOutlineDraft(null)
+      setJobProgress({ total: null, completed: 0, currentTitle: null })
     } catch (err) {
       console.error('job:', err)
       setError(err.response?.data?.message || 'Не удалось запустить генерацию уроков')
@@ -786,8 +861,20 @@ const CourseEdit = () => {
                 </strong>
                 <span className="gen-job-banner__meta">
                   Статус: <code>{jobStatus || 'PENDING'}</code>
+                  {jobProgress != null &&
+                  jobProgress.total != null &&
+                  jobProgress.completed != null &&
+                  jobProgress.total > 0 ? (
+                    <>
+                      {' '}
+                      — уроки: {jobProgress.completed}/{jobProgress.total}
+                      {jobProgress.currentTitle
+                        ? ` («${jobProgress.currentTitle.slice(0, 60)}${jobProgress.currentTitle.length > 60 ? '…' : ''}»)`
+                        : ''}
+                    </>
+                  ) : null}
                   {jobStatus === 'RUNNING' || jobStatus === 'PENDING'
-                    ? ' — страницу можно не закрывать, список уроков обновится сам.'
+                    ? ' — после обновления страницы прогресс восстановится; уже созданные уроки остаются в курсе.'
                     : null}
                 </span>
               </div>
