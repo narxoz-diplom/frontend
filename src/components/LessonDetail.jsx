@@ -22,6 +22,7 @@ import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import LessonChat from './LessonChat'
 import { pickLocalized } from '../i18n/localize'
+import { useTranslation } from 'react-i18next'
 import './LessonDetail.css'
 
 /** Извлекает вставки картинок из Markdown и HTML для редактора конспекта */
@@ -56,6 +57,7 @@ function removeFirstOccurrence(haystack, needle) {
 }
 
 const LessonDetail = () => {
+  const { t } = useTranslation()
   const { courseId, lessonId } = useParams()
   const navigate = useNavigate()
   const { confirm } = useAlert()
@@ -106,7 +108,7 @@ const LessonDetail = () => {
       setLoading(false)
     } catch (err) {
       console.error('Error loading lesson:', err)
-      setError('Failed to load lesson')
+      setError(t('coursePage.loadLessonsError'))
       setLoading(false)
     }
   }
@@ -151,14 +153,14 @@ const LessonDetail = () => {
       setError(null)
     } catch (err) {
       console.error('Error saving content:', err)
-      setError('Failed to save content')
+      setError(t('lessonPage.saveError'))
     }
   }
 
   const handleVideoUpload = async (e) => {
     e.preventDefault()
     if (!newVideo.file || !newVideo.title) {
-      setError('Please provide video file and title')
+      setError(t('lessonPage.requiredVideoFields'))
       return
     }
     
@@ -204,7 +206,7 @@ const LessonDetail = () => {
       } else if (err.response?.data?.message) {
         setError(err.response.data.message)
       } else {
-        setError('Failed to upload video. Please try again.')
+        setError(t('lessonPage.uploadVideoError'))
       }
     } finally {
       setUploadingVideo(false)
@@ -251,16 +253,16 @@ const LessonDetail = () => {
       window.URL.revokeObjectURL(url)
     } catch (err) {
       console.error('Error downloading file:', err)
-      setError('Failed to download file. Please try again.')
+      setError(t('filesPage.downloadError'))
     }
   }
 
   const handleDeleteVideo = async (videoId) => {
     const ok = await confirm({
-      title: 'Удаление видео',
-      message: 'Удалить это видео?',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('lessonPage.deleteVideoTitle'),
+      message: t('lessonPage.deleteVideoMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
@@ -272,7 +274,7 @@ const LessonDetail = () => {
       setError(null)
     } catch (err) {
       console.error('Error deleting video:', err)
-      setError('Ошибка при удалении видео')
+      setError(t('lessonPage.deleteVideoError'))
     }
   }
 
@@ -287,10 +289,10 @@ const LessonDetail = () => {
 
   const handleDeleteFile = async (fileId) => {
     const ok = await confirm({
-      title: 'Удаление файла',
-      message: 'Удалить этот файл?',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('filesPage.deleteTitle'),
+      message: t('filesPage.deleteMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
@@ -302,16 +304,16 @@ const LessonDetail = () => {
       setError(null)
     } catch (err) {
       console.error('Error deleting file:', err)
-      setError('Ошибка при удалении файла')
+      setError(t('lessonPage.deleteFileError'))
     }
   }
 
   if (loading) {
-    return <div className="loading">Loading lesson...</div>
+    return <div className="loading">{t('common.loading')}</div>
   }
 
   if (!lesson || !course) {
-    return <div className="error">Lesson not found</div>
+    return <div className="error">{t('coursePage.loadLessonsError')}</div>
   }
 
   const currentIndex = getCurrentLessonIndex()
@@ -323,23 +325,23 @@ const LessonDetail = () => {
     <div className="lesson-detail lesson-detail--v2">
       <header className="lesson-page__intro">
         <Link to={`/courses/${courseId}`} className="lesson-page__back">
-          <FiArrowLeft aria-hidden /> К курсу
+          <FiArrowLeft aria-hidden /> {t('lessonPage.backToCourse')}
         </Link>
         <p className="lesson-page__kicker">
-          Урок {currentIndex + 1} из {lessons.length}
+          {t('lessonPage.lessonOf', { current: currentIndex + 1, total: lessons.length })}
           {pickLocalized(course, 'title') ? ` · ${pickLocalized(course, 'title')}` : ''}
         </p>
         <div className="lesson-page__title-row">
           <h1 className="lesson-page__title">{pickLocalized(lesson, 'title')}</h1>
           {lessonProgress.completed && (
             <span className="lesson-page__badge lesson-page__badge--done">
-              <FiCheckCircle aria-hidden /> Пройдено
+              <FiCheckCircle aria-hidden /> {t('lessonPage.completed')}
             </span>
           )}
         </div>
         {pickLocalized(lesson, 'description') && <p className="lesson-page__lead">{pickLocalized(lesson, 'description')}</p>}
         {videos.length > 0 && (
-          <div className="lesson-page__progress" aria-label="Прогресс по видео">
+          <div className="lesson-page__progress" aria-label={t('coursePage.progress')}>
             <div className="lesson-page__progress-track">
               <div
                 className="lesson-page__progress-fill"
@@ -360,9 +362,9 @@ const LessonDetail = () => {
           <div className="lesson-notes-section lesson-panel">
             <div className="section-header">
               <div className="section-header__text">
-                <span className="section-header__eyebrow">Материал</span>
+                <span className="section-header__eyebrow">{t('lessonPage.material')}</span>
                 <h2>
-                  <FiBook aria-hidden /> Конспект
+                  <FiBook aria-hidden /> {t('lessonPage.notes')}
                 </h2>
               </div>
               {canEdit && (
@@ -379,11 +381,11 @@ const LessonDetail = () => {
                 >
                   {isEditingContent ? (
                     <>
-                      <FiX /> Cancel
+                      <FiX /> {t('common.cancel')}
                     </>
                   ) : (
                     <>
-                      <FiEdit3 /> Edit
+                      <FiEdit3 /> {t('common.edit')}
                     </>
                   )}
                 </button>
@@ -395,15 +397,13 @@ const LessonDetail = () => {
                 <textarea
                   value={editedContent}
                   onChange={(e) => setEditedContent(e.target.value)}
-                  placeholder="Enter lesson notes in Markdown format..."
+                  placeholder={t('lessonPage.notes')}
                   className="content-textarea"
                   rows="20"
                 />
                 {embeddedImagesInEditor.length > 0 && (
-                  <div className="markdown-embedded-images" aria-label="Картинки в тексте">
-                    <p className="markdown-embedded-images__title">
-                      Картинки в тексте — нажмите, чтобы удалить вставку из текста
-                    </p>
+                  <div className="markdown-embedded-images" aria-label="Markdown images">
+                    <p className="markdown-embedded-images__title">Markdown images</p>
                     <ul className="markdown-embedded-images__list">
                       {embeddedImagesInEditor.map((img, idx) => (
                         <li key={`embed-img-${idx}-${img.url.slice(0, 24)}`} className="markdown-embedded-images__item">
@@ -429,9 +429,9 @@ const LessonDetail = () => {
                             type="button"
                             className="btn btn-secondary btn-sm markdown-embedded-images__remove"
                             onClick={() => handleRemoveEmbeddedImage(img.fullMatch)}
-                            title="Удалить эту картинку из текста"
+                            title={t('common.delete')}
                           >
-                            <FiTrash2 /> Удалить
+                            <FiTrash2 /> {t('common.delete')}
                           </button>
                         </li>
                       ))}
@@ -440,7 +440,7 @@ const LessonDetail = () => {
                 )}
                 <div className="editor-actions">
                   <button className="btn btn-primary" onClick={handleSaveContent}>
-                    <FiSave /> Save Notes
+                    <FiSave /> {t('lessonPage.saveNotes')}
                   </button>
                   <button 
                     className="btn btn-secondary"
@@ -449,7 +449,7 @@ const LessonDetail = () => {
                       setEditedContent(lesson.content || '')
                     }}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </div>
@@ -465,13 +465,13 @@ const LessonDetail = () => {
                   </div>
                 ) : (
                   <div className="empty-notes">
-                    <p>No notes available for this lesson.</p>
+                    <p>{t('lessonPage.noNotes')}</p>
                     {canEdit && (
                       <button
                         className="btn btn-primary"
                         onClick={() => setIsEditingContent(true)}
                       >
-                        <FiEdit3 /> Add Notes
+                        <FiEdit3 /> {t('lessonPage.addNotes')}
                       </button>
                     )}
                   </div>
@@ -484,9 +484,9 @@ const LessonDetail = () => {
           <div className="lesson-videos-section lesson-panel">
             <div className="section-header">
               <div className="section-header__text">
-                <span className="section-header__eyebrow">Медиа</span>
+                <span className="section-header__eyebrow">{t('lessonPage.media')}</span>
                 <h2>
-                  <FiPlay aria-hidden /> Видео ({videos.length})
+                  <FiPlay aria-hidden /> {t('lessonPage.videos')} ({videos.length})
                 </h2>
               </div>
               {canEdit && (
@@ -496,11 +496,11 @@ const LessonDetail = () => {
                 >
                   {showVideoForm ? (
                     <>
-                      <FiX /> Cancel
+                      <FiX /> {t('common.cancel')}
                     </>
                   ) : (
                     <>
-                      <FiUpload /> Add Video
+                      <FiUpload /> {t('lessonPage.addVideo')}
                     </>
                   )}
                 </button>
@@ -511,27 +511,27 @@ const LessonDetail = () => {
               <div className="video-upload-form">
                 <form onSubmit={handleVideoUpload}>
                   <div className="form-group">
-                    <label>Video Title *</label>
+                    <label>{t('lessonPage.videoTitle')} *</label>
                     <input
                       type="text"
                       value={newVideo.title}
                       onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
                       required
-                      placeholder="Enter video title"
+                      placeholder={t('lessonPage.videoTitle')}
                     />
                   </div>
                   <div className="form-group">
-                    <label>Description</label>
+                    <label>{t('coursePage.lessonDescription')}</label>
                     <textarea
                       value={newVideo.description}
                       onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
                       rows="3"
-                      placeholder="Enter video description"
+                      placeholder={t('lessonPage.videoDescription')}
                     />
                   </div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Order Number</label>
+                      <label>{t('coursePage.orderNumber')}</label>
                       <input
                         type="number"
                         value={newVideo.orderNumber}
@@ -540,7 +540,7 @@ const LessonDetail = () => {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Video File *</label>
+                      <label>{t('lessonPage.videoFile')} *</label>
                       <input
                         type="file"
                         accept="video/*"
@@ -557,11 +557,11 @@ const LessonDetail = () => {
                     >
                       {uploadingVideo ? (
                         <>
-                          <FiClock /> Uploading...
+                          <FiClock /> {t('lessonPage.uploading')}
                         </>
                       ) : (
                         <>
-                          <FiUpload /> Upload Video
+                          <FiUpload /> {t('lessonPage.uploadVideo')}
                         </>
                       )}
                     </button>
@@ -573,7 +573,7 @@ const LessonDetail = () => {
                         setNewVideo({ title: '', description: '', orderNumber: videos.length + 1, file: null })
                       }}
                     >
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                   </div>
                 </form>
@@ -583,13 +583,13 @@ const LessonDetail = () => {
             {videos.length === 0 ? (
               <div className="empty-state">
                 <FiPlay className="empty-icon" />
-                <p>No videos available for this lesson.</p>
+                <p>{t('lessonPage.noVideos')}</p>
                 {canEdit && (
                   <button
                     className="btn btn-primary"
                     onClick={() => setShowVideoForm(true)}
                   >
-                    <FiUpload /> Add First Video
+                    <FiUpload /> {t('lessonPage.addFirstVideo')}
                   </button>
                 )}
               </div>
@@ -642,7 +642,7 @@ const LessonDetail = () => {
                             e.stopPropagation()
                             handleDeleteVideo(video.id)
                           }}
-                          title="Удалить видео"
+                          title={t('common.delete')}
                         >
                           <FiTrash2 />
                         </button>
@@ -658,14 +658,14 @@ const LessonDetail = () => {
           <div className="lesson-files-section lesson-panel">
             <div className="section-header">
               <div className="section-header__text">
-                <span className="section-header__eyebrow">Вложения</span>
+                <span className="section-header__eyebrow">{t('lessonPage.attachments')}</span>
                 <h2>
-                  <FiFile aria-hidden /> Файлы ({files.length})
+                  <FiFile aria-hidden /> {t('common.files')} ({files.length})
                 </h2>
               </div>
               {canEdit && (
                 <label className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
-                  <FiUpload /> Add File
+                  <FiUpload /> {t('lessonPage.addFile')}
                   <input
                     type="file"
                     style={{ display: 'none' }}
@@ -687,13 +687,12 @@ const LessonDetail = () => {
                         } catch (err) {
                           console.error('Error uploading file:', err)
                           if (err.response?.status === 413 || err.response?.status === 400) {
-                            const errorMessage = err.response?.data?.message || 
-                              'File size too large. Maximum allowed size is 2GB. Please upload a smaller file.'
+                            const errorMessage = err.response?.data?.message || t('lessonPage.uploadVideoError')
                             setError(errorMessage)
                           } else if (err.response?.data?.message) {
                             setError(err.response.data.message)
                           } else {
-                            setError('Failed to upload file. Please try again.')
+                            setError(t('filesPage.uploadError'))
                           }
                         }
                       }
@@ -706,7 +705,7 @@ const LessonDetail = () => {
             {files.length === 0 ? (
               <div className="empty-state">
                 <FiFile className="empty-icon" />
-                <p>No files available for this lesson.</p>
+                <p>{t('lessonPage.noFiles')}</p>
               </div>
             ) : (
               <div className="files-list">
@@ -736,7 +735,7 @@ const LessonDetail = () => {
                           e.stopPropagation()
                           handleDeleteFile(file.id)
                         }}
-                        title="Удалить файл"
+                        title={t('common.delete')}
                       >
                         <FiTrash2 />
                       </button>
@@ -750,16 +749,16 @@ const LessonDetail = () => {
 
         <aside className="lesson-sidebar lesson-rail">
           <div className="sidebar-section lesson-rail__card">
-            <p className="lesson-rail__eyebrow">Курс</p>
+            <p className="lesson-rail__eyebrow">{t('lessonPage.course')}</p>
             <h3 className="lesson-rail__title">{pickLocalized(course, 'title')}</h3>
             <Link to={`/courses/${courseId}`} className="lesson-rail__link">
-              Открыть страницу курса
+              {t('lessonPage.openCoursePage')}
             </Link>
           </div>
 
           <div className="sidebar-section lesson-rail__card">
-            <p className="lesson-rail__eyebrow">Навигация</p>
-            <h3 className="lesson-rail__title lesson-rail__title--sm">Все уроки</h3>
+            <p className="lesson-rail__eyebrow">{t('lessonPage.navigation')}</p>
+            <h3 className="lesson-rail__title lesson-rail__title--sm">{t('lessonPage.allLessons')}</h3>
             <div className="lessons-nav">
               {lessons.map((l, index) => (
                 <Link
@@ -790,7 +789,7 @@ const LessonDetail = () => {
                 to={`/courses/${courseId}/lessons/${prevLesson.id}`}
                 className="nav-btn prev-btn"
               >
-                <FiChevronLeft aria-hidden /> Предыдущий
+                <FiChevronLeft aria-hidden /> {t('lessonPage.previous')}
               </Link>
             )}
             {nextLesson && (
@@ -798,7 +797,7 @@ const LessonDetail = () => {
                 to={`/courses/${courseId}/lessons/${nextLesson.id}`}
                 className="nav-btn next-btn"
               >
-                Следующий <FiChevronRight aria-hidden />
+                {t('lessonPage.next')} <FiChevronRight aria-hidden />
               </Link>
             )}
           </div>

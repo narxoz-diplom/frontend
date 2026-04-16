@@ -11,9 +11,11 @@ import {
 import api from '../../services/api'
 import auth from '../../config/auth'
 import HomeNewsFeed from './HomeNewsFeed'
+import { useTranslation } from 'react-i18next'
 import './Dashboard.css'
 
 const StudentDashboard = ({ view = 'home' }) => {
+    const { t } = useTranslation()
     const [stats, setStats] = useState({
         catalogCourses: 0,
         enrolledCourses: 0,
@@ -81,7 +83,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{stats.enrolledCourses}</p>
-                    <p className="stat-label">Мои курсы</p>
+                    <p className="stat-label">{t('dashboard.myCourses')}</p>
                 </div>
             </div>
 
@@ -91,7 +93,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{stats.completedLessons}</p>
-                    <p className="stat-label">Завершено уроков</p>
+                    <p className="stat-label">{t('dashboard.completedLessons')}</p>
                 </div>
             </div>
 
@@ -101,7 +103,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{stats.testAttempts}</p>
-                    <p className="stat-label">Попыток тестов</p>
+                    <p className="stat-label">{t('dashboard.testAttempts')}</p>
                 </div>
             </div>
 
@@ -111,7 +113,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{stats.catalogCourses}</p>
-                    <p className="stat-label">Курсов в каталоге</p>
+                    <p className="stat-label">{t('dashboard.catalogCourses')}</p>
                 </div>
             </div>
         </div>
@@ -121,13 +123,13 @@ const StudentDashboard = ({ view = 'home' }) => {
         return (
             <div className="dashboard dashboard--stats-only">
                 <div className="dashboard-page-header">
-                    <h1 className="dashboard-page-title">Статистика</h1>
+                    <h1 className="dashboard-page-title">{t('dashboard.statsTitle')}</h1>
                     <p className="dashboard-page-desc">
-                        Ваш прогресс, записи на курсы и доступный каталог
+                        {t('dashboard.studentStatsDesc')}
                     </p>
                 </div>
                 {loading ? (
-                    <div className="dashboard-loading-inline">Загрузка…</div>
+                    <div className="dashboard-loading-inline">{t('common.loading')}</div>
                 ) : (
                     statsBlock
                 )}
@@ -138,7 +140,7 @@ const StudentDashboard = ({ view = 'home' }) => {
     if (loading) {
         return (
             <div className="dashboard">
-                <div className="loading">Загрузка…</div>
+                <div className="loading">{t('common.loading')}</div>
             </div>
         )
     }
@@ -147,10 +149,9 @@ const StudentDashboard = ({ view = 'home' }) => {
         <div className="dashboard">
             <div className="dashboard-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">С возвращением, {userName.split(' ')[0]}</h1>
+                    <h1 className="hero-title">{t('dashboard.welcomeBack', { name: userName.split(' ')[0] })}</h1>
                     <p className="hero-subtitle">
-                        У вас {stats.enrolledCourses} курсов в обучении. Ниже — новости и быстрые действия.
-                        Цифры по урокам и тестам — в разделе «Статистика».
+                        {t('dashboard.studentSubtitle', { count: stats.enrolledCourses })}
                     </p>
                 </div>
                 <div className="hero-illustration">
@@ -164,17 +165,17 @@ const StudentDashboard = ({ view = 'home' }) => {
 
             <div className="dashboard-section">
                 <div className="section-header">
-                    <h2 className="section-title">Быстрые действия</h2>
+                    <h2 className="section-title">{t('dashboard.quickActions')}</h2>
                 </div>
                 <div className="dashboard-grid">
                     <Link to="/courses" className="dashboard-card">
-                        К каталогу курсов <FiArrowRight />
+                        {t('dashboard.toCatalog')} <FiArrowRight />
                     </Link>
                     <Link to="/files" className="dashboard-card">
-                        Мои файлы <FiArrowRight />
+                        {t('dashboard.myFiles')} <FiArrowRight />
                     </Link>
                     <Link to="/stats" className="dashboard-card">
-                        Сводная статистика <FiArrowRight />
+                        {t('dashboard.summaryStats')} <FiArrowRight />
                     </Link>
                 </div>
             </div>

@@ -15,15 +15,12 @@ import {
 import api from '../../services/api'
 import CreateCourseModal from '../CreateCourseModal'
 import HomeNewsFeed from './HomeNewsFeed'
+import { useTranslation } from 'react-i18next'
+import { pickLocalized } from '../../i18n/localize'
 import './Dashboard.css'
 
-const statusConfig = {
-    PUBLISHED: { label: 'Опубликован', color: '#16a34a', bg: '#dcfce7' },
-    DRAFT: { label: 'Черновик', color: '#d97706', bg: '#fef3c7' },
-    ARCHIVED: { label: 'Архив', color: '#64748b', bg: '#f1f5f9' },
-}
-
 const TeacherDashboard = ({ view = 'home' }) => {
+    const { t } = useTranslation()
     const [courses, setCourses] = useState([])
     const [loading, setLoading] = useState(true)
     const [showCreateModal, setShowCreateModal] = useState(false)
@@ -65,8 +62,14 @@ const TeacherDashboard = ({ view = 'home' }) => {
 
     const draftCount = useMemo(() => courses.filter((c) => c.status === 'DRAFT').length, [courses])
 
-    const getStatusCfg = (status) =>
-        statusConfig[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
+    const getStatusCfg = (status) => {
+        const map = {
+            PUBLISHED: { label: t('dashboard.published'), color: '#16a34a', bg: '#dcfce7' },
+            DRAFT: { label: 'Draft', color: '#d97706', bg: '#fef3c7' },
+            ARCHIVED: { label: 'Archived', color: '#64748b', bg: '#f1f5f9' },
+        }
+        return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
+    }
 
     const statsBlock = (
         <div className="dashboard-stats" id="dashboard-stats">
@@ -76,7 +79,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{courses.length}</p>
-                    <p className="stat-label">Мои курсы</p>
+                    <p className="stat-label">{t('dashboard.myCourses')}</p>
                 </div>
             </div>
             <div className="stat-card">
@@ -85,7 +88,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{totalLessons || 0}</p>
-                    <p className="stat-label">Уроков всего</p>
+                    <p className="stat-label">{t('dashboard.totalLessons')}</p>
                 </div>
             </div>
             <div className="stat-card">
@@ -94,7 +97,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{totalStudentEnrollments}</p>
-                    <p className="stat-label">Записей студентов</p>
+                    <p className="stat-label">{t('dashboard.studentEnrollments')}</p>
                 </div>
             </div>
             <div className="stat-card">
@@ -103,7 +106,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{publishedCount}</p>
-                    <p className="stat-label">Опубликовано</p>
+                    <p className="stat-label">{t('dashboard.published')}</p>
                 </div>
             </div>
             <div className="stat-card">
@@ -112,7 +115,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="stat-content">
                     <p className="stat-value">{draftCount}</p>
-                    <p className="stat-label">Черновиков</p>
+                    <p className="stat-label">{t('dashboard.drafts')}</p>
                 </div>
             </div>
         </div>
@@ -122,12 +125,12 @@ const TeacherDashboard = ({ view = 'home' }) => {
         return (
             <div className="dashboard dashboard--stats-only">
                 <div className="dashboard-page-header">
-                    <h1 className="dashboard-page-title">Статистика</h1>
+                    <h1 className="dashboard-page-title">{t('dashboard.statsTitle')}</h1>
                     <p className="dashboard-page-desc">
-                        Ваши курсы, уроки, записи студентов и статусы публикации
+                        {t('dashboard.teacherStatsDesc')}
                     </p>
                 </div>
-                {loading ? <div className="dashboard-loading-inline">Загрузка…</div> : statsBlock}
+                {loading ? <div className="dashboard-loading-inline">{t('common.loading')}</div> : statsBlock}
             </div>
         )
     }
@@ -136,9 +139,9 @@ const TeacherDashboard = ({ view = 'home' }) => {
         <div className="dashboard">
             <div className="dashboard-hero">
                 <div className="hero-content">
-                    <h1 className="hero-title">Панель преподавателя</h1>
+                    <h1 className="hero-title">{t('dashboard.teacherPanel')}</h1>
                     <p className="hero-subtitle">
-                        Новости, быстрый доступ и управление курсами. Подробная статистика — в разделе «Статистика».
+                        {t('dashboard.teacherSubtitle')}
                     </p>
                 </div>
                 <div className="hero-illustration">
@@ -152,14 +155,14 @@ const TeacherDashboard = ({ view = 'home' }) => {
 
             <div className="dashboard-section">
                 <div className="section-header">
-                    <h2 className="section-title">Управление</h2>
+                    <h2 className="section-title">{t('dashboard.management')}</h2>
                 </div>
                 <div className="dashboard-grid">
                     <Link to="/notifications" className="dashboard-card">
-                        Объявления <FiArrowRight />
+                        {t('dashboard.announcements')} <FiArrowRight />
                     </Link>
                     <Link to="/stats" className="dashboard-card">
-                        Сводная статистика <FiArrowRight />
+                        {t('dashboard.summaryStats')} <FiArrowRight />
                     </Link>
                 </div>
             </div>
@@ -167,10 +170,9 @@ const TeacherDashboard = ({ view = 'home' }) => {
             <div className="dashboard-section">
                 <div className="section-header courses-header">
                     <div>
-                        <h2 className="section-title">Мои курсы</h2>
+                        <h2 className="section-title">{t('dashboard.myCourses')}</h2>
                         <p className="section-subtitle">
-                            {courses.length}{' '}
-                            {courses.length === 1 ? 'курс' : 'курсов'} создано
+                            {courses.length} {t('dashboard.createdCourses')}
                         </p>
                     </div>
                     <button
@@ -179,7 +181,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                         onClick={() => setShowCreateModal(true)}
                     >
                         <FiPlus size={16} />
-                        Создать курс
+                        {t('dashboard.createCourse')}
                     </button>
                 </div>
 
@@ -194,8 +196,8 @@ const TeacherDashboard = ({ view = 'home' }) => {
                         <div className="courses-empty-icon">
                             <FiBook size={40} />
                         </div>
-                        <h3>Курсов пока нет</h3>
-                        <p>Нажмите «Создать курс», чтобы добавить первый.</p>
+                        <h3>{t('dashboard.noCourses')}</h3>
+                        <p>{t('dashboard.addFirstCourse')}</p>
                     </div>
                 ) : (
                     <div className="courses-grid">
@@ -213,10 +215,10 @@ const TeacherDashboard = ({ view = 'home' }) => {
                                             {cfg.label}
                                         </span>
 
-                                        <h3 className="course-title">{course.title}</h3>
+                                        <h3 className="course-title">{pickLocalized(course, 'title')}</h3>
 
                                         <p className="course-desc">
-                                            {course.description || 'Описание не добавлено'}
+                                            {pickLocalized(course, 'description') || t('dashboard.noDescription')}
                                         </p>
                                     </div>
 
@@ -224,21 +226,21 @@ const TeacherDashboard = ({ view = 'home' }) => {
                                         <div className="course-meta">
                                             <span className="course-meta-item">
                                                 <FiFileText size={13} />
-                                                {course.lessonsCount ?? '—'} уроков
+                                                {course.lessonsCount ?? '—'} {t('dashboard.lessonsCountSuffix')}
                                             </span>
                                         </div>
                                         <div className="course-card-actions">
                                             <Link
                                                 to={`/courses/${course.id}`}
                                                 className="course-action-btn"
-                                                title="Просмотр"
+                                                title={t('common.view')}
                                             >
                                                 <FiEye size={15} />
                                             </Link>
                                             <Link
                                                 to={`/courses/${course.id}/edit`}
                                                 className="course-action-btn primary"
-                                                title="Редактировать"
+                                                title={t('common.edit')}
                                             >
                                                 <FiEdit size={15} />
                                             </Link>

@@ -13,12 +13,13 @@ import api from '../services/api'
 import auth from '../config/auth'
 import { useAlert } from '../context/AlertProvider'
 import { isAdmin } from '../utils/roles'
+import { useTranslation } from 'react-i18next'
 import './AdminNews.css'
 
-const formatTime = (iso) => {
+const formatTime = (iso, locale = 'ru-RU') => {
   if (!iso) return '—'
   try {
-    return new Date(iso).toLocaleString('ru-RU', {
+    return new Date(iso).toLocaleString(locale, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -37,6 +38,7 @@ const emptyForm = () => ({
 })
 
 const AdminNews = () => {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { confirm, toast } = useAlert()
   const [items, setItems] = useState([])
@@ -56,12 +58,12 @@ const AdminNews = () => {
         [...list].sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
       )
     } catch {
-      toast('Не удалось загрузить новости', 'error')
+      toast(t('adminNewsPage.loadError'), 'error')
       setItems([])
     } finally {
       setLoading(false)
     }
-  }, [toast])
+  }, [toast, t])
 
   useEffect(() => {
     const keycloak = typeof window !== 'undefined' ? window.keycloak || auth : auth
@@ -90,7 +92,7 @@ const AdminNews = () => {
       })
       setModalOpen(true)
     } catch {
-      toast('Не удалось загрузить новость', 'error')
+      toast(t('adminNewsPage.loadOneError'), 'error')
     } finally {
       setLoadingOne(false)
     }
@@ -109,7 +111,7 @@ const AdminNews = () => {
     const shortDescription = form.shortDescription.trim()
     const content = form.content.trim()
     if (!title || !shortDescription || !content) {
-      toast('Заполните заголовок, краткое описание и текст', 'error')
+      toast(t('adminNewsPage.fillRequired'), 'error')
       return
     }
     const body = { title, shortDescription, content }
@@ -117,19 +119,19 @@ const AdminNews = () => {
     try {
       if (editingId != null) {
         await api.put(`/news/${editingId}`, body)
-        toast('Новость обновлена', 'success')
+        toast(t('adminNewsPage.updated'), 'success')
       } else {
         await api.post('/news', body)
-        toast('Новость создана', 'success')
+        toast(t('adminNewsPage.created'), 'success')
       }
       closeModal()
       loadNews()
     } catch (err) {
       const status = err.response?.status
       if (status === 403) {
-        toast('Недостаточно прав (нужна роль администратора)', 'error')
+        toast(t('adminNewsPage.noRightsAdmin'), 'error')
       } else {
-        toast('Не удалось сохранить новость', 'error')
+        toast(t('adminNewsPage.saveError'), 'error')
       }
     } finally {
       setSaving(false)
@@ -138,22 +140,22 @@ const AdminNews = () => {
 
   const handleDelete = async (id) => {
     const ok = await confirm({
-      title: 'Удаление новости',
-      message: 'Удалить эту новость? Восстановить её будет нельзя.',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('adminNewsPage.deleteTitle'),
+      message: t('adminNewsPage.deleteMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger',
     })
     if (!ok) return
     try {
       await api.delete(`/news/${id}`)
-      toast('Новость удалена', 'success')
+      toast(t('adminNewsPage.deleted'), 'success')
       loadNews()
     } catch (err) {
       if (err.response?.status === 403) {
-        toast('Недостаточно прав', 'error')
+        toast(t('adminNewsPage.noRights'), 'error')
       } else {
-        toast('Не удалось удалить новость', 'error')
+        toast(t('adminNewsPage.deleteError'), 'error')
       }
     }
   }
@@ -167,35 +169,35 @@ const AdminNews = () => {
       <div className="admin-news-header">
         <div className="admin-news-header-left">
           <Link to="/" className="admin-news-back">
-            <FiArrowLeft /> На главную
+            <FiArrowLeft /> {t('adminNewsPage.backHome')}
           </Link>
-          <h1 className="admin-news-title">Новости — администрирование</h1>
+          <h1 className="admin-news-title">{t('adminNewsPage.title')}</h1>
           <p className="admin-news-desc">
-            Создание и редактирование публикаций для блока «Новости и объявления» на дашборде.
+            {t('adminNewsPage.subtitle')}
           </p>
         </div>
         <button type="button" className="admin-news-btn-primary" onClick={openCreate}>
           <FiPlus aria-hidden />
-          Новая новость
+          {t('adminNewsPage.newItem')}
         </button>
       </div>
 
       {loading ? (
         <div className="admin-news-loading">
           <FiLoader className="admin-news-spin" />
-          Загрузка…
+          {t('adminNewsPage.loading')}
         </div>
       ) : items.length === 0 ? (
-        <div className="admin-news-empty">Пока нет новостей. Создайте первую.</div>
+        <div className="admin-news-empty">{t('adminNewsPage.empty')}</div>
       ) : (
         <div className="admin-news-table-wrap">
           <table className="admin-news-table">
             <thead>
               <tr>
-                <th>Заголовок</th>
-                <th>Автор</th>
-                <th>Опубликовано</th>
-                <th className="admin-news-col-actions">Действия</th>
+                <th>{t('adminNewsPage.headline')}</th>
+                <th>{t('adminNewsPage.author')}</th>
+                <th>{t('adminNewsPage.published')}</th>
+                <th className="admin-news-col-actions">{t('adminNewsPage.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -209,7 +211,7 @@ const AdminNews = () => {
                   <td>
                     <span className="admin-news-date">
                       <FiClock aria-hidden />
-                      {formatTime(n.publishedAt)}
+                      {formatTime(n.publishedAt, i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU')}
                     </span>
                   </td>
                   <td className="admin-news-col-actions">
@@ -217,7 +219,7 @@ const AdminNews = () => {
                       <button
                         type="button"
                         className="admin-news-icon-btn"
-                        title="Редактировать"
+                        title={t('adminNewsPage.edit')}
                         onClick={() => openEdit(n.id)}
                         disabled={loadingOne}
                       >
@@ -226,7 +228,7 @@ const AdminNews = () => {
                       <button
                         type="button"
                         className="admin-news-icon-btn admin-news-icon-btn--danger"
-                        title="Удалить"
+                        title={t('adminNewsPage.delete')}
                         onClick={() => handleDelete(n.id)}
                       >
                         <FiTrash2 />
@@ -251,21 +253,21 @@ const AdminNews = () => {
           >
             <div className="admin-news-modal-head">
               <h2 id="admin-news-modal-title">
-                {editingId != null ? 'Редактировать новость' : 'Новая новость'}
+                {editingId != null ? t('adminNewsPage.editTitle') : t('adminNewsPage.createTitle')}
               </h2>
               <button
                 type="button"
                 className="admin-news-modal-close"
                 onClick={closeModal}
                 disabled={saving}
-                aria-label="Закрыть"
+                aria-label={t('courseEdit.closeLabel')}
               >
                 <FiX />
               </button>
             </div>
             <form className="admin-news-form" onSubmit={handleSubmit}>
               <label className="admin-news-field">
-                <span>Заголовок</span>
+                <span>{t('adminNewsPage.titleField')}</span>
                 <input
                   type="text"
                   value={form.title}
@@ -275,7 +277,7 @@ const AdminNews = () => {
                 />
               </label>
               <label className="admin-news-field">
-                <span>Краткое описание</span>
+                <span>{t('adminNewsPage.shortDescription')}</span>
                 <textarea
                   value={form.shortDescription}
                   onChange={(e) => setForm((f) => ({ ...f, shortDescription: e.target.value }))}
@@ -285,7 +287,7 @@ const AdminNews = () => {
                 />
               </label>
               <label className="admin-news-field">
-                <span>Полный текст</span>
+                <span>{t('adminNewsPage.fullText')}</span>
                 <textarea
                   value={form.content}
                   onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
@@ -296,10 +298,10 @@ const AdminNews = () => {
               </label>
               <div className="admin-news-modal-foot">
                 <button type="button" className="admin-news-btn-secondary" onClick={closeModal} disabled={saving}>
-                  Отмена
+                  {t('common.cancel')}
                 </button>
                 <button type="submit" className="admin-news-btn-primary" disabled={saving}>
-                  {saving ? 'Сохранение…' : editingId != null ? 'Сохранить' : 'Создать'}
+                  {saving ? t('adminNewsPage.saving') : editingId != null ? t('common.save') : t('adminNewsPage.create')}
                 </button>
               </div>
             </form>

@@ -16,9 +16,11 @@ import {
 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
+import { useTranslation } from 'react-i18next'
 import './Notifications.css'
 
 const Notifications = () => {
+  const { t, i18n } = useTranslation()
   const { confirm } = useAlert()
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -47,7 +49,7 @@ const Notifications = () => {
       setNotifications(response.data)
       setError(null)
     } catch (err) {
-      setError('Не удалось загрузить уведомления')
+      setError(t('notificationsPage.loadError'))
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -74,7 +76,7 @@ const Notifications = () => {
       )
       loadUnreadCount()
     } catch (err) {
-      setError('Не удалось отметить уведомление как прочитанное')
+      setError(t('notificationsPage.markReadError'))
     }
   }
 
@@ -84,7 +86,7 @@ const Notifications = () => {
       setNotifications(prev => prev.map(n => ({ ...n, read: true })))
       setUnreadCount(0)
     } catch (err) {
-      setError('Не удалось отметить все как прочитанные')
+      setError(t('notificationsPage.markAllError'))
     }
   }
 
@@ -93,10 +95,10 @@ const Notifications = () => {
       e.stopPropagation()
     }
     const ok = await confirm({
-      title: 'Удаление',
-      message: 'Удалить это уведомление?',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('notificationsPage.deleteTitle'),
+      message: t('notificationsPage.deleteMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
@@ -104,7 +106,7 @@ const Notifications = () => {
       // Если нет эндпоинта для удаления, просто скрываем из списка
       setNotifications(prev => prev.filter(n => n.id !== id))
     } catch (err) {
-      setError('Не удалось удалить уведомление')
+      setError(t('notificationsPage.deleteError'))
     }
   }
 
@@ -146,20 +148,22 @@ const Notifications = () => {
     const date = new Date(dateString)
     const now = new Date()
     const diffInSeconds = Math.floor((now - date) / 1000)
+    const locale = i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU'
+    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
 
     if (diffInSeconds < 60) {
-      return 'только что'
+      return t('notificationsPage.justNow')
     } else if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60)
-      return `${minutes} ${minutes === 1 ? 'минуту' : minutes < 5 ? 'минуты' : 'минут'} назад`
+      return rtf.format(-minutes, 'minute')
     } else if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600)
-      return `${hours} ${hours === 1 ? 'час' : hours < 5 ? 'часа' : 'часов'} назад`
+      return rtf.format(-hours, 'hour')
     } else if (diffInSeconds < 604800) {
       const days = Math.floor(diffInSeconds / 86400)
-      return `${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} назад`
+      return rtf.format(-days, 'day')
     } else {
-      return date.toLocaleDateString('ru-RU', { 
+      return date.toLocaleDateString(locale, {
         day: 'numeric', 
         month: 'short',
         year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
@@ -168,7 +172,7 @@ const Notifications = () => {
   }
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('ru-RU', {
+    return new Date(dateString).toLocaleString(i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -188,11 +192,11 @@ const Notifications = () => {
       
       let groupKey
       if (date.getTime() === today.getTime()) {
-        groupKey = 'Сегодня'
+        groupKey = t('notificationsPage.today')
       } else if (date.getTime() === today.getTime() - 86400000) {
-        groupKey = 'Вчера'
+        groupKey = t('notificationsPage.yesterday')
       } else {
-        groupKey = date.toLocaleDateString('ru-RU', { 
+        groupKey = date.toLocaleDateString(i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU', {
           day: 'numeric', 
           month: 'long',
           year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
@@ -220,7 +224,7 @@ const Notifications = () => {
   if (loading) {
     return (
       <div className="notifications-container">
-        <div className="loading">Загрузка уведомлений...</div>
+        <div className="loading">{t('common.loading')}</div>
       </div>
     )
   }
@@ -234,7 +238,7 @@ const Notifications = () => {
         <div className="notifications-header-left">
           <div className="notifications-title-section">
             <FiBell className="notifications-title-icon" />
-            <h1>Уведомления</h1>
+            <h1>{t('notificationsPage.title')}</h1>
             {unreadCount > 0 && (
               <span className="unread-badge">{unreadCount}</span>
             )}
@@ -244,7 +248,7 @@ const Notifications = () => {
           <button
             className="btn-icon"
             onClick={() => loadNotifications()}
-            title="Обновить"
+            title={t('common.refresh')}
             disabled={refreshing}
           >
             <FiRefreshCw className={refreshing ? 'spinning' : ''} />
@@ -254,7 +258,7 @@ const Notifications = () => {
               className="btn btn-primary btn-sm"
               onClick={handleMarkAllAsRead}
             >
-              <FiCheckCircle /> Отметить все как прочитанные
+              <FiCheckCircle /> {t('notificationsPage.markAllRead')}
             </button>
           )}
         </div>
@@ -266,40 +270,40 @@ const Notifications = () => {
       <div className="notifications-filters">
         <div className="filter-group">
           <span className="filter-label">
-            <FiFilter /> Статус:
+            <FiFilter /> {t('notificationsPage.status')}:
           </span>
           <div className="filter-buttons">
             <button
               className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
               onClick={() => setFilter('all')}
             >
-              Все
+              {t('notificationsPage.all')}
             </button>
             <button
               className={`filter-btn ${filter === 'unread' ? 'active' : ''}`}
               onClick={() => setFilter('unread')}
             >
-              Непрочитанные {notifications.filter(n => !n.read).length > 0 && 
+              {t('notificationsPage.unread')} {notifications.filter(n => !n.read).length > 0 && 
                 `(${notifications.filter(n => !n.read).length})`}
             </button>
             <button
               className={`filter-btn ${filter === 'read' ? 'active' : ''}`}
               onClick={() => setFilter('read')}
             >
-              Прочитанные
+              {t('notificationsPage.read')}
             </button>
           </div>
         </div>
         
         {uniqueTypes.length > 0 && (
           <div className="filter-group">
-            <span className="filter-label">Тип:</span>
+            <span className="filter-label">{t('notificationsPage.type')}:</span>
             <div className="filter-buttons">
               <button
                 className={`filter-btn ${typeFilter === 'all' ? 'active' : ''}`}
                 onClick={() => setTypeFilter('all')}
               >
-                Все типы
+                {t('notificationsPage.allTypes')}
               </button>
               {uniqueTypes.map(type => (
                 <button
@@ -323,11 +327,11 @@ const Notifications = () => {
         {filteredNotifications.length === 0 ? (
           <div className="empty-state">
             <FiBell className="empty-icon" />
-            <h3>Нет уведомлений</h3>
+            <h3>{t('notificationsPage.emptyTitle')}</h3>
             <p>
               {filter === 'unread' 
-                ? 'У вас нет непрочитанных уведомлений' 
-                : 'У вас пока нет уведомлений'}
+                ? t('notificationsPage.emptyUnread')
+                : t('notificationsPage.emptyAll')}
             </p>
           </div>
         ) : (
@@ -367,7 +371,7 @@ const Notifications = () => {
                         <button
                           className="btn-icon btn-mark-read"
                           onClick={(e) => handleMarkAsRead(notification.id, e)}
-                          title="Отметить как прочитанное"
+                          title={t('notificationsPage.markRead')}
                         >
                           <FiCheck />
                         </button>
@@ -375,7 +379,7 @@ const Notifications = () => {
                       <button
                         className="btn-icon btn-delete"
                         onClick={(e) => handleDelete(notification.id, e)}
-                        title="Удалить"
+                        title={t('common.delete')}
                       >
                         <FiTrash2 />
                       </button>

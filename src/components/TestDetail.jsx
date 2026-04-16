@@ -3,9 +3,11 @@ import { useParams, Link } from 'react-router-dom'
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi'
 import api from '../services/api'
 import { pickLocalized } from '../i18n/localize'
+import { useTranslation } from 'react-i18next'
 import './TestDetail.css'
 
 const TestDetail = () => {
+  const { t } = useTranslation()
   const { courseId, testId } = useParams()
   const [test, setTest] = useState(null)
   const [course, setCourse] = useState(null)
@@ -32,7 +34,7 @@ const TestDetail = () => {
       setError(null)
     } catch (err) {
       console.error('Error loading test:', err)
-      setError('Не удалось загрузить тест')
+      setError(t('testPage.loadError'))
     } finally {
       setLoading(false)
     }
@@ -93,7 +95,7 @@ const TestDetail = () => {
       setSubmitted(true)
     } catch (err) {
       console.error('Error submitting test:', err)
-      setError(err.response?.data?.message || 'Ошибка отправки теста')
+      setError(err.response?.data?.message || t('testPage.loadError'))
     } finally {
       setSubmitting(false)
     }
@@ -102,7 +104,7 @@ const TestDetail = () => {
   if (loading) {
     return (
       <div className="test-detail-loading">
-        <p>Загрузка теста...</p>
+        <p>{t('common.loading')}</p>
       </div>
     )
   }
@@ -112,7 +114,7 @@ const TestDetail = () => {
   }
 
   if (!test) {
-    return <div className="test-detail-error">Тест не найден</div>
+    return <div className="test-detail-error">{t('testPage.notFound')}</div>
   }
 
   const questions = test.questions || []
@@ -122,11 +124,11 @@ const TestDetail = () => {
     <div className="test-detail">
       <div className="test-detail-header">
         <Link to={`/courses/${courseId}`} className="back-link">
-          <FiArrowLeft /> К курсу
+          <FiArrowLeft /> {t('testPage.backToCourse')}
         </Link>
         <h1>{pickLocalized(test, 'title')}</h1>
         {course && (
-          <p className="test-course-name">Курс: {pickLocalized(course, 'title')}</p>
+          <p className="test-course-name">{t('testPage.coursePrefix')}: {pickLocalized(course, 'title')}</p>
         )}
       </div>
 
@@ -136,9 +138,9 @@ const TestDetail = () => {
         <div className="test-result">
           <div className="result-card">
             <FiCheckSquare className="result-icon" />
-            <h2>Тест пройден!</h2>
+            <h2>{t('testPage.passed')}</h2>
             <p className="result-score">
-              {result.score} / {result.maxScore} баллов
+              {result.score} / {result.maxScore} {t('testPage.points')}
             </p>
             <p className="result-percent">
               {result.maxScore > 0
@@ -146,7 +148,7 @@ const TestDetail = () => {
                 : 0}%
             </p>
             <Link to={`/courses/${courseId}`} className="btn btn-primary">
-              Вернуться к курсу
+              {t('testPage.returnToCourse')}
             </Link>
           </div>
         </div>
@@ -156,7 +158,7 @@ const TestDetail = () => {
             {sortedQuestions.map((q, idx) => (
               <div key={q.id} className="question-card">
                 <h3 className="question-number">
-                  Вопрос {idx + 1} из {sortedQuestions.length}
+                  {t('testPage.questionOf', { current: idx + 1, total: sortedQuestions.length })}
                 </h3>
                 <p className="question-text">{pickLocalized(q, 'text')}</p>
                 <div className="question-options">
@@ -199,7 +201,7 @@ const TestDetail = () => {
                           checked={answers[q.id] === 'true'}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                         />
-                        <span>Верно</span>
+                        <span>{t('testPage.true')}</span>
                       </label>
                       <label className="option-label">
                         <input
@@ -209,14 +211,14 @@ const TestDetail = () => {
                           checked={answers[q.id] === 'false'}
                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                         />
-                        <span>Неверно</span>
+                        <span>{t('testPage.false')}</span>
                       </label>
                     </>
                   ) : (
                     <input
                       type="text"
                       className="open-answer-input"
-                      placeholder="Введите ответ..."
+                      placeholder={t('testPage.enterAnswer')}
                       value={answers[q.id] || ''}
                       onChange={(e) => handleAnswerChange(q.id, e.target.value)}
                     />
@@ -231,7 +233,7 @@ const TestDetail = () => {
               onClick={handleSubmit}
               disabled={submitting}
             >
-              {submitting ? 'Отправка...' : 'Отправить ответы'}
+              {submitting ? t('testPage.submitting') : t('testPage.submit')}
             </button>
           </div>
         </>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { getRoles, isAdmin, isTeacher, isClient } from '../utils/roles'
 import api from '../services/api'
+import { useTranslation } from 'react-i18next'
 import './Profile.css'
 
 const formatField = (value) => {
@@ -25,6 +26,7 @@ const buildInitials = (firstName, lastName, username) => {
 }
 
 const Profile = () => {
+    const { t } = useTranslation()
     const [userInfo, setUserInfo] = useState(null)
     const [roles, setRoles] = useState([])
     const [loading, setLoading] = useState(true)
@@ -99,7 +101,7 @@ const Profile = () => {
                         })
                         setRoles(getRoles(window.keycloak))
                     } else {
-                        setError('Unable to load profile')
+                        setError(t('profilePage.loadError'))
                     }
                     setLoading(false)
                 }
@@ -128,21 +130,21 @@ const Profile = () => {
 
     const roleConfig = useMemo(
         () => ({
-            admin: { label: 'Administrator' },
-            teacher: { label: 'Teacher' },
-            client: { label: 'Student' },
-            ROLE_ADMIN: { label: 'Administrator' },
-            ROLE_TEACHER: { label: 'Teacher' },
-            ROLE_CLIENT: { label: 'Student' },
+            admin: { label: t('profilePage.administrator') },
+            teacher: { label: t('profilePage.teacher') },
+            client: { label: t('profilePage.student') },
+            ROLE_ADMIN: { label: t('profilePage.administrator') },
+            ROLE_TEACHER: { label: t('profilePage.teacher') },
+            ROLE_CLIENT: { label: t('profilePage.student') },
         }),
-        []
+        [t]
     )
 
     const getRoleDescription = () => {
-        if (isAdmin(window.keycloak)) return 'Full access to platform administration and user management.'
-        if (isTeacher(window.keycloak)) return 'Course authoring, materials, and student progress.'
-        if (isClient(window.keycloak)) return 'Course access, materials, and learning progress.'
-        return 'No role assigned. Contact an administrator if you need access.'
+        if (isAdmin(window.keycloak)) return t('profilePage.adminDesc')
+        if (isTeacher(window.keycloak)) return t('profilePage.teacherDesc')
+        if (isClient(window.keycloak)) return t('profilePage.studentDesc')
+        return t('profilePage.noRoleDesc')
     }
 
     const initials = userInfo
@@ -152,14 +154,14 @@ const Profile = () => {
     if (loading) {
         return (
             <div className="profile-page profile-page--formal">
-                <div className="profile-state">Loading…</div>
+                <div className="profile-state">{t('common.loading')}</div>
             </div>
         )
     }
     if (error || !userInfo) {
         return (
             <div className="profile-page profile-page--formal">
-                <div className="profile-state error">{error || 'Unable to load profile'}</div>
+                <div className="profile-state error">{error || t('profilePage.loadError')}</div>
             </div>
         )
     }
@@ -168,8 +170,8 @@ const Profile = () => {
         <div className="profile-page profile-page--formal">
             <div className="profile-inner">
                 <header className="profile-doc-header">
-                    <h1 className="profile-doc-title">User profile</h1>
-                    <p className="profile-doc-subtitle">Account details on the learning platform</p>
+                    <h1 className="profile-doc-title">{t('profilePage.title')}</h1>
+                    <p className="profile-doc-subtitle">{t('profilePage.subtitle')}</p>
                 </header>
 
                 <section className="profile-card profile-card--hero" aria-labelledby="profile-identity">
@@ -179,12 +181,12 @@ const Profile = () => {
                     <div className="profile-identity" id="profile-identity">
                         <h2 className="profile-display-name">{userInfo.fullName}</h2>
                         <p className="profile-meta-line">
-                            <span className="profile-label-inline">Username</span>
+                            <span className="profile-label-inline">{t('profilePage.username')}</span>
                             <span className="profile-value-inline">@{userInfo.username}</span>
                         </p>
                         {userInfo.userId && (
                             <p className="profile-meta-line profile-meta-line--muted">
-                                <span className="profile-label-inline">User ID</span>
+                                <span className="profile-label-inline">{t('profilePage.userId')}</span>
                                 <span className="profile-value-inline profile-value-mono">{userInfo.userId}</span>
                             </p>
                         )}
@@ -194,28 +196,28 @@ const Profile = () => {
                 <div className="profile-grid">
                     <section className="profile-card" aria-labelledby="personal-heading">
                         <h2 id="personal-heading" className="profile-section-title">
-                            Personal information
+                            {t('profilePage.personalInfo')}
                         </h2>
                         <dl className="profile-dl">
                             <div className="profile-dl-row">
-                                <dt>First name</dt>
+                                <dt>{t('profilePage.firstName')}</dt>
                                 <dd>{userInfo.firstName}</dd>
                             </div>
                             <div className="profile-dl-row">
-                                <dt>Last name</dt>
+                                <dt>{t('profilePage.lastName')}</dt>
                                 <dd>{userInfo.lastName}</dd>
                             </div>
                             <div className="profile-dl-row">
-                                <dt>Username</dt>
+                                <dt>{t('profilePage.username')}</dt>
                                 <dd>@{userInfo.username}</dd>
                             </div>
                             <div className="profile-dl-row">
-                                <dt>Email</dt>
+                                <dt>{t('profilePage.email')}</dt>
                                 <dd className="profile-dd-with-badge">
                                     <span>{userInfo.email}</span>
                                     {userInfo.emailVerified && (
-                                        <span className="profile-badge profile-badge--ok" title="Verified">
-                                            Verified
+                                        <span className="profile-badge profile-badge--ok" title={t('common.verified')}>
+                                            {t('common.verified')}
                                         </span>
                                     )}
                                 </dd>
@@ -225,37 +227,37 @@ const Profile = () => {
 
                     <section className="profile-card" aria-labelledby="status-heading">
                         <h2 id="status-heading" className="profile-section-title">
-                            Account status
+                            {t('profilePage.accountStatus')}
                         </h2>
                         <dl className="profile-dl profile-dl--status">
                             <div className="profile-dl-row">
-                                <dt>Account</dt>
+                                <dt>{t('profilePage.account')}</dt>
                                 <dd>
                                     <span
                                         className={`profile-badge ${userInfo.accountEnabled ? 'profile-badge--ok' : 'profile-badge--warn'}`}
                                     >
-                                        {userInfo.accountEnabled ? 'Active' : 'Disabled'}
+                                        {userInfo.accountEnabled ? t('common.active') : t('common.disabled')}
                                     </span>
                                 </dd>
                             </div>
                             <div className="profile-dl-row">
-                                <dt>Email</dt>
+                                <dt>{t('profilePage.email')}</dt>
                                 <dd>
                                     <span
                                         className={`profile-badge ${userInfo.emailVerified ? 'profile-badge--ok' : 'profile-badge--pending'}`}
                                     >
-                                        {userInfo.emailVerified ? 'Verified' : 'Not verified'}
+                                        {userInfo.emailVerified ? t('common.verified') : t('common.notVerified')}
                                     </span>
                                 </dd>
                             </div>
                             <div className="profile-dl-row">
-                                <dt>Authentication</dt>
+                                <dt>{t('profilePage.auth')}</dt>
                                 <dd>
-                                    <span className="profile-badge profile-badge--neutral">Platform (JWT)</span>
+                                    <span className="profile-badge profile-badge--neutral">{t('profilePage.platformJwt')}</span>
                                 </dd>
                             </div>
                             <div className="profile-dl-row profile-dl-row--roles">
-                                <dt>Roles</dt>
+                                <dt>{t('profilePage.roles')}</dt>
                                 <dd>
                                     {roles.length > 0 ? (
                                         <ul className="profile-role-list">
@@ -268,7 +270,7 @@ const Profile = () => {
                                             ))}
                                         </ul>
                                     ) : (
-                                        <span className="profile-empty-note">No role assigned</span>
+                                        <span className="profile-empty-note">{t('profilePage.noRole')}</span>
                                     )}
                                 </dd>
                             </div>

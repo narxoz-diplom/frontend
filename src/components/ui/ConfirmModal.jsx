@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import './alert-ui.css'
 
 const ConfirmModal = ({
   open,
   title,
   message,
-  confirmText = 'ОК',
-  cancelText = 'Отмена',
+  confirmText,
+  cancelText,
   variant = 'default',
   onConfirm,
   onCancel
 }) => {
+  const { t } = useTranslation()
   useEffect(() => {
     if (!open) return
     const onKey = (e) => {
@@ -66,7 +68,7 @@ const ConfirmModal = ({
             className="alert-modal__btn alert-modal__btn--ghost"
             onClick={onCancel}
           >
-            {cancelText}
+            {cancelText || t('common.cancel')}
           </button>
           <button
             type="button"
@@ -78,7 +80,7 @@ const ConfirmModal = ({
             onClick={onConfirm}
             autoFocus
           >
-            {confirmText}
+            {confirmText || t('confirmModal.ok')}
           </button>
         </div>
       </div>

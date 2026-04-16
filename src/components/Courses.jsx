@@ -5,9 +5,11 @@ import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import { pickLocalized } from '../i18n/localize'
+import { useTranslation } from 'react-i18next'
 import './Courses.css'
 
 const Courses = () => {
+  const { t } = useTranslation()
   const { confirm, toast } = useAlert()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
@@ -62,7 +64,7 @@ const Courses = () => {
       
       setError(null)
     } catch (err) {
-      setError('Failed to load courses')
+      setError(t('coursesPage.loadError'))
     } finally {
       setLoading(false)
     }
@@ -94,7 +96,7 @@ const Courses = () => {
       setError(null)
     } catch (err) {
       console.error('Error loading enrolled courses:', err)
-      setError('Не удалось загрузить записанные курсы')
+      setError(t('coursesPage.enrolledLoadError'))
     } finally {
       setLoading(false)
     }
@@ -112,7 +114,7 @@ const Courses = () => {
       setNewCourse({ title: '', description: '', imageUrl: '' })
     } catch (err) {
       console.error('Error creating course:', err)
-      setError('Failed to create course')
+      setError(t('coursesPage.createError'))
     }
   }
 
@@ -133,7 +135,7 @@ const Courses = () => {
       
       // Находим курс для отображения сообщения
       const course = courses.find(c => c.id === courseId)
-      setSuccess(`Вы успешно записались на курс "${course?.title || 'курс'}"!`)
+      setSuccess(t('coursesPage.enrollSuccess', { title: pickLocalized(course, 'title') || t('common.course') }))
       
       // Скрываем сообщение через 5 секунд
       setTimeout(() => {
@@ -148,7 +150,7 @@ const Courses = () => {
       }
     } catch (err) {
       console.error('Error enrolling in course:', err)
-      setError(err.response?.data?.message || 'Не удалось записаться на курс. Попробуйте еще раз.')
+      setError(err.response?.data?.message || t('coursesPage.enrollError'))
     } finally {
       setEnrolling(prev => {
         const newSet = new Set(prev)
@@ -171,10 +173,10 @@ const Courses = () => {
 
   const handleDeleteCourse = async (course) => {
     const ok = await confirm({
-      title: 'Удаление курса',
-      message: `Удалить курс «${course.title}»? Действие необратимо.`,
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('coursesPage.deleteTitle'),
+      message: t('coursesPage.deleteMessage', { title: pickLocalized(course, 'title') || course.title }),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
@@ -183,23 +185,23 @@ const Courses = () => {
     try {
       await api.delete(`/courses/${course.id}`)
       setCourses((prev) => prev.filter((c) => c.id !== course.id))
-      toast('Курс удалён', 'success')
+      toast(t('coursesPage.deleted'), 'success')
     } catch (err) {
       console.error('Error deleting course:', err)
-      setError(err.response?.data?.message || 'Не удалось удалить курс')
+      setError(err.response?.data?.message || t('coursesPage.deleteError'))
     } finally {
       setDeletingCourseId(null)
     }
   }
 
   if (loading) {
-    return <div className="loading">Loading courses...</div>
+    return <div className="loading">{t('coursesPage.loading')}</div>
   }
 
   return (
     <div className="courses-page">
       <div className="courses-header">
-        <h1>Courses</h1>
+        <h1>{t('coursesPage.title')}</h1>
         <div className="courses-header-actions">
           {!isTeacher(window.keycloak) && !isAdmin(window.keycloak) && (
             <div className="filter-buttons">
@@ -207,13 +209,13 @@ const Courses = () => {
                 className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
                 onClick={() => setFilter('all')}
               >
-                Все курсы
+                {t('coursesPage.allCourses')}
               </button>
               <button
                 className={`filter-btn ${filter === 'enrolled' ? 'active' : ''}`}
                 onClick={() => setFilter('enrolled')}
               >
-                Мои записанные курсы
+                {t('coursesPage.myEnrolled')}
               </button>
             </div>
           )}
@@ -222,7 +224,7 @@ const Courses = () => {
               className="btn btn-primary"
               onClick={() => setShowCreateForm(!showCreateForm)}
             >
-              {showCreateForm ? 'Cancel' : '+ Create Course'}
+              {showCreateForm ? t('common.cancel') : `+ ${t('coursesPage.createNew')}`}
             </button>
           )}
         </div>
@@ -233,10 +235,10 @@ const Courses = () => {
 
       {showCreateForm && (
         <div className="card create-course-form">
-          <h3>Create New Course</h3>
+          <h3>{t('coursesPage.createNew')}</h3>
           <form onSubmit={handleCreateCourse}>
             <div className="form-group">
-              <label>Course Title</label>
+              <label>{t('courseModal.courseTitle')}</label>
               <input
                 type="text"
                 value={newCourse.title}
@@ -245,7 +247,7 @@ const Courses = () => {
               />
             </div>
             <div className="form-group">
-              <label>Description</label>
+              <label>{t('coursePage.lessonDescription')}</label>
               <textarea
                 value={newCourse.description}
                 onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
@@ -254,14 +256,14 @@ const Courses = () => {
               />
             </div>
             <div className="form-group">
-              <label>Image URL (optional)</label>
+              <label>Image URL</label>
               <input
                 type="url"
                 value={newCourse.imageUrl}
                 onChange={(e) => setNewCourse({...newCourse, imageUrl: e.target.value})}
               />
             </div>
-            <button type="submit" className="btn btn-primary">Create Course</button>
+            <button type="submit" className="btn btn-primary">{t('coursesPage.createNew')}</button>
           </form>
         </div>
       )}
@@ -269,7 +271,7 @@ const Courses = () => {
       <div className="courses-grid">
         {courses.length === 0 ? (
           <p style={{ textAlign: 'center', color: '#7f8c8d', padding: '40px' }}>
-            No courses available yet
+            {t('coursesPage.noCourses')}
           </p>
         ) : (
           courses.map((course) => (
@@ -282,14 +284,14 @@ const Courses = () => {
               <div className="course-content">
                 <h3>{pickLocalized(course, 'title')}</h3>
                 <p className="course-description">
-                  {pickLocalized(course, 'description') || 'No description available'}
+                  {pickLocalized(course, 'description') || t('coursesPage.noDescription')}
                 </p>
                 <div className="course-meta">
                   <span className={`course-status ${course.status}`}>{course.status}</span>
                   <div className="course-stats">
                     {course.lessons && (
                       <span className="course-lessons">
-                        {course.lessons.length} lesson{course.lessons.length !== 1 ? 's' : ''}
+                        {course.lessons.length} {t('coursesPage.lessonsSuffix')}
                       </span>
                     )}
                     {courseViews[course.id] !== undefined && (
@@ -301,7 +303,7 @@ const Courses = () => {
                 </div>
                 <div className="course-actions">
                   <Link to={`/courses/${course.id}`} className="btn btn-primary">
-                    View Course
+                    {t('coursesPage.viewCourse')}
                   </Link>
                   {canDeleteCourse(course) && (
                     <button
@@ -309,7 +311,7 @@ const Courses = () => {
                       className="btn btn-danger-outline"
                       onClick={() => handleDeleteCourse(course)}
                       disabled={deletingCourseId === course.id}
-                      title="Удалить курс"
+                      title={t('coursesPage.deleteCourse')}
                     >
                       {deletingCourseId === course.id ? '…' : <FiTrash2 />}
                     </button>
@@ -319,13 +321,13 @@ const Courses = () => {
                       className={`btn ${isEnrolled(course.id) ? 'btn-secondary' : 'btn-success'}`}
                       onClick={() => handleEnroll(course.id)}
                       disabled={enrolling.has(course.id) || isEnrolled(course.id)}
-                      title={isEnrolled(course.id) ? 'Вы уже записаны на этот курс' : 'Записаться на курс'}
+                      title={isEnrolled(course.id) ? t('coursesPage.alreadyEnrolled') : t('coursesPage.enrollCourse')}
                     >
                       {enrolling.has(course.id) 
-                        ? 'Запись...' 
+                        ? t('coursesPage.enrolling')
                         : isEnrolled(course.id) 
-                        ? 'Записан' 
-                        : 'Enroll'}
+                        ? t('coursesPage.enrolled')
+                        : t('coursesPage.enroll')}
                     </button>
                   )}
                 </div>

@@ -32,6 +32,7 @@ import {
 } from 'recharts'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { useTranslation } from 'react-i18next'
 import api from '../services/api'
 import './LessonChat.css'
 
@@ -136,6 +137,7 @@ const AGUIChat = forwardRef(function AGUIChat(
   { lessonId, courseId, lessonTitle, courseTitle, lessonContent },
   ref
 ) {
+  const { t } = useTranslation()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -218,7 +220,7 @@ const AGUIChat = forwardRef(function AGUIChat(
       setError(errMsg)
       setMessages(prev => [
         ...prev,
-        { id: randomUUID(), role: 'assistant', content: `Ошибка: ${errMsg}. Проверьте, что AG-UI агент запущен на ${AG_UI_URL} (порт 5001) и CORS разрешён.` },
+        { id: randomUUID(), role: 'assistant', content: t('lessonChat.aguiError', { error: errMsg, url: AG_UI_URL }) },
       ])
     } finally {
       setLoading(false)
@@ -233,7 +235,7 @@ const AGUIChat = forwardRef(function AGUIChat(
         {messages.length === 0 && (
           <div className="lesson-chat-empty">
             <FiMessageCircle />
-            <p>Задайте вопрос по уроку, попросите тест, резюме или аналитику</p>
+            <p>{t('lessonChat.askLesson')}</p>
           </div>
         )}
         {messages.map(renderAGUIMessage)}
@@ -263,12 +265,12 @@ const AGUIChat = forwardRef(function AGUIChat(
                 sendMessage()
               }
             }}
-            placeholder="Сообщение… Shift+Enter — новая строка"
+            placeholder={t('lessonChat.messagePlaceholder')}
             disabled={loading}
             rows={1}
             maxLength={4000}
           />
-          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
+          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title={t('lessonChat.send')}>
             <FiSend />
           </button>
         </div>
@@ -285,6 +287,7 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
   { lessonId, courseId, lessonTitle: _lessonTitle, courseTitle: _courseTitle },
   ref
 ) {
+  const { t } = useTranslation()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -332,20 +335,20 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
         top_k: 8,
         metadata_filter: Object.keys(metadataFilter).length ? metadataFilter : undefined,
       })
-      setMessages(prev => [...prev, { role: 'assistant', content: r.data?.answer ?? 'Нет ответа.' }])
+      setMessages(prev => [...prev, { role: 'assistant', content: r.data?.answer ?? t('lessonChat.noAnswer') }])
     } catch (err) {
       const status = err.response?.status
-      const detail = err.response?.data?.detail || err.message || 'Неизвестная ошибка'
-      let msg = 'Ошибка: ' + detail
+      const detail = err.response?.data?.detail || err.message || t('ragPage.genericError')
+      let msg = `${t('ragPage.genericError')}: ${detail}`
       if (status === 502) {
-        msg = 'RAG вернул ошибку генерации. Проверьте LLM API key в RAG (OpenAI и т.д.).'
-        if (typeof detail === 'string' && detail.length) msg += ' Детали: ' + detail
+        msg = t('lessonChat.ragGenerationError')
+        if (typeof detail === 'string' && detail.length) msg += ` ${detail}`
       } else if (status === 503) {
-        msg = 'Векторная база RAG недоступна. Проверьте ChromaDB.'
+        msg = t('lessonChat.ragUnavailable')
       } else if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
-        msg = 'Не удалось подключиться к RAG. Запустите RAG на порту 8000. Если используете Gateway — также запустите его на 8083. Либо в .env задайте VITE_RAG_URL=http://localhost:8000 для прямого запроса к RAG.'
+        msg = t('lessonChat.ragConnectError')
       } else if (status === 404) {
-        msg = 'Маршрут RAG не найден. Задайте VITE_RAG_URL=http://localhost:8000 в .env фронтенда и перезапустите dev-сервер.'
+        msg = t('lessonChat.ragRouteNotFound')
       }
       setMessages(prev => [...prev, { role: 'assistant', content: msg }])
     } finally {
@@ -363,7 +366,7 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
         {messages.length === 0 && (
           <div className="lesson-chat-empty">
             <FiMessageCircle />
-            <p>Задайте вопрос по материалу урока</p>
+            <p>{t('lessonChat.askMaterial')}</p>
           </div>
         )}
         {messages.map((m, i) => (
@@ -396,12 +399,12 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
                 sendMessage()
               }
             }}
-            placeholder="Сообщение… Shift+Enter — новая строка"
+            placeholder={t('lessonChat.messagePlaceholder')}
             disabled={loading}
             rows={1}
             maxLength={4000}
           />
-          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title="Отправить">
+          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title={t('lessonChat.send')}>
             <FiSend />
           </button>
         </div>
@@ -415,6 +418,7 @@ SimpleLessonChat.displayName = 'SimpleLessonChat'
  * Генеративный UI для резюме урока — карточка с темой по курсу.
  */
 function SummaryGenerativeUI({ result, theme = {}, onClose }) {
+  const { t } = useTranslation()
   const summary = dedupeSummaryBlocks(String(result?.summary || ''))
   const primary = theme.primary || '#b83848'
   const accent = theme.accent || '#dc8a95'
@@ -424,11 +428,11 @@ function SummaryGenerativeUI({ result, theme = {}, onClose }) {
       <div className="ag-ui-summary-header">
         <span className="ag-ui-summary-icon">📋</span>
         <div>
-          <h3>Резюме урока</h3>
+          <h3>{t('lessonChat.lessonSummary')}</h3>
           {result?.lesson_title && <span className="ag-ui-subtitle">{result.lesson_title}</span>}
         </div>
         {onClose && (
-          <button type="button" className="ag-ui-card-close" onClick={onClose} aria-label="Закрыть">
+          <button type="button" className="ag-ui-card-close" onClick={onClose} aria-label={t('lessonChat.close')}>
             <FiX />
           </button>
         )}
@@ -444,6 +448,7 @@ function SummaryGenerativeUI({ result, theme = {}, onClose }) {
  * Генеративный UI для аналитики — карточка с фактами/тезисами и темой по курсу.
  */
 function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
+  const { t } = useTranslation()
   const summary = result?.summary || ''
   const pie = result?.pie_chart || null
   const bar = result?.bar_chart || null
@@ -474,11 +479,11 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
       <div className="ag-ui-analytics-header">
         <span className="ag-ui-analytics-icon">📊</span>
         <div>
-          <h3>Аналитика по уроку</h3>
+          <h3>{t('lessonChat.lessonAnalytics')}</h3>
           {result?.lesson_title && <span className="ag-ui-subtitle">{result.lesson_title}</span>}
         </div>
         {onClose && (
-          <button type="button" className="ag-ui-card-close" onClick={onClose} aria-label="Закрыть">
+          <button type="button" className="ag-ui-card-close" onClick={onClose} aria-label={t('lessonChat.close')}>
             <FiX />
           </button>
         )}
@@ -486,7 +491,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
       <div className="ag-ui-analytics-body">
         {summary && (
           <div className="ag-ui-analytics-section">
-            <h4>Аналитическая сводка</h4>
+            <h4>{t('lessonChat.analyticsSummary')}</h4>
             {summary.split(/\n\n+/).map((p, i) => (
               <p key={i}>{p.trim()}</p>
             ))}
@@ -495,7 +500,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 
         {statCards.length > 0 && (
           <div className="ag-ui-analytics-section">
-            <h4>Ключевые показатели</h4>
+            <h4>{t('lessonChat.keyMetrics')}</h4>
             <div className="ag-ui-analytics-stat-cards">
               {statCards.map((card, i) => (
                 <div key={i} className="ag-ui-analytics-stat-card">
@@ -513,7 +518,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 
         {pie && Array.isArray(pie.items) && pie.items.length > 0 && (
           <div className="ag-ui-analytics-section">
-            <h4>{pie.title || 'Распределение показателей (круговая диаграмма)'}</h4>
+            <h4>{pie.title || t('lessonChat.distribution')}</h4>
             <div className="ag-ui-analytics-chart ag-ui-analytics-pie">
               <div className="ag-ui-analytics-pie-chart">
                 <ResponsiveContainer width="100%" height={220}>
@@ -584,7 +589,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 
         {topList && Array.isArray(topList.items) && topList.items.length > 0 && (
           <div className="ag-ui-analytics-section">
-            <h4>{topList.title || 'Топ элементов'}</h4>
+            <h4>{topList.title || t('lessonChat.topItems')}</h4>
             <div className="ag-ui-analytics-top-list">
               {topList.items.map((item, i) => (
                 <div key={i} className="ag-ui-analytics-top-item">
@@ -604,7 +609,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 
         {trend && trendData.length > 0 && (
           <div className="ag-ui-analytics-section">
-            <h4>{trend.title || 'Динамика по шагам'}</h4>
+            <h4>{trend.title || t('lessonChat.trend')}</h4>
             <div className="ag-ui-analytics-chart ag-ui-analytics-trend">
               <ResponsiveContainer width="100%" height={260}>
                 <LineChart data={trendData} margin={{ top: 8, right: 8, left: -10, bottom: 4 }}>
@@ -621,7 +626,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 
         {insights.length > 0 && (
           <div className="ag-ui-analytics-section">
-            <h4>Краткие выводы</h4>
+            <h4>{t('lessonChat.insights')}</h4>
             <ul className="ag-ui-analytics-insights">
               {insights.map((line, i) => (
                 <li key={i}>{String(line).replace(/^[\s•\-*]+\s*/, '').trim()}</li>
@@ -639,6 +644,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
  * key должен меняться при каждой новой генерации теста, чтобы сбросить состояние.
  */
 function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
+  const { t: tt } = useTranslation()
   const questions = result?.questions || []
   const t = theme.primary || '#b83848'
   const [answers, setAnswers] = useState({})
@@ -666,7 +672,7 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
   }
 
   if (result?.status === 'error') {
-    return <div className="quiz-gen-error">{result.message || 'Ошибка генерации теста'}</div>
+    return <div className="quiz-gen-error">{result.message || tt('ragPage.generationError')}</div>
   }
 
   if (!questions.length) return null
@@ -675,11 +681,11 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
     <div className="quiz-generative-ui" style={{ '--theme-primary': t, '--theme-accent': theme.accent || '#dc8a95' }}>
       <div className="quiz-gen-header">
         <div className="quiz-gen-header-text">
-          <h3>Тест по уроку</h3>
+          <h3>{tt('lessonChat.lessonQuiz')}</h3>
           {result?.lesson_title && <span>{result.lesson_title}</span>}
         </div>
         {onClose && (
-          <button type="button" className="quiz-gen-header-close" onClick={onClose} title="Скрыть тест" aria-label="Скрыть тест">
+          <button type="button" className="quiz-gen-header-close" onClick={onClose} title={tt('lessonChat.hideQuiz')} aria-label={tt('lessonChat.hideQuiz')}>
             <FiX />
           </button>
         )}
@@ -691,7 +697,7 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
             <div className="quiz-gen-hint-block">
               {!hintsVisible[i] ? (
                 <button type="button" className="quiz-gen-hint-btn" onClick={() => toggleHint(i)}>
-                  Показать подсказку
+                  {tt('lessonChat.showHint')}
                 </button>
               ) : (
                 <p className="quiz-gen-hint-text">{q.hint}</p>
@@ -716,9 +722,9 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
           {checked && (
             <div className="quiz-gen-feedback">
               {answers[i] === q.correct ? (
-                <span className="correct">Верно!</span>
+                <span className="correct">{tt('lessonChat.right')}</span>
               ) : (
-                <span className="incorrect">Правильный ответ: {q.options?.[q.correct]}</span>
+                <span className="incorrect">{tt('lessonChat.correctAnswer', { answer: q.options?.[q.correct] })}</span>
               )}
               {q.explanation && <p className="quiz-gen-explanation">{q.explanation}</p>}
             </div>
@@ -727,17 +733,17 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
       ))}
       {!checked && (
         <button className="quiz-gen-finish" onClick={handleFinish}>
-          Завершить тест
+          {tt('lessonChat.finishTest')}
         </button>
       )}
       {score != null && (
         <div className="quiz-gen-result-row">
           <div className={`quiz-gen-score ${score.pct >= 60 ? 'good' : 'bad'}`}>
-            Результат: {score.correct} из {score.total} ({score.pct}%)
+            {tt('ragPage.result', { correct: score.correct, total: score.total, pct: score.pct })}
           </div>
           {onClose && (
             <button type="button" className="quiz-gen-close" onClick={onClose}>
-              Скрыть тест
+              {tt('lessonChat.hideQuiz')}
             </button>
           )}
         </div>
@@ -750,6 +756,7 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
  * Основной компонент: AG-UI чат или простой fallback.
  */
 export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitle, lessonContent }) {
+  const { t } = useTranslation()
   const chatRef = useRef(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const [panelWidth, setPanelWidth] = useState(() => {
@@ -840,8 +847,8 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
           type="button"
           className="lesson-chat-fab"
           onClick={() => setPanelOpen(true)}
-          aria-label="Открыть чат помощника по уроку"
-          title="Чат помощника"
+          aria-label={t('lessonChat.openAssistant')}
+          title={t('lessonChat.assistantChat')}
         >
           <FiMessageCircle className="lesson-chat-fab-icon" aria-hidden />
           {AG_UI_URL && <span className="lesson-chat-fab-badge" aria-hidden>AG</span>}
@@ -875,43 +882,43 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
               }}
               role="separator"
               aria-orientation="vertical"
-              aria-label="Потяните, чтобы изменить ширину панели"
+              aria-label={t('lessonChat.resizePanel')}
             />
             <div className="lesson-chat-panel-inner">
               <div className="lesson-chat-header lesson-chat-panel-header">
                 <h2 id="lesson-chat-panel-title">
-                  <FiMessageCircle aria-hidden /> Помощник по уроку
+                  <FiMessageCircle aria-hidden /> {t('lessonChat.assistantTitle')}
                   {AG_UI_URL && <span className="lesson-chat-badge">AG-UI</span>}
                 </h2>
                 <button
                   type="button"
                   className="lesson-chat-panel-close"
                   onClick={() => setPanelOpen(false)}
-                  aria-label="Закрыть чат"
-                  title="Закрыть"
+                  aria-label={t('lessonChat.closeChat')}
+                  title={t('lessonChat.close')}
                 >
                   <FiX aria-hidden />
                 </button>
               </div>
 
-              <div className="lesson-chat-panel-toolbar" role="toolbar" aria-label="Действия чата">
+              <div className="lesson-chat-panel-toolbar" role="toolbar" aria-label={t('lessonChat.chatActions')}>
                 <button
                   type="button"
                   className="lesson-chat-toolbar-btn"
                   onClick={() => chatRef.current?.clear()}
-                  title="Очистить историю сообщений"
+                  title={t('lessonChat.clearHistory')}
                 >
                   <FiTrash2 aria-hidden />
-                  <span>Очистить</span>
+                  <span>{t('lessonChat.clear')}</span>
                 </button>
                 <button
                   type="button"
                   className="lesson-chat-toolbar-btn lesson-chat-toolbar-btn--ghost"
                   onClick={() => chatRef.current?.scrollToBottom()}
-                  title="Прокрутить к последним сообщениям"
+                  title={t('lessonChat.scrollBottom')}
                 >
                   <FiChevronDown aria-hidden />
-                  <span>Вниз</span>
+                  <span>{t('lessonChat.down')}</span>
                 </button>
               </div>
 

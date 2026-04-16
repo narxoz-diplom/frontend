@@ -20,9 +20,11 @@ import {
   FiChevronRight
 } from 'react-icons/fi'
 import api from '../services/api'
+import { useTranslation } from 'react-i18next'
 import './VideoPlayer.css'
 
 const VideoPlayer = () => {
+  const { t } = useTranslation()
   const { courseId, lessonId, videoId } = useParams()
   const navigate = useNavigate()
   const videoRef = useRef(null)
@@ -186,7 +188,7 @@ const VideoPlayer = () => {
       setLoading(false)
     } catch (err) {
       console.error('Error loading video:', err)
-      setError('Failed to load video')
+      setError(t('videoPage.loadError'))
       setLoading(false)
     }
   }
@@ -494,11 +496,11 @@ const VideoPlayer = () => {
   }
 
   if (loading) {
-    return <div className="loading">Loading video...</div>
+    return <div className="loading">{t('common.loading')}</div>
   }
 
   if (!video || !lesson || !course) {
-    return <div className="error">Video not found</div>
+    return <div className="error">{t('videoPage.notFound')}</div>
   }
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
@@ -519,7 +521,7 @@ const VideoPlayer = () => {
               preload="metadata"
               onError={(e) => {
                 console.error('Video playback error:', e, 'Video URL:', videoUrl)
-                setError('Failed to load video. Please check your connection and try again.')
+                setError(t('videoPage.playbackError'))
               }}
               onLoadedMetadata={(e) => {
                 const video = e.target
@@ -605,7 +607,7 @@ const VideoPlayer = () => {
                     )}
                   </div>
                   
-                  <button className="control-btn" onClick={addBookmark} title="Add bookmark">
+                  <button className="control-btn" onClick={addBookmark} title={t('videoPage.addBookmark')}>
                     <FiBookmark />
                   </button>
                   
@@ -625,13 +627,13 @@ const VideoPlayer = () => {
                   className={`action-btn ${showNotes ? 'active' : ''}`}
                   onClick={() => setShowNotes(!showNotes)}
                 >
-                  <FiFileText /> Notes
+                  <FiFileText /> {t('videoPage.notes')}
                 </button>
                 <button 
                   className={`action-btn ${showBookmarks ? 'active' : ''}`}
                   onClick={() => setShowBookmarks(!showBookmarks)}
                 >
-                  <FiBookmark /> Bookmarks
+                  <FiBookmark /> {t('videoPage.bookmarks')}
                 </button>
               </div>
             </div>
@@ -639,8 +641,8 @@ const VideoPlayer = () => {
             {video.description && <p className="video-description">{video.description}</p>}
             
             <div className="video-meta">
-              <span><FiClock /> Duration: {formatDuration(video.duration)}</span>
-              <span>Size: {formatFileSize(video.fileSize)}</span>
+              <span><FiClock /> {t('videoPage.duration')}: {formatDuration(video.duration)}</span>
+              <span>{t('videoPage.size')}: {formatFileSize(video.fileSize)}</span>
             </div>
             
             <div className="video-navigation">
@@ -649,7 +651,7 @@ const VideoPlayer = () => {
                   to={`/courses/${courseId}/lessons/${prevVideo.lessonId}/videos/${prevVideo.videoId}`}
                   className="nav-btn prev-btn"
                 >
-                  <FiArrowLeft /> Previous
+                  <FiArrowLeft /> {t('videoPage.previous')}
                 </Link>
               )}
               {nextVideo && (
@@ -657,7 +659,7 @@ const VideoPlayer = () => {
                   to={`/courses/${courseId}/lessons/${nextVideo.lessonId}/videos/${nextVideo.videoId}`}
                   className="nav-btn next-btn"
                 >
-                  Next <FiArrowRight />
+                  {t('videoPage.next')} <FiArrowRight />
                 </Link>
               )}
             </div>
@@ -667,7 +669,7 @@ const VideoPlayer = () => {
           {showNotes && (
             <div className="notes-panel">
               <div className="panel-header">
-                <h3><FiFileText /> Notes</h3>
+                <h3><FiFileText /> {t('videoPage.notes')}</h3>
                 <button className="close-btn" onClick={() => setShowNotes(false)}>
                   <FiX />
                 </button>
@@ -675,25 +677,25 @@ const VideoPlayer = () => {
               
               {!showNoteForm ? (
                 <button className="btn btn-primary" onClick={() => setShowNoteForm(true)}>
-                  <FiEdit3 /> Add Note at {formatTime(currentTime)}
+                  <FiEdit3 /> {t('videoPage.addNoteAt', { time: formatTime(currentTime) })}
                 </button>
               ) : (
                 <div className="note-form">
                   <textarea
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
-                    placeholder="Enter your note..."
+                    placeholder={t('videoPage.enterNote')}
                     rows="3"
                   />
                   <div className="form-actions">
                     <button className="btn btn-primary" onClick={addNote}>
-                      <FiSave /> Save
+                      <FiSave /> {t('common.save')}
                     </button>
                     <button className="btn btn-secondary" onClick={() => {
                       setShowNoteForm(false)
                       setNoteText('')
                     }}>
-                      Cancel
+                      {t('common.cancel')}
                     </button>
                   </div>
                 </div>
@@ -701,7 +703,7 @@ const VideoPlayer = () => {
               
               <div className="notes-list">
                 {notes.length === 0 ? (
-                  <p className="empty-state">No notes yet</p>
+                  <p className="empty-state">{t('videoPage.noNotes')}</p>
                 ) : (
                   notes.map((note) => (
                     <div key={note.id} className="note-item">
@@ -722,13 +724,13 @@ const VideoPlayer = () => {
                               className="btn btn-sm btn-primary"
                               onClick={() => updateNote(note.id, note.text)}
                             >
-                              <FiSave /> Save
+                              <FiSave /> {t('common.save')}
                             </button>
                             <button 
                               className="btn btn-sm btn-secondary"
                               onClick={() => setEditingNote(null)}
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           </div>
                         </div>
@@ -770,7 +772,7 @@ const VideoPlayer = () => {
           {showBookmarks && (
             <div className="bookmarks-panel">
               <div className="panel-header">
-                <h3><FiBookmark /> Bookmarks</h3>
+                <h3><FiBookmark /> {t('videoPage.bookmarks')}</h3>
                 <button className="close-btn" onClick={() => setShowBookmarks(false)}>
                   <FiX />
                 </button>
@@ -778,7 +780,7 @@ const VideoPlayer = () => {
               
               <div className="bookmarks-list">
                 {bookmarks.length === 0 ? (
-                  <p className="empty-state">No bookmarks yet. Click the bookmark button to add one.</p>
+                  <p className="empty-state">{t('videoPage.noBookmarks')}</p>
                 ) : (
                   bookmarks.map((bookmark) => (
                     <div key={bookmark.id} className="bookmark-item">
@@ -806,13 +808,13 @@ const VideoPlayer = () => {
         <div className="video-sidebar">
           <div className="course-info">
             <Link to={`/courses/${courseId}`} className="course-link">
-              <FiArrowLeft /> Back to Course
+              <FiArrowLeft /> {t('videoPage.backToCourse')}
             </Link>
             <h3>{course.title}</h3>
           </div>
           
           <div className="lessons-sidebar">
-            <h4>Lessons</h4>
+            <h4>{t('videoPage.lessons')}</h4>
             <div className="lessons-list">
               {lessons.map((l, index) => (
                 <div key={l.id} className={`lesson-item ${l.id === parseInt(lessonId) ? 'active' : ''}`}>

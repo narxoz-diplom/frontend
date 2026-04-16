@@ -2,24 +2,24 @@ import React, { useState, useMemo, useEffect } from 'react'
 import { FiUpload, FiFileText, FiMessageSquare, FiHelpCircle, FiEdit3 } from 'react-icons/fi'
 import api from '../services/api'
 import { isTeacher } from '../utils/roles'
+import { useTranslation } from 'react-i18next'
 import './RAG.css'
 
-// Ключи функций для учителя и студента
-const TEACHER_FUNCTIONS = [
-  { value: 'ingest', label: 'Загрузить контент', icon: FiUpload },
-  { value: 'module', label: 'Сгенерировать модуль', icon: FiFileText },
-  { value: 'summary', label: 'Создать сводку', icon: FiMessageSquare },
-  { value: 'quiz', label: 'Викторина', icon: FiHelpCircle },
-  { value: 'exam', label: 'Экзаменационные вопросы', icon: FiEdit3 }
-]
-const STUDENT_FUNCTIONS = [
-  { value: 'summary', label: 'Получить резюме', icon: FiMessageSquare },
-  { value: 'quiz', label: 'Пройти викторину', icon: FiHelpCircle }
-]
-
 const RAG = () => {
+  const { t } = useTranslation()
   const keycloak = typeof window !== 'undefined' ? window.keycloak : null
   const isTeacherRole = useMemo(() => isTeacher(keycloak), [keycloak?.token])
+  const TEACHER_FUNCTIONS = useMemo(() => [
+    { value: 'ingest', label: t('ragPage.ingest'), icon: FiUpload },
+    { value: 'module', label: t('ragPage.generateModule'), icon: FiFileText },
+    { value: 'summary', label: t('ragPage.createSummary'), icon: FiMessageSquare },
+    { value: 'quiz', label: t('ragPage.quiz'), icon: FiHelpCircle },
+    { value: 'exam', label: t('ragPage.examQuestions'), icon: FiEdit3 }
+  ], [t])
+  const STUDENT_FUNCTIONS = useMemo(() => [
+    { value: 'summary', label: t('ragPage.getSummary'), icon: FiMessageSquare },
+    { value: 'quiz', label: t('ragPage.takeQuiz'), icon: FiHelpCircle }
+  ], [t])
   const functions = isTeacherRole ? TEACHER_FUNCTIONS : STUDENT_FUNCTIONS
   const [selectedFunction, setSelectedFunction] = useState(functions[0]?.value ?? 'ingest')
   useEffect(() => {
@@ -94,7 +94,7 @@ const RAG = () => {
   const handleIngest = async (e) => {
     e.preventDefault()
     if (!ingestFile) {
-      setIngestResult({ error: 'Выберите файл' })
+      setIngestResult({ error: t('ragPage.selectFile') })
       return
     }
     setIngestLoading(true)
@@ -108,7 +108,7 @@ const RAG = () => {
       setIngestResult({ success: true, ...r.data })
     } catch (err) {
       setIngestResult({
-        error: err.response?.data?.detail || err.message || 'Ошибка загрузки'
+        error: err.response?.data?.detail || err.message || t('ragPage.uploadError')
       })
     } finally {
       setIngestLoading(false)
@@ -128,7 +128,7 @@ const RAG = () => {
       setModuleResult(r.data)
     } catch (err) {
       setModuleResult({
-        error: err.response?.data?.detail || err.message || 'Ошибка генерации'
+        error: err.response?.data?.detail || err.message || t('ragPage.generationError')
       })
     } finally {
       setModuleLoading(false)
@@ -148,7 +148,7 @@ const RAG = () => {
       setSummaryResult(r.data)
     } catch (err) {
       setSummaryResult({
-        error: err.response?.data?.detail || err.message || 'Ошибка'
+        error: err.response?.data?.detail || err.message || t('ragPage.genericError')
       })
     } finally {
       setSummaryLoading(false)
@@ -173,7 +173,7 @@ const RAG = () => {
       setQuizData(r.data)
     } catch (err) {
       setQuizData({
-        error: err.response?.data?.detail || err.message || 'Ошибка'
+        error: err.response?.data?.detail || err.message || t('ragPage.genericError')
       })
     } finally {
       setQuizLoading(false)
@@ -223,7 +223,7 @@ const RAG = () => {
       setExamResult(r.data)
     } catch (err) {
       setExamResult({
-        error: err.response?.data?.detail || err.message || 'Ошибка'
+        error: err.response?.data?.detail || err.message || t('ragPage.genericError')
       })
     } finally {
       setExamLoading(false)
@@ -233,24 +233,24 @@ const RAG = () => {
   return (
     <div className="rag-page">
       <header className="rag-header">
-        <h1>RAG — образовательные модули</h1>
+        <h1>{t('ragPage.title')}</h1>
         <p className="rag-subtitle">
           {isTeacherRole
-            ? 'Загружайте контент в векторную базу и создавайте модули, презентации, тесты и экзаменационные вопросы.'
-            : 'Задавайте вопросы по курсу, получайте резюме и проходите викторины по материалам.'}
+            ? t('ragPage.teacherSubtitle')
+            : t('ragPage.studentSubtitle')}
         </p>
       </header>
 
       <div className="rag-toolbar">
         <span className={`rag-role-badge ${isTeacherRole ? 'teacher' : 'student'}`}>
-          {isTeacherRole ? 'Учитель' : 'Студент'}
+          {isTeacherRole ? t('ragPage.teacher') : t('ragPage.student')}
         </span>
-        <label className="rag-toolbar-label">Функция:</label>
+        <label className="rag-toolbar-label">{t('ragPage.function')}:</label>
         <select
           className="rag-function-select"
           value={selectedFunction}
           onChange={(e) => setSelectedFunction(e.target.value)}
-          aria-label="Выберите функцию"
+          aria-label={t('ragPage.chooseFunction')}
         >
           {functions.map((f) => (
             <option key={f.value} value={f.value}>{f.label}</option>
@@ -260,9 +260,9 @@ const RAG = () => {
 
       {selectedFunction === 'ingest' && (
       <section className="rag-card">
-        <h2><FiUpload /> Загрузить контент</h2>
+        <h2><FiUpload /> {t('ragPage.ingest')}</h2>
         <form onSubmit={handleIngest}>
-          <label>Файл (PDF, DOCX, видео, аудио, изображение)</label>
+          <label>{t('ragPage.fileLabel')}</label>
             <div
               className={`file-upload ${dragActive ? "active" : ""}`}
               onDragEnter={handleDrag}
@@ -284,29 +284,29 @@ const RAG = () => {
               {ingestFile ? (
                 <>
                   <span className="file-name">📄 {ingestFile.name}</span>
-                  <span className="file-sub">Файл успешно выбран</span>
+                  <span className="file-sub">{t('ragPage.fileChosen')}</span>
                 </>
               ) : (
                 <>
                   <span className="file-main">
-                    Загрузите учебный материал<br />
+                    {t('ragPage.uploadPrompt')}<br />
                   </span>
 
                   <span className="file-sub">
-                    (Перетащите файл сюда или нажмите для выбора)
+                    ({t('ragPage.dragPrompt')})
                   </span>
                 </>
               )}
             </label>
             </div>
-          <label>Коллекция (необязательно)</label>
+          <label>{t('ragPage.collectionOptional')}</label>
           <input
             type="text"
             value={ingestCollection}
             onChange={(e) => setIngestCollection(e.target.value)}
             placeholder="default"
           />
-          <label>Метаданные JSON (необязательно)</label>
+          <label>{t('ragPage.metadataOptional')}</label>
           <input
             type="text"
             value={ingestMetadata}
@@ -314,13 +314,13 @@ const RAG = () => {
             placeholder='{"course_name": "...", "topic": "..."}'
           />
           <button type="submit" disabled={ingestLoading}>
-            {ingestLoading ? 'Загрузка…' : 'Загрузить'}
+            {ingestLoading ? t('common.loading') : t('ragPage.upload')}
           </button>
         </form>
         {ingestResult && (
           <div className={`rag-out ${ingestResult.error ? 'error' : 'success'}`}>
             {ingestResult.error || (
-              <>Загружено: {ingestResult.chunks_count} чанков. Документ: {ingestResult.document_id}. Коллекция: {ingestResult.collection_name}</>
+              <>{t('ragPage.uploadedChunks', { chunks: ingestResult.chunks_count, document: ingestResult.document_id, collection: ingestResult.collection_name })}</>
             )}
           </div>
         )}
@@ -329,23 +329,23 @@ const RAG = () => {
 
       {selectedFunction === 'module' && (
       <section className="rag-card">
-        <h2><FiFileText /> Сгенерировать модуль</h2>
+        <h2><FiFileText /> {t('ragPage.generateModule')}</h2>
         <form onSubmit={handleGenerateModule}>
-          <label>Запрос</label>
+          <label>{t('ragPage.request')}</label>
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Создай обучающий модуль по теме из загруженных материалов..."
+            placeholder={t('ragPage.modulePromptPlaceholder')}
             rows={3}
           />
-          <label>Коллекция (необязательно)</label>
+          <label>{t('ragPage.collectionOptional')}</label>
           <input
             type="text"
             value={genCollection}
             onChange={(e) => setGenCollection(e.target.value)}
             placeholder="default"
           />
-          <label>Число чанков (1–50)</label>
+          <label>{t('ragPage.chunkCount')}</label>
           <input
             type="number"
             min={1}
@@ -354,7 +354,7 @@ const RAG = () => {
             onChange={(e) => setTopK(Number(e.target.value) || 8)}
           />
           <button type="submit" disabled={moduleLoading}>
-            {moduleLoading ? 'Генерация…' : 'Сгенерировать'}
+            {moduleLoading ? t('common.loading') : t('ragPage.generate')}
           </button>
         </form>
         {moduleResult && (
@@ -363,7 +363,7 @@ const RAG = () => {
               <>
                 {moduleResult.module_text}
                 {moduleResult.chunks_used != null && (
-                  <p className="rag-meta">Использовано чанков: {moduleResult.chunks_used}, коллекция: {moduleResult.collection_name}</p>
+                  <p className="rag-meta">{t('ragPage.chunksUsed', { chunks: moduleResult.chunks_used, collection: moduleResult.collection_name })}</p>
                 )}
               </>
             )}
@@ -374,9 +374,9 @@ const RAG = () => {
 
       {selectedFunction === 'summary' && (
       <section className="rag-card">
-        <h2><FiMessageSquare /> Создать сводку</h2>
+        <h2><FiMessageSquare /> {t('ragPage.createSummary')}</h2>
         <form onSubmit={handleSummary}>
-          <label>Коллекция</label>
+          <label>{t('ragPage.collection')}</label>
           <input
             type="text"
             value={summaryCollection}
@@ -384,7 +384,7 @@ const RAG = () => {
             placeholder="default"
           />
           <button type="submit" disabled={summaryLoading}>
-            {summaryLoading ? 'Генерация…' : 'Сгенерировать резюме'}
+            {summaryLoading ? t('common.loading') : t('ragPage.generateSummary')}
           </button>
         </form>
         {summaryResult && (
@@ -393,7 +393,7 @@ const RAG = () => {
               <>
                 {summaryResult.text}
                 {summaryResult.chunks_used != null && (
-                  <p className="rag-meta">Чанков: {summaryResult.chunks_used}, коллекция: {summaryResult.collection_name}</p>
+                  <p className="rag-meta">{t('ragPage.chunksShort', { chunks: summaryResult.chunks_used, collection: summaryResult.collection_name })}</p>
                 )}
               </>
             )}
@@ -404,9 +404,9 @@ const RAG = () => {
 
       {selectedFunction === 'quiz' && (
       <section className="rag-card">
-        <h2><FiHelpCircle /> {isTeacherRole ? 'Создать викторину' : 'Викторина'}</h2>
+        <h2><FiHelpCircle /> {isTeacherRole ? t('ragPage.createQuiz') : t('ragPage.quiz')}</h2>
         <form onSubmit={handleQuiz}>
-          <label>Коллекция</label>
+          <label>{t('ragPage.collection')}</label>
           <input
             type="text"
             value={quizCollection}
@@ -414,7 +414,7 @@ const RAG = () => {
             placeholder="default"
           />
           <button type="submit" disabled={quizLoading}>
-            {quizLoading ? 'Генерация…' : 'Сгенерировать викторину'}
+            {quizLoading ? t('common.loading') : t('ragPage.generateQuiz')}
           </button>
         </form>
         {quizData && (
@@ -441,7 +441,7 @@ const RAG = () => {
                               className="btn-quiz-hint"
                               onClick={() => setQuizHintsVisible(prev => new Set([...prev, i]))}
                             >
-                              Подсказка
+                              {t('ragPage.hint')}
                             </button>
                           ) : (
                             <p className="quiz-hint-text">{q.hint}</p>
@@ -465,15 +465,15 @@ const RAG = () => {
                         <div className="quiz-feedback">
                           {isCorrect ? (
                             <>
-                              <p className="quiz-feedback-correct">Верно!</p>
-                              <p className="correct-answer">Правильный ответ: {q.options?.[q.correct] ?? q.correct}</p>
+                              <p className="quiz-feedback-correct">{t('ragPage.correct')}</p>
+                              <p className="correct-answer">{t('ragPage.rightAnswer', { answer: q.options?.[q.correct] ?? q.correct })}</p>
                               {q.explanation && <p className="quiz-explanation">{q.explanation}</p>}
                             </>
                           ) : (
                             <>
-                              <p className="quiz-feedback-incorrect">Неверно.</p>
-                              <p className="quiz-your-answer">Ваш ответ: {userAnswer ? (q.options?.[userAnswer] ?? userAnswer) : '—'}</p>
-                              <p className="correct-answer">Правильный ответ: {q.options?.[q.correct] ?? q.correct}</p>
+                              <p className="quiz-feedback-incorrect">{t('ragPage.incorrect')}</p>
+                              <p className="quiz-your-answer">{t('ragPage.yourAnswer', { answer: userAnswer ? (q.options?.[userAnswer] ?? userAnswer) : '—' })}</p>
+                              <p className="correct-answer">{t('ragPage.rightAnswer', { answer: q.options?.[q.correct] ?? q.correct })}</p>
                               {q.explanation && <p className="quiz-explanation">{q.explanation}</p>}
                             </>
                           )}
@@ -484,12 +484,12 @@ const RAG = () => {
                 })}
                 {quizData.questions?.length && !quizChecked && (
                   <button type="button" className="btn-finish-quiz" onClick={handleFinishQuiz}>
-                    Завершить тест
+                    {t('ragPage.finishQuiz')}
                   </button>
                 )}
                 {quizScore != null && (
                   <div className={`quiz-result ${quizScore.pct >= 60 ? 'good' : 'bad'}`}>
-                    Результат: {quizScore.correct} из {quizScore.total} ({quizScore.pct}%)
+                    {t('ragPage.result', { correct: quizScore.correct, total: quizScore.total, pct: quizScore.pct })}
                   </div>
                 )}
               </>
@@ -501,9 +501,9 @@ const RAG = () => {
 
       {selectedFunction === 'exam' && (
       <section className="rag-card">
-        <h2><FiEdit3 /> Экзаменационные вопросы</h2>
+        <h2><FiEdit3 /> {t('ragPage.examQuestions')}</h2>
         <form onSubmit={handleExam}>
-          <label>Коллекция</label>
+          <label>{t('ragPage.collection')}</label>
           <input
             type="text"
             value={examCollection}
@@ -511,7 +511,7 @@ const RAG = () => {
             placeholder="default"
           />
           <button type="submit" disabled={examLoading}>
-            {examLoading ? 'Генерация…' : 'Сгенерировать вопросы'}
+            {examLoading ? t('common.loading') : t('ragPage.generateQuestions')}
           </button>
         </form>
         {examResult && (
@@ -520,7 +520,7 @@ const RAG = () => {
               <>
                 {examResult.text}
                 {examResult.chunks_used != null && (
-                  <p className="rag-meta">Чанков: {examResult.chunks_used}, коллекция: {examResult.collection_name}</p>
+                  <p className="rag-meta">{t('ragPage.chunksShort', { chunks: examResult.chunks_used, collection: examResult.collection_name })}</p>
                 )}
               </>
             )}

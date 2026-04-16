@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
+import { useTranslation } from 'react-i18next'
 import './Register.css'
 
 const Register = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const [formData, setFormData] = useState({
         username: '',
@@ -41,23 +43,23 @@ const Register = () => {
 
     const validateForm = () => {
         if (!formData.username || !formData.email || !formData.password || !formData.firstName || !formData.lastName) {
-            setError('Все поля обязательны для заполнения')
+            setError(t('auth.fillAllRequired'))
             return false
         }
 
         if (formData.password.length < 6) {
-            setError('Пароль должен содержать минимум 6 символов')
+            setError(t('auth.passwordTooShort'))
             return false
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setError('Пароли не совпадают')
+            setError(t('auth.passwordsMismatch'))
             return false
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
-            setError('Некорректный email адрес')
+            setError(t('auth.invalidEmail'))
             return false
         }
 
@@ -89,9 +91,9 @@ const Register = () => {
             if (err.response?.data?.error) {
                 setError(err.response.data.error)
             } else if (err.response?.status === 409) {
-                setError('Пользователь с таким именем или email уже существует')
+                setError(t('auth.userExists'))
             } else {
-                setError('Ошибка регистрации. Попробуйте еще раз.')
+                setError(t('auth.registerDefaultError'))
             }
             setLoading(false)
         }
@@ -269,22 +271,22 @@ const Register = () => {
                     </div>
                     <div className="illustration-text">
                         <h2>ACADEMIS</h2>
-                        <p>Инновационная среда для вашего обучения</p>
+                        <p>{t('auth.brandSubtitle')}</p>
                     </div>
                 </div>
 
                 {/* Правая часть — Форма регистрации */}
                 <div className="login-form-section">
                     <div className="login-card" style={{maxWidth: '480px'}}>
-                        <h1>Регистрация</h1>
-                        <p className="login-subtitle">Создайте новый аккаунт</p>
+                        <h1>{t('auth.registerTitle')}</h1>
+                        <p className="login-subtitle">{t('auth.registerSubtitle')}</p>
 
                         {error && <div className="error-message">{error}</div>}
 
                         <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Имя</label>
+                                    <label>{t('auth.firstName')}</label>
                                     <input
                                         name="firstName"
                                         type="text"
@@ -295,7 +297,7 @@ const Register = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Фамилия</label>
+                                    <label>{t('auth.lastName')}</label>
                                     <input
                                         name="lastName"
                                         type="text"
@@ -308,7 +310,7 @@ const Register = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Имя пользователя</label>
+                                    <label>{t('auth.username')}</label>
                                 <input
                                     name="username"
                                     type="text"
@@ -332,16 +334,16 @@ const Register = () => {
                             </div>
 
                             <div className="form-group">
-                                <label>Роль</label>
+                                    <label>{t('auth.role')}</label>
                                 <select name="role" value={formData.role} onChange={handleChange}>
-                                    <option value="client">Студент</option>
-                                    <option value="teacher">Преподаватель</option>
+                                    <option value="client">{t('auth.student')}</option>
+                                    <option value="teacher">{t('auth.teacher')}</option>
                                 </select>
                             </div>
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Пароль</label>
+                                    <label>{t('auth.password')}</label>
                                     <input
                                         name="password"
                                         type="password"
@@ -353,7 +355,7 @@ const Register = () => {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Подтверждение</label>
+                                    <label>{t('auth.confirmPassword')}</label>
                                     <input
                                         name="confirmPassword"
                                         type="password"
@@ -370,13 +372,13 @@ const Register = () => {
                                 className="btn-block btn-primary"
                                 disabled={loading}
                             >
-                                {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+                                {loading ? t('auth.registerLoading') : t('auth.registerButton')}
                             </button>
                         </form>
 
                         <div className="login-help">
-                            <span>Уже есть аккаунт? </span>
-                            <Link to="/login">Войти</Link>
+                            <span>{t('auth.alreadyHaveAccount')} </span>
+                            <Link to="/login">{t('nav.login')}</Link>
                         </div>
                     </div>
                 </div>

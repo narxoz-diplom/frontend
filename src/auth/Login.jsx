@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import auth from '../config/auth'
+import { useTranslation } from 'react-i18next'
 import './Login.css'
 
 const parseJwtPayload = (token) => {
@@ -18,65 +19,12 @@ const parseJwtPayload = (token) => {
     }
 }
 
-const translations = {
-    ru: {
-        brandSubtitle: "Инновационная среда для вашего обучения",
-        formTitle: "Вход в систему",
-        formSubtitle: "Введите ваши учетные данные",
-        labelUser: "Имя пользователя",
-        labelPass: "Пароль",
-        placeholderUser: "Логин или Email",
-        btnLog: "Войти",
-        btnLoading: "Загрузка...",
-        noAccount: "Нет аккаунта?",
-        linkReg: "Зарегистрироваться",
-        errorLabel: "Ошибка входа",
-        errInvalid: "Неверное имя пользователя или пароль",
-        errServer: "Сервис временно недоступен",
-        errDefault: "Не удалось войти в систему"
-    },
-    en: {
-        brandSubtitle: "Innovative environment for your learning",
-        formTitle: "Sign In",
-        formSubtitle: "Enter your credentials",
-        labelUser: "Username",
-        labelPass: "Password",
-        placeholderUser: "Login or Email",
-        btnLog: "Login",
-        btnLoading: "Loading...",
-        noAccount: "No account?",
-        linkReg: "Register now",
-        errorLabel: "Login Error",
-        errInvalid: "Invalid username or password",
-        errServer: "Service temporarily unavailable",
-        errDefault: "Could not log in"
-    },
-    kk: {
-        brandSubtitle: "Оқуыңызға арналған инновациялық орта",
-        formTitle: "Жүйеге кіру",
-        formSubtitle: "Тіркелгі деректерін енгізіңіз",
-        labelUser: "Пайдаланушы аты",
-        labelPass: "Құпия сөз",
-        placeholderUser: "Логин немесе Email",
-        btnLog: "Кіру",
-        btnLoading: "Жүктеу...",
-        noAccount: "Тіркелгі жоқ па?",
-        linkReg: "Тіркелу",
-        errorLabel: "Кіру қатесі",
-        errInvalid: "Пайдаланушы аты немесе құпия сөз қате",
-        errServer: "Сервис уақытша қолжетімсіз",
-        errDefault: "Жүйеге кіру мүмкін болмады"
-    }
-}
-
 const Login = () => {
+    const { t, i18n } = useTranslation()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-
-    const currentLang = localStorage.getItem('language') || 'ru'
-    const t = translations[currentLang] || translations.ru
 
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
@@ -85,8 +33,8 @@ const Login = () => {
         } else {
             document.body.classList.remove('dark-mode');
         }
-        document.title = currentLang === 'ru' ? 'Academis | Вход' : (currentLang === 'kk' ? 'Academis | Кіру' : 'Academis | Login');
-    }, [currentLang]);
+        document.title = `Academis | ${t('auth.loginTitle')}`;
+    }, [i18n.language, t]);
 
     useEffect(() => {
         if (auth.authenticated) {
@@ -112,11 +60,11 @@ const Login = () => {
 
                 // ИСПРАВЛЕННАЯ ЛОГИКА:
                 if (response.status === 401) {
-                    throw new Error(t.errInvalid); // Точно неверный пароль/логин
+                    throw new Error(t('auth.invalidCredentials')); // Точно неверный пароль/логин
                 } else if (response.status === 404 || response.status >= 500) {
-                    throw new Error(t.errServer);  // Проблемы с сервером
+                    throw new Error(t('auth.serviceUnavailable'));  // Проблемы с сервером
                 } else {
-                    throw new Error(errorData.message || t.errDefault); // Остальные ошибки
+                    throw new Error(errorData.message || t('auth.loginDefaultError')); // Остальные ошибки
                 }
             }
 
@@ -202,20 +150,20 @@ const Login = () => {
                     </div>
                     <div className="illustration-text">
                         <h2>ACADEMIS</h2>
-                        <p>{t.brandSubtitle}</p>
+                        <p>{t('auth.brandSubtitle')}</p>
                     </div>
                 </div>
 
                 <div className="login-form-section">
                     <div className="login-card">
-                        <h1>{t.formTitle}</h1>
-                        <p className="login-subtitle">{t.formSubtitle}</p>
+                        <h1>{t('auth.loginTitle')}</h1>
+                        <p className="login-subtitle">{t('auth.loginSubtitle')}</p>
 
                         {error && (
                             <div className="error-alert">
                                 <span className="error-icon">!</span>
                                 <div className="error-text-wrapper">
-                                    <strong>{t.errorLabel}</strong>
+                                    <strong>{t('auth.loginError')}</strong>
                                     <p>{error}</p>
                                 </div>
                             </div>
@@ -223,19 +171,19 @@ const Login = () => {
 
                         <form onSubmit={handleLogin} className="login-form">
                             <div className="form-group">
-                                <label htmlFor="username">{t.labelUser}</label>
+                                <label htmlFor="username">{t('auth.username')}</label>
                                 <input
                                     id="username"
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    placeholder={t.placeholderUser}
+                                    placeholder={t('auth.loginPlaceholder')}
                                     required
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="password">{t.labelPass}</label>
+                                <label htmlFor="password">{t('auth.password')}</label>
                                 <input
                                     id="password"
                                     type="password"
@@ -251,13 +199,13 @@ const Login = () => {
                                 className="btn-block btn-primary"
                                 disabled={loading}
                             >
-                                {loading ? t.btnLoading : t.btnLog}
+                                {loading ? t('common.loading') : t('auth.loginButton')}
                             </button>
                         </form>
 
                         <div className="login-help">
-                            <span>{t.noAccount} </span>
-                            <Link to="/register">{t.linkReg}</Link>
+                            <span>{t('auth.noAccount')} </span>
+                            <Link to="/register">{t('auth.registerLink')}</Link>
                         </div>
                     </div>
                 </div>

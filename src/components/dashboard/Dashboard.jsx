@@ -279,8 +279,10 @@ import TeacherDashboard from './TeacherDashboard'
 import AdminDashboard from './AdminDashboard'
 import auth from '../../config/auth'
 import { isAdmin, isTeacher } from '../../utils/roles'
+import { useTranslation } from 'react-i18next'
 
 const Dashboard = () => {
+    const { t } = useTranslation()
     const location = useLocation()
     const view = location.pathname === '/stats' ? 'stats' : 'home'
 
@@ -302,7 +304,7 @@ const Dashboard = () => {
     }, [])
 
     if (isLoading) {
-        return <div className="dashboard-loading">Загрузка данных...</div>
+        return <div className="dashboard-loading">{t('dashboard.loading')}</div>
     }
 
     if (userRole === 'admin') {

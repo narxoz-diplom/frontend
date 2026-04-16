@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { FiCheckCircle, FiAlertCircle, FiInfo, FiX } from 'react-icons/fi'
 import './alert-ui.css'
 
@@ -9,6 +10,7 @@ const icons = {
 }
 
 const ToastStack = ({ toasts, onDismiss }) => {
+  const { t } = useTranslation()
   if (!toasts?.length) return null
 
   return (
@@ -33,7 +35,7 @@ const ToastStack = ({ toasts, onDismiss }) => {
               type="button"
               className="toast__close"
               onClick={() => onDismiss(t.id)}
-              aria-label="Закрыть"
+              aria-label={t('lessonChat.close')}
             >
               <FiX size={18} />
             </button>

@@ -18,9 +18,11 @@ import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import { pickLocalized } from '../i18n/localize'
+import { useTranslation } from 'react-i18next'
 import './CourseDetail.css'
 
 const CourseDetail = () => {
+  const { t } = useTranslation()
   const { id } = useParams()
   const { confirm, toast } = useAlert()
   const [course, setCourse] = useState(null)
@@ -102,17 +104,17 @@ const CourseDetail = () => {
       setLoading(false)
     } catch (err) {
       console.error('Error loading course:', err)
-      setError('Failed to load course')
+      setError(t('coursePage.loadCourseError'))
       setLoading(false)
     }
   }
 
   const handleStatusChange = async (newStatus) => {
     const ok = await confirm({
-      title: 'Статус курса',
-      message: `Изменить статус курса на «${newStatus}»?`,
-      confirmText: 'Изменить',
-      cancelText: 'Отмена',
+      title: t('coursePage.changeStatusTitle'),
+      message: t('coursePage.changeStatusMessage', { status: newStatus }),
+      confirmText: t('common.edit'),
+      cancelText: t('common.cancel'),
       variant: 'default'
     })
     if (!ok) return
@@ -122,10 +124,10 @@ const CourseDetail = () => {
       const response = await api.patch(`/courses/${id}/status`, { status: newStatus })
       setCourse(response.data)
       setError(null)
-      toast(`Статус курса изменён на «${newStatus}»`, 'success')
+      toast(t('coursePage.statusChanged', { status: newStatus }), 'success')
     } catch (err) {
       console.error('Error changing course status:', err)
-      setError('Ошибка при изменении статуса курса')
+      setError(t('coursePage.statusChangeError'))
     } finally {
       setStatusChanging(false)
     }
@@ -163,7 +165,7 @@ const CourseDetail = () => {
       loadProgress() // Обновляем прогресс после загрузки уроков
     } catch (err) {
       console.error('Error loading lessons:', err)
-      setError('Failed to load lessons')
+      setError(t('coursePage.loadLessonsError'))
       setLoading(false)
     }
   }
@@ -179,7 +181,7 @@ const CourseDetail = () => {
       setNewLesson({ title: '', description: '', orderNumber: lessons.length + 1 })
     } catch (err) {
       console.error('Error creating lesson:', err)
-      setError('Failed to create lesson')
+      setError(t('coursePage.createLessonError'))
     }
   }
 
@@ -249,10 +251,10 @@ const CourseDetail = () => {
 
   const handleDeleteFile = async (fileId, lessonId) => {
     const ok = await confirm({
-      title: 'Удаление файла',
-      message: 'Удалить этот файл?',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('filesPage.deleteTitle'),
+      message: t('filesPage.deleteMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
@@ -267,41 +269,41 @@ const CourseDetail = () => {
       setError(null)
     } catch (err) {
       console.error('Error deleting file:', err)
-      setError('Ошибка при удалении файла')
+      setError(t('filesPage.deleteError'))
     }
   }
 
   if (loading) {
-    return <div className="loading">Loading course...</div>
+    return <div className="loading">{t('common.loading')}</div>
   }
 
   if (!course) {
-    return <div className="error">Course not found</div>
+    return <div className="error">{t('coursePage.loadCourseError')}</div>
   }
 
   const courseProgress = getCourseProgress()
 
   const statusLabel =
     course.status === 'PUBLISHED'
-      ? 'Опубликован'
+      ? t('dashboard.published')
       : course.status === 'DRAFT'
-        ? 'Черновик'
+        ? t('common.draft')
         : course.status === 'ARCHIVED'
-          ? 'В архиве'
+          ? t('common.archived')
           : course.status
 
   return (
     <div className="course-detail course-detail--v2">
       <header className="course-page__intro">
         <Link to="/courses" className="course-page__back">
-          <FiArrowLeft aria-hidden /> К каталогу курсов
+          <FiArrowLeft aria-hidden /> {t('coursePage.backToCatalog')}
         </Link>
         {course.imageUrl && (
           <div className="course-page__cover-wrap">
             <img src={course.imageUrl} alt="" className="course-page__cover" decoding="async" />
           </div>
         )}
-        <p className="course-page__kicker">Курс · {statusLabel}</p>
+        <p className="course-page__kicker">{t('common.course')} · {statusLabel}</p>
         <div className="course-page__title-row">
           <h1 className="course-page__title">{pickLocalized(course, 'title')}</h1>
           <div className="course-page__status-block">
@@ -312,8 +314,8 @@ const CourseDetail = () => {
                 value={course.status}
                 onChange={(e) => handleStatusChange(e.target.value)}
                 disabled={statusChanging}
-                title="Изменить статус курса"
-                aria-label="Статус курса"
+                title={t('coursePage.changeStatusTitle')}
+                aria-label={t('coursePage.changeStatusTitle')}
               >
                 <option value="DRAFT">DRAFT (Черновик)</option>
                 <option value="PUBLISHED">PUBLISHED (Опубликован)</option>
@@ -325,26 +327,26 @@ const CourseDetail = () => {
         {pickLocalized(course, 'description') && <p className="course-page__lead">{pickLocalized(course, 'description')}</p>}
         <dl className="course-page__meta">
           <div>
-            <dt>Уроков</dt>
+            <dt>{t('coursePage.lessons')}</dt>
             <dd>{lessons.length}</dd>
           </div>
           <div>
-            <dt>Тестов</dt>
+            <dt>{t('coursePage.tests')}</dt>
             <dd>{tests.length}</dd>
           </div>
           {lessons.length > 0 && (
             <div>
-              <dt>Прогресс</dt>
+              <dt>{t('coursePage.progress')}</dt>
               <dd>{Math.round(courseProgress)}%</dd>
             </div>
           )}
           <div>
-            <dt>Просмотров</dt>
+            <dt>{t('coursePage.views')}</dt>
             <dd>{courseViews}</dd>
           </div>
         </dl>
         {lessons.length > 0 && (
-          <div className="course-page__progress" aria-label="Прогресс по урокам">
+          <div className="course-page__progress" aria-label={t('coursePage.progress')}>
             <div className="course-page__progress-track">
               <div className="course-page__progress-fill" style={{ width: `${courseProgress}%` }} />
             </div>
@@ -358,9 +360,9 @@ const CourseDetail = () => {
         <section className="lessons-section course-panel">
           <div className="lessons-header">
             <div className="course-section-head__text">
-              <span className="course-section-head__eyebrow">Программа</span>
+              <span className="course-section-head__eyebrow">{t('coursePage.program')}</span>
               <div className="lessons-header-titles">
-                <h2>Уроки</h2>
+                <h2>{t('coursePage.lessons')}</h2>
               {canUpload(window.keycloak) && (
                 <p className="lessons-manage-hint">
                   Удаление уроков и курса — в «Редактировать курс».
@@ -371,7 +373,7 @@ const CourseDetail = () => {
             {canUpload(window.keycloak) && (
               <>
                 <Link to={`/courses/${id}/edit`} className="btn-edit">
-                  Редактировать курс
+                  {t('coursePage.editCourse')}
                 </Link>
                 <button
                   className="btn btn-primary"
@@ -379,11 +381,11 @@ const CourseDetail = () => {
                 >
                 {showLessonForm ? (
                   <>
-                    <FiX /> Отмена
+                    <FiX /> {t('common.cancel')}
                   </>
                 ) : (
                   <>
-                    <FiPlus /> Добавить урок
+                    <FiPlus /> {t('coursePage.addLesson')}
                   </>
                 )}
               </button>
@@ -393,29 +395,29 @@ const CourseDetail = () => {
 
           {showLessonForm && (
             <div className="card create-lesson-form">
-              <h3>Create New Lesson</h3>
+              <h3>{t('coursePage.createLesson')}</h3>
               <form onSubmit={handleCreateLesson}>
                 <div className="form-group">
-                  <label>Lesson Title</label>
+                  <label>{t('coursePage.lessonTitle')}</label>
                   <input
                     type="text"
                     value={newLesson.title}
                     onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
                     required
-                    placeholder="Enter lesson title"
+                    placeholder={t('coursePage.lessonTitle')}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Description</label>
+                  <label>{t('coursePage.lessonDescription')}</label>
                   <textarea
                     value={newLesson.description}
                     onChange={(e) => setNewLesson({...newLesson, description: e.target.value})}
                     rows="3"
-                    placeholder="Enter lesson description"
+                    placeholder={t('coursePage.lessonDescription')}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Order Number</label>
+                  <label>{t('coursePage.orderNumber')}</label>
                   <input
                     type="number"
                     value={newLesson.orderNumber}
@@ -426,14 +428,14 @@ const CourseDetail = () => {
                 </div>
                 <div className="form-actions">
                   <button type="submit" className="btn btn-primary">
-                    <FiPlus /> Create Lesson
+                    <FiPlus /> {t('coursePage.createLesson')}
                   </button>
                   <button 
                     type="button" 
                     className="btn btn-cancel"
                     onClick={() => setShowLessonForm(false)}
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 </div>
               </form>
@@ -446,7 +448,7 @@ const CourseDetail = () => {
                 <FiBook />
               </div>
               <p>
-                No lessons yet. {canUpload(window.keycloak) && 'Create the first lesson!'}
+                {t('coursePage.emptyLessons')} {canUpload(window.keycloak) && t('coursePage.createFirstLesson')}
               </p>
             </div>
           ) : (
@@ -468,7 +470,7 @@ const CourseDetail = () => {
                         <h3>{pickLocalized(lesson, 'title')}</h3>
                         {progress.completed && (
                           <span className="lesson-completed-badge">
-                            <FiCheckCircle /> Completed
+                            <FiCheckCircle /> {t('coursePage.completed')}
                           </span>
                         )}
                       </div>
@@ -492,7 +494,7 @@ const CourseDetail = () => {
                           to={`/courses/${id}/lessons/${lesson.id}`}
                           className="btn btn-primary"
                         >
-                          <FiBook /> Study Lesson
+                          <FiBook /> {t('coursePage.studyLesson')}
                         </Link>
                       </div>
                       
@@ -500,7 +502,7 @@ const CourseDetail = () => {
                       {lesson.videos && lesson.videos.length > 0 && (
                         <div className="lesson-videos">
                           <h4>
-                            <FiPlay /> Videos ({lesson.videos.length})
+                            <FiPlay /> {t('coursePage.videos')} ({lesson.videos.length})
                           </h4>
                           <div className="videos-list">
                             {lesson.videos.slice(0, 3).map((video) => (
@@ -518,7 +520,7 @@ const CourseDetail = () => {
                                 to={`/courses/${id}/lessons/${lesson.id}`}
                                 className="video-link see-more"
                               >
-                                <span>+{lesson.videos.length - 3} more videos</span>
+                                <span>+{lesson.videos.length - 3} {t('coursePage.moreVideos')}</span>
                               </Link>
                             )}
                           </div>
@@ -528,7 +530,7 @@ const CourseDetail = () => {
                       {/* Файлы урока (краткий список) */}
                       <div className="lesson-files">
                         <h4>
-                          <FiFile /> Files ({lessonFiles[lesson.id]?.length || 0})
+                          <FiFile /> {t('coursePage.files')} ({lessonFiles[lesson.id]?.length || 0})
                         </h4>
                         {lessonFiles[lesson.id] && lessonFiles[lesson.id].length > 0 ? (
                           <div className="files-list">
@@ -552,7 +554,7 @@ const CourseDetail = () => {
                                       e.stopPropagation()
                                       handleDeleteFile(file.id, lesson.id)
                                     }}
-                                    title="Удалить файл"
+                                    title={t('common.delete')}
                                   >
                                     <FiTrash2 />
                                   </button>
@@ -569,7 +571,7 @@ const CourseDetail = () => {
                             )}
                           </div>
                         ) : (
-                          <p className="no-files">No files yet</p>
+                          <p className="no-files">{t('coursePage.noFilesYet')}</p>
                         )}
                         
                         {/* Загрузка файла к уроку */}
@@ -592,11 +594,11 @@ const CourseDetail = () => {
                             >
                               {uploadingFile?.[lesson.id] ? (
                                 <>
-                                  <FiClock /> Uploading...
+                                  <FiClock /> {t('lessonPage.uploading')}
                                 </>
                               ) : (
                                 <>
-                                  <FiUpload /> Add File
+                                  <FiUpload /> {t('coursePage.addFile')}
                                 </>
                               )}
                             </label>
@@ -613,15 +615,15 @@ const CourseDetail = () => {
 
         <section className="tests-section course-panel">
           <div className="course-section-head__text course-section-head__text--tests">
-            <span className="course-section-head__eyebrow">Проверка знаний</span>
-            <h2>Тесты</h2>
+            <span className="course-section-head__eyebrow">{t('coursePage.knowledgeCheck')}</span>
+            <h2>{t('coursePage.tests')}</h2>
           </div>
           {tests.length === 0 ? (
             <div className="card empty-state">
               <div className="empty-state-icon">
                 <FiCheckSquare />
               </div>
-              <p>Тестов пока нет</p>
+              <p>{t('coursePage.noTests')}</p>
             </div>
           ) : (
             <div className="tests-list">
@@ -632,7 +634,7 @@ const CourseDetail = () => {
                   className="test-card-link"
                 >
                   <FiCheckSquare className="test-icon" />
-                  <span>{test.title}</span>
+                  <span>{pickLocalized(test, 'title')}</span>
                 </Link>
               ))}
             </div>

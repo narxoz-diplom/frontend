@@ -91,7 +91,7 @@ const Navigation = ({ userRoles = [] }) => {
             const count = response.data.filter(n => !n.read).length
             setUnreadCount(count)
         } catch (err) {
-            console.error('Ошибка загрузки уведомлений', err)
+            console.error('Failed to load notifications', err)
         }
     }, [])
 
@@ -149,7 +149,7 @@ const Navigation = ({ userRoles = [] }) => {
             <header className={`top-navbar ${isCollapsed ? 'collapsed' : ''}`}>
                 <div className="top-search">
                     <FiSearch className="search-icon" />
-                    <input type="text" placeholder="Поиск материалов..." />
+                    <input type="text" placeholder={t('common.search')} />
                 </div>
 
                 <div className="top-right-actions">
@@ -176,7 +176,7 @@ const Navigation = ({ userRoles = [] }) => {
                     <div className="notif-wrapper" style={{ position: 'relative' }}>
                         <button
                             className={`top-action-btn ${unreadCount > 0 ? 'has-unread' : ''}`}
-                            title="Уведомления"
+                            title={t('nav.notifications')}
                             onClick={() => setShowNotifications(!showNotifications)}
                         >
                             <FiBell />
@@ -203,8 +203,8 @@ const Navigation = ({ userRoles = [] }) => {
                         <div className="top-avatar-container">
                             <div className="top-avatar">{userName.charAt(0).toUpperCase()}</div>
                             <div className="top-dropdown">
-                                <Link to="/profile"><FiUser /> Профиль</Link>
-                                <Link to="/settings"><FiSettings /> Настройки</Link>
+                                <Link to="/profile"><FiUser /> {t('nav.profile')}</Link>
+                                <Link to="/settings"><FiSettings /> {t('nav.settings')}</Link>
                                 <hr />
                                 <button onClick={handleLogout} className="logout-btn-dropdown">
                                     <FiLogOut /> {t('nav.logout')}
@@ -234,9 +234,9 @@ const Navigation = ({ userRoles = [] }) => {
                 </button>
 
                 <div className="nav-links">
-                    <NavItem to="/" icon={<FiHome />} label="Главная" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/" icon={<FiHome />} label={t('nav.home')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/courses" icon={<FiBook />} label={t('nav.courses')} isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/stats" icon={<FiBarChart2 />} label="Статистика" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/stats" icon={<FiBarChart2 />} label={t('nav.stats')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/files" icon={<FiFolder />} label={t('nav.files')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/rag" icon={<FiCpu />} label={t('nav.rag')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/notifications" icon={<FiBell />} label={t('nav.notifications')} isActive={isActive} isCollapsed={isCollapsed} />
@@ -255,7 +255,7 @@ const Navigation = ({ userRoles = [] }) => {
                     <button
                         className="btn-logout-sidebar"
                         onClick={handleLogout}
-                        title="Выйти из системы"
+                        title={t('nav.logout')}
                     >
                         <FiLogOut className="nav-icon" />
                         {!isCollapsed && <span className="nav-label">{t('nav.logout')}</span>}

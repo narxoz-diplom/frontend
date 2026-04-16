@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiEdit3, FiTrash2, FiSave, FiX, FiDownload } from 'react-icons/fi'
+import { FiEdit3, FiTrash2, FiSave, FiX, FiDownload, FiFileText } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canDelete, isAdmin, canUpload } from '../utils/roles'
+import { useTranslation } from 'react-i18next'
 import './Files.css'
 
 const Files = () => {
+  const { t } = useTranslation()
   const { confirm, toast } = useAlert()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,7 @@ const Files = () => {
       setFiles(response.data)
       setError(null)
     } catch (err) {
-      setError('Ошибка при загрузке файлов')
+      setError(t('filesPage.loadError'))
     } finally {
       setLoading(false)
     }
@@ -41,12 +43,12 @@ const Files = () => {
   const handleSaveEdit = async (id) => {
     try {
       await api.put(`/files/${id}`, { originalFileName: editFileName })
-      setSuccess('Файл успешно обновлен')
+      setSuccess(t('filesPage.updateSuccess'))
       setEditingFile(null)
       setEditFileName('')
       loadFiles()
     } catch (err) {
-      setError('Ошибка при обновлении файла')
+      setError(t('filesPage.updateError'))
     }
   }
 
@@ -57,19 +59,19 @@ const Files = () => {
 
   const handleDelete = async (id) => {
     const ok = await confirm({
-      title: 'Удаление файла',
-      message: 'Удалить этот файл?',
-      confirmText: 'Удалить',
-      cancelText: 'Отмена',
+      title: t('filesPage.deleteTitle'),
+      message: t('filesPage.deleteMessage'),
+      confirmText: t('common.delete'),
+      cancelText: t('common.cancel'),
       variant: 'danger'
     })
     if (!ok) return
     try {
       await api.delete(`/files/${id}`)
-      toast('Файл удалён', 'success')
+      toast(t('filesPage.deleted'), 'success')
       loadFiles()
     } catch (err) {
-      setError('Ошибка при удалении файла')
+      setError(t('filesPage.deleteError'))
     }
   }
 
@@ -86,7 +88,7 @@ const Files = () => {
       link.click()
       link.remove()
     } catch (err) {
-      setError('Ошибка при скачивании файла')
+      setError(t('filesPage.downloadError'))
     }
   }
 
@@ -103,15 +105,15 @@ const Files = () => {
   }
 
   if (loading) {
-    return <div className="loading">Загрузка файлов...</div>
+    return <div className="loading">{t('filesPage.loading')}</div>
   }
 
     return (
         <div className="files-section"> {/* Добавили уникальный класс-обертку */}
             <div className="files-header">
-                <h2>File Management</h2>
+                <h2>{t('filesPage.title')}</h2>
                 <p className="files-subtitle">
-                    Просмотр и управление файлами. Для загрузки файлов перейдите к соответствующему уроку в курсе.
+                    {t('filesPage.subtitle')}
                 </p>
             </div>
 
@@ -121,24 +123,23 @@ const Files = () => {
             {/* Убрали inline style, заменили на класс info-banner */}
             <div className="info-banner">
                 <div className="info-content">
-                    <strong>Информация:</strong> Файлы теперь загружаются к урокам.
-                    Перейдите к нужному курсу и уроку, чтобы загрузить файлы.
+                    <strong>{t('common.info')}:</strong> {t('filesPage.infoText')}
                 </div>
                 <Link to="/courses" className="btn-primary">
-                    Перейти к курсам
+                    {t('filesPage.goToCourses')}
                 </Link>
             </div>
 
             {/* Заменили "card" на "files-container-card", чтобы глобальный CSS не мешал */}
             <div className="files-container-card">
                 <div className="card-header-flex">
-                    <h3>{isAdmin(window.keycloak) ? 'Все файлы' : 'Мои файлы'}</h3>
+                    <h3>{isAdmin(window.keycloak) ? t('filesPage.allFiles') : t('filesPage.myFiles')}</h3>
                     <span className="file-count-badge">{files.length}</span>
                 </div>
 
                 {files.length === 0 ? (
                     <div className="empty-files">
-                        <p>Файлы не найдены. Файлы загружаются к урокам в курсах.</p>
+                        <p>{t('filesPage.empty')}</p>
                     </div>
                 ) : (
                     <ul className="file-list">
@@ -176,25 +177,25 @@ const Files = () => {
                                 <div className="file-actions">
                                     {editingFile === file.id ? (
                                         <>
-                                            <button className="btn-icon" onClick={() => handleSaveEdit(file.id)} title="Сохранить">
+                                            <button className="btn-icon" onClick={() => handleSaveEdit(file.id)} title={t('common.save')}>
                                                 <FiSave style={{ color: 'var(--primary-color)' }} />
                                             </button>
-                                            <button className="btn-icon" onClick={handleCancelEdit} title="Отмена">
+                                            <button className="btn-icon" onClick={handleCancelEdit} title={t('common.cancel')}>
                                                 <FiX />
                                             </button>
                                         </>
                                     ) : (
                                         <>
-                                            <button className="btn-icon" onClick={() => handleDownload(file.id, file.originalFileName)} title="Скачать">
+                                            <button className="btn-icon" onClick={() => handleDownload(file.id, file.originalFileName)} title={t('common.file')}>
                                                 <FiDownload />
                                             </button>
                                             {canUpload(window.keycloak) && (
-                                                <button className="btn-icon" onClick={() => handleEdit(file)} title="Редактировать">
+                                                <button className="btn-icon" onClick={() => handleEdit(file)} title={t('common.edit')}>
                                                     <FiEdit3 />
                                                 </button>
                                             )}
                                             {canUpload(window.keycloak) && (
-                                                <button className="btn-icon danger" onClick={() => handleDelete(file.id)} title="Удалить">
+                                                <button className="btn-icon danger" onClick={() => handleDelete(file.id)} title={t('common.delete')}>
                                                     <FiTrash2 />
                                                 </button>
                                             )}
