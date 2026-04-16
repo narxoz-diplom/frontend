@@ -68,6 +68,13 @@ const HomeNewsFeed = () => {
                 <ul className="home-news-list">
                     {items.map((n) => (
                         <li key={n.id} className="home-news-card">
+                            {n.imageUrl ? (
+                                <img
+                                    src={n.imageUrl}
+                                    alt=""
+                                    style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, marginBottom: 12 }}
+                                />
+                            ) : null}
                             <div className="home-news-card-top">
                                 <span className="home-news-type">Новость</span>
                                 <span className="home-news-time">

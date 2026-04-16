@@ -35,6 +35,7 @@ const emptyForm = () => ({
   title: '',
   shortDescription: '',
   content: '',
+  imageUrl: null,
 })
 
 const AdminNews = () => {
@@ -46,6 +47,8 @@ const AdminNews = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyForm)
+  const [imageFile, setImageFile] = useState(null)
+  const [removeImage, setRemoveImage] = useState(false)
   const [saving, setSaving] = useState(false)
   const [loadingOne, setLoadingOne] = useState(false)
 
@@ -77,6 +80,8 @@ const AdminNews = () => {
   const openCreate = () => {
     setEditingId(null)
     setForm(emptyForm())
+    setImageFile(null)
+    setRemoveImage(false)
     setModalOpen(true)
   }
 
@@ -89,7 +94,10 @@ const AdminNews = () => {
         title: res.data.title || '',
         shortDescription: res.data.shortDescription || '',
         content: res.data.content || '',
+        imageUrl: res.data.imageUrl || null,
       })
+      setImageFile(null)
+      setRemoveImage(false)
       setModalOpen(true)
     } catch {
       toast(t('adminNewsPage.loadOneError'), 'error')
@@ -103,6 +111,8 @@ const AdminNews = () => {
     setModalOpen(false)
     setEditingId(null)
     setForm(emptyForm())
+    setImageFile(null)
+    setRemoveImage(false)
   }
 
   const handleSubmit = async (e) => {
@@ -114,14 +124,44 @@ const AdminNews = () => {
       toast(t('adminNewsPage.fillRequired'), 'error')
       return
     }
-    const body = { title, shortDescription, content }
+    let uploadedImageFileId = null
+    if (imageFile) {
+      try {
+        const up = new FormData()
+        up.append('file', imageFile)
+        const uploadRes = await api.post('/files/upload-news-image', up, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
+        uploadedImageFileId = uploadRes.data?.id ?? null
+        if (!uploadedImageFileId) {
+          toast(t('common.uploadError') || 'Ошибка загрузки фото', 'error')
+          return
+        }
+      } catch {
+        toast(t('common.uploadError') || 'Ошибка загрузки фото', 'error')
+        return
+      }
+    }
+
+    const body = {
+      title,
+      shortDescription,
+      content,
+    }
     setSaving(true)
     try {
       if (editingId != null) {
-        await api.put(`/news/${editingId}`, body)
+        await api.put(`/news/${editingId}`, {
+          ...body,
+          removeImage,
+          imageFileId: uploadedImageFileId,
+        })
         toast(t('adminNewsPage.updated'), 'success')
       } else {
-        await api.post('/news', body)
+        await api.post('/news', {
+          ...body,
+          imageFileId: uploadedImageFileId,
+        })
         toast(t('adminNewsPage.created'), 'success')
       }
       closeModal()
@@ -296,6 +336,37 @@ const AdminNews = () => {
                   required
                 />
               </label>
+              <div className="admin-news-field">
+                <span>{t('common.photo') || 'Фото'}</span>
+                {form.imageUrl && !removeImage ? (
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <img
+                      src={form.imageUrl}
+                      alt=""
+                      style={{ width: 160, height: 90, objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(148,163,184,0.25)' }}
+                    />
+                    <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={removeImage}
+                        onChange={(e) => setRemoveImage(e.target.checked)}
+                        disabled={saving}
+                      />
+                      {t('common.remove') || 'Удалить фото'}
+                    </label>
+                  </div>
+                ) : null}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] || null
+                    setImageFile(f)
+                    if (f) setRemoveImage(false)
+                  }}
+                  disabled={saving}
+                />
+              </div>
               <div className="admin-news-modal-foot">
                 <button type="button" className="admin-news-btn-secondary" onClick={closeModal} disabled={saving}>
                   {t('common.cancel')}
