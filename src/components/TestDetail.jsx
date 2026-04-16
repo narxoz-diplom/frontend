@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi'
 import api from '../services/api'
+import { pickLocalized } from '../i18n/localize'
 import './TestDetail.css'
 
 const TestDetail = () => {
@@ -123,9 +124,9 @@ const TestDetail = () => {
         <Link to={`/courses/${courseId}`} className="back-link">
           <FiArrowLeft /> К курсу
         </Link>
-        <h1>{test.title}</h1>
+        <h1>{pickLocalized(test, 'title')}</h1>
         {course && (
-          <p className="test-course-name">Курс: {course.title}</p>
+          <p className="test-course-name">Курс: {pickLocalized(course, 'title')}</p>
         )}
       </div>
 
@@ -157,10 +158,10 @@ const TestDetail = () => {
                 <h3 className="question-number">
                   Вопрос {idx + 1} из {sortedQuestions.length}
                 </h3>
-                <p className="question-text">{q.text}</p>
+                <p className="question-text">{pickLocalized(q, 'text')}</p>
                 <div className="question-options">
                   {q.type === 'MULTIPLE_CHOICE' || q.type === 'MULTIPLE_ANSWER' ? (
-                    parseOptions(q.options).map((opt) => (
+                    parseOptions(pickLocalized(q, 'options')).map((opt) => (
                       <label key={opt.key} className="option-label">
                         <input
                           type={q.type === 'MULTIPLE_ANSWER' ? 'checkbox' : 'radio'}

@@ -176,6 +176,33 @@
     z-index: 999;
     transition: left var(--transition-base), background var(--transition-base);
 }
+
+.top-lang-select select {
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: var(--card-bg, #fff);
+  color: inherit;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.dark-mode .top-lang-select select {
+  border-color: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.06);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 /* Search */
 .top-search {
     display: flex;

@@ -4,6 +4,7 @@ import { FiEye, FiTrash2 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
+import { pickLocalized } from '../i18n/localize'
 import './Courses.css'
 
 const Courses = () => {
@@ -279,9 +280,9 @@ const Courses = () => {
                 </div>
               )}
               <div className="course-content">
-                <h3>{course.title}</h3>
+                <h3>{pickLocalized(course, 'title')}</h3>
                 <p className="course-description">
-                  {course.description || 'No description available'}
+                  {pickLocalized(course, 'description') || 'No description available'}
                 </p>
                 <div className="course-meta">
                   <span className={`course-status ${course.status}`}>{course.status}</span>

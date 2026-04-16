@@ -21,6 +21,7 @@ import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import LessonChat from './LessonChat'
+import { pickLocalized } from '../i18n/localize'
 import './LessonDetail.css'
 
 /** Извлекает вставки картинок из Markdown и HTML для редактора конспекта */
@@ -84,7 +85,7 @@ const LessonDetail = () => {
       // Загружаем урок
       const lessonResponse = await api.get(`/courses/lessons/${lessonId}`)
       setLesson(lessonResponse.data)
-      setEditedContent(lessonResponse.data.content || '')
+      setEditedContent(pickLocalized(lessonResponse.data, 'content') || '')
       
       // Загружаем курс
       const courseResponse = await api.get(`/courses/${courseId}`)
@@ -326,17 +327,17 @@ const LessonDetail = () => {
         </Link>
         <p className="lesson-page__kicker">
           Урок {currentIndex + 1} из {lessons.length}
-          {course?.title ? ` · ${course.title}` : ''}
+          {pickLocalized(course, 'title') ? ` · ${pickLocalized(course, 'title')}` : ''}
         </p>
         <div className="lesson-page__title-row">
-          <h1 className="lesson-page__title">{lesson.title}</h1>
+          <h1 className="lesson-page__title">{pickLocalized(lesson, 'title')}</h1>
           {lessonProgress.completed && (
             <span className="lesson-page__badge lesson-page__badge--done">
               <FiCheckCircle aria-hidden /> Пройдено
             </span>
           )}
         </div>
-        {lesson.description && <p className="lesson-page__lead">{lesson.description}</p>}
+        {pickLocalized(lesson, 'description') && <p className="lesson-page__lead">{pickLocalized(lesson, 'description')}</p>}
         {videos.length > 0 && (
           <div className="lesson-page__progress" aria-label="Прогресс по видео">
             <div className="lesson-page__progress-track">
@@ -370,7 +371,7 @@ const LessonDetail = () => {
                   onClick={() => {
                     if (isEditingContent) {
                       setIsEditingContent(false)
-                      setEditedContent(lesson.content || '')
+                      setEditedContent(pickLocalized(lesson, 'content') || '')
                     } else {
                       setIsEditingContent(true)
                     }
@@ -454,12 +455,12 @@ const LessonDetail = () => {
               </div>
             ) : (
               <div className="lesson-notes-content">
-                {lesson.content ? (
+                {pickLocalized(lesson, 'content') ? (
                   <div className="markdown-content">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                     >
-                      {lesson.content}
+                      {pickLocalized(lesson, 'content')}
                     </ReactMarkdown>
                   </div>
                 ) : (
@@ -750,7 +751,7 @@ const LessonDetail = () => {
         <aside className="lesson-sidebar lesson-rail">
           <div className="sidebar-section lesson-rail__card">
             <p className="lesson-rail__eyebrow">Курс</p>
-            <h3 className="lesson-rail__title">{course.title}</h3>
+            <h3 className="lesson-rail__title">{pickLocalized(course, 'title')}</h3>
             <Link to={`/courses/${courseId}`} className="lesson-rail__link">
               Открыть страницу курса
             </Link>
@@ -767,7 +768,7 @@ const LessonDetail = () => {
                   className={`lesson-nav-item ${l.id === parseInt(lessonId) ? 'active' : ''}`}
                 >
                   <span className="lesson-nav-number">{index + 1}</span>
-                  <span className="lesson-nav-title">{l.title}</span>
+                  <span className="lesson-nav-title">{pickLocalized(l, 'title')}</span>
                 </Link>
               ))}
             </div>
@@ -777,9 +778,9 @@ const LessonDetail = () => {
           <LessonChat
             lessonId={lessonId}
             courseId={courseId}
-            lessonTitle={lesson.title}
-            courseTitle={course.title}
-            lessonContent={lesson.content || ''}
+            lessonTitle={pickLocalized(lesson, 'title')}
+            courseTitle={pickLocalized(course, 'title')}
+            lessonContent={pickLocalized(lesson, 'content') || ''}
           />
 
           {/* Navigation */}

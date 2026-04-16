@@ -17,6 +17,7 @@ import {
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
+import { pickLocalized } from '../i18n/localize'
 import './CourseDetail.css'
 
 const CourseDetail = () => {
@@ -302,7 +303,7 @@ const CourseDetail = () => {
         )}
         <p className="course-page__kicker">Курс · {statusLabel}</p>
         <div className="course-page__title-row">
-          <h1 className="course-page__title">{course.title}</h1>
+          <h1 className="course-page__title">{pickLocalized(course, 'title')}</h1>
           <div className="course-page__status-block">
             <span className={`course-status course-status--pill ${course.status}`}>{course.status}</span>
             {(isTeacher(window.keycloak) || isAdmin(window.keycloak)) && (
@@ -321,7 +322,7 @@ const CourseDetail = () => {
             )}
           </div>
         </div>
-        {course.description && <p className="course-page__lead">{course.description}</p>}
+        {pickLocalized(course, 'description') && <p className="course-page__lead">{pickLocalized(course, 'description')}</p>}
         <dl className="course-page__meta">
           <div>
             <dt>Уроков</dt>
@@ -464,14 +465,14 @@ const CourseDetail = () => {
                     </div>
                     <div className="lesson-content">
                       <div className="lesson-header">
-                        <h3>{lesson.title}</h3>
+                        <h3>{pickLocalized(lesson, 'title')}</h3>
                         {progress.completed && (
                           <span className="lesson-completed-badge">
                             <FiCheckCircle /> Completed
                           </span>
                         )}
                       </div>
-                      {lesson.description && <p className="lesson-description">{lesson.description}</p>}
+                      {pickLocalized(lesson, 'description') && <p className="lesson-description">{pickLocalized(lesson, 'description')}</p>}
                       
                       {progress.progress > 0 && !progress.completed && (
                         <div className="lesson-progress">

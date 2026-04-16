@@ -9,6 +9,8 @@ import {
 import auth from '../config/auth'
 import api from '../services/api'
 import { isAdmin } from '../utils/roles'
+import { useTranslation } from 'react-i18next'
+import { setLang } from '../i18n'
 import NotificationPopover from './NotificationPopover'
 import "./Navigation.css"
 
@@ -27,6 +29,7 @@ const NavItem = ({ to, icon, label, isActive, isCollapsed, className = '' }) => 
 
 const Navigation = ({ userRoles = [] }) => {
     const location = useLocation()
+    const { t, i18n } = useTranslation()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [userName, setUserName] = useState('User')
@@ -150,6 +153,18 @@ const Navigation = ({ userRoles = [] }) => {
                 </div>
 
                 <div className="top-right-actions">
+                    <label className="top-lang-select" title={t('lang')}>
+                        <span className="sr-only">{t('lang')}</span>
+                        <select
+                            value={i18n.language}
+                            onChange={(e) => setLang(e.target.value)}
+                            aria-label={t('lang')}
+                        >
+                            <option value="kz">{t('kz')}</option>
+                            <option value="ru">{t('ru')}</option>
+                            <option value="en">{t('en')}</option>
+                        </select>
+                    </label>
                     <button
                         className="top-action-btn theme-toggle-btn"
                         onClick={toggleTheme}
@@ -192,7 +207,7 @@ const Navigation = ({ userRoles = [] }) => {
                                 <Link to="/settings"><FiSettings /> Настройки</Link>
                                 <hr />
                                 <button onClick={handleLogout} className="logout-btn-dropdown">
-                                    <FiLogOut /> Выйти
+                                    <FiLogOut /> {t('nav.logout')}
                                 </button>
                             </div>
                         </div>
@@ -220,16 +235,16 @@ const Navigation = ({ userRoles = [] }) => {
 
                 <div className="nav-links">
                     <NavItem to="/" icon={<FiHome />} label="Главная" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/courses" icon={<FiBook />} label="Курсы" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/courses" icon={<FiBook />} label={t('nav.courses')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/stats" icon={<FiBarChart2 />} label="Статистика" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/files" icon={<FiFolder />} label="Файлы" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/rag" icon={<FiCpu />} label="Поиск (RAG)" isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/notifications" icon={<FiBell />} label="Уведомления" isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/files" icon={<FiFolder />} label={t('nav.files')} isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/rag" icon={<FiCpu />} label={t('nav.rag')} isActive={isActive} isCollapsed={isCollapsed} />
+                    <NavItem to="/notifications" icon={<FiBell />} label={t('nav.notifications')} isActive={isActive} isCollapsed={isCollapsed} />
                     {isAdmin(window.keycloak || auth) && (
                         <NavItem
                             to="/admin/news"
                             icon={<FiEdit3 />}
-                            label="Новости (админ)"
+                            label={t('nav.adminNews')}
                             isActive={isActive}
                             isCollapsed={isCollapsed}
                         />
@@ -243,7 +258,7 @@ const Navigation = ({ userRoles = [] }) => {
                         title="Выйти из системы"
                     >
                         <FiLogOut className="nav-icon" />
-                        {!isCollapsed && <span className="nav-label">Выход</span>}
+                        {!isCollapsed && <span className="nav-label">{t('nav.logout')}</span>}
                     </button>
                 </div>
             </nav>
