@@ -369,7 +369,7 @@ const CourseDetail = () => {
             </div>
             {canUpload(window.keycloak) && (
               <>
-                <Link to={`/courses/${id}/edit`} className="btn btn-secondary">
+                <Link to={`/courses/${id}/edit`} className="btn-edit">
                   Редактировать курс
                 </Link>
                 <button
@@ -429,7 +429,7 @@ const CourseDetail = () => {
                   </button>
                   <button 
                     type="button" 
-                    className="btn btn-secondary"
+                    className="btn btn-cancel"
                     onClick={() => setShowLessonForm(false)}
                   >
                     Cancel

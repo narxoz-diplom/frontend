@@ -149,7 +149,7 @@
 .lessons-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center; /* Выравниваем по центру для аккуратного ряда */
     gap: var(--spacing-md);
     flex-wrap: wrap;
     margin-bottom: var(--spacing-lg);
@@ -175,17 +175,88 @@
 }
 
 .create-lesson-form {
-    margin-bottom: var(--spacing-lg);
-    animation: slideIn var(--transition-base);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: var(--spacing-xl);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .create-lesson-form h3 {
-    margin: 0 0 var(--spacing-lg) 0;
-    color: var(--text-primary);
-    font-size: 20px;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
 }
 
-.form-actions { display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg); }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    opacity: 0.8;
+}
+
+.form-group input, .form-group textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-gradient-start);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 0 4px rgba(184, 56, 72, 0.15);
+}
+
+.btn-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    height: var(--ui-height-md, 38px); /* Синхронизируем высоту с другими UI элементами */
+    padding: 0 18px;
+
+    border-radius: var(--radius-md);
+    /* Убираем яркий красный бордюр, заменяем на мягкий белый */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+
+    /* Делаем фон спокойнее */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Цвет текста спокойный белый */
+    color: var(--text-primary, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    /* Убираем неоновое свечение по умолчанию */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Эффект при наведении — делаем его благородным, а не кричащим */
+.btn-edit:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+
+    /* Вместо красной тени — мягкое увеличение глубины */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
 
 .empty-state {
     text-align: center;
@@ -206,212 +277,58 @@
 .lessons-list { display: flex; flex-direction: column; gap: var(--spacing-lg); }
 
 .lesson-card {
-    background: linear-gradient(to bottom, var(--bg-primary) 0%, rgba(255, 255, 255, 0.02) 100%);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-xl);
-    display: flex;
-    gap: var(--spacing-lg);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-    border: 2px solid var(--border-color);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
+    background: var(--bg-primary); /* Чистый темный фон */
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 24px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.lesson-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 5px;
-    background: linear-gradient(180deg, var(--primary-gradient-start), var(--primary-gradient-end));
-    transform: scaleY(0);
-    transform-origin: bottom;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+.lesson-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: rgba(184, 56, 72, 0.4);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
-.lesson-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary-gradient-start), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.lesson-card:hover { box-shadow: var(--shadow-md); border-color: rgba(184, 56, 72, 0.35); background: var(--bg-primary); }
-.lesson-card:hover::before { transform: scaleY(1); }
-.lesson-card:hover::after  { opacity: 1; }
-
+/* Номер урока — сделаем его более стильным */
 .lesson-number {
-    width: 56px; height: 56px;
-    border-radius: var(--radius-full);
-    background: linear-gradient(135deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 22px;
-    flex-shrink: 0;
-    position: relative;
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    transition: all 0.3s ease;
-}
-
-.lesson-number > span.lesson-number-text {
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 22px !important;
-    line-height: 1;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-    display: inline-block;
-    min-width: 22px;
-    text-align: center;
-    position: relative;
-    z-index: 1;
-}
-
-.lesson-number svg.lesson-completed-icon {
-    width: 28px !important;
-    height: 28px !important;
-    color: white !important;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #e41616 0%, #b83848 100%);
+    border-radius: 16px; /* Мягкий квадрат вместо круга */
+    rotate: -5deg; /* Небольшой наклон для динамики */
 }
 
 .lesson-card:hover .lesson-number {
-    transform: scale(1.05) rotate(5deg);
-    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+    rotate: 0deg;
+    transform: scale(1.1);
 }
 
-.lesson-completed-icon { font-size: 28px; color: white; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
-.lesson-content { flex: 1; min-width: 0; }
-
-.lesson-actions {
-    margin-top: var(--spacing-lg);
-    margin-bottom: var(--spacing-md);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-}
-
-.lesson-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
-    flex-wrap: wrap;
-}
-
-.lesson-content h3 {
-    margin: 0;
-    color: var(--text-primary);
-    font-size: 22px;
-    font-weight: 700;
-    flex: 1;
-    letter-spacing: -0.01em;
-    line-height: 1.3;
-}
-
-.lesson-completed-badge {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-    padding: 4px 12px;
-    border-radius: var(--radius-full);
-    background: rgba(40, 167, 69, 0.1);
-    color: #28a745;
-    font-size: 12px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.lesson-completed-badge svg { font-size: 14px; }
-
-.lesson-description {
-    color: var(--text-secondary);
-    margin-bottom: var(--spacing-md);
-    line-height: 1.6;
-}
-
-.lesson-progress {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
-}
-
+/* Прогресс-бар — тоньше и эстетичнее */
 .lesson-progress-bar {
-    flex: 1;
-    height: 8px;
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
-    position: relative;
-}
-
-.lesson-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
-    border-radius: var(--radius-full);
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.lesson-progress-fill::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(100%);  }
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
 }
 
 .lesson-progress-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    min-width: 45px;
-    text-align: right;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--primary-gradient-start);
 }
-
 .lesson-videos {
-    margin-top: var(--spacing-lg);
-    padding-top: var(--spacing-lg);
-    border-top: 2px solid var(--border-color);
-    background: linear-gradient(to bottom, transparent, rgba(52, 152, 219, 0.02));
-    margin-left: calc(var(--spacing-lg) * -1);
-    margin-right: calc(var(--spacing-lg) * -1);
-    padding-left: var(--spacing-lg);
-    padding-right: var(--spacing-lg);
-    padding-bottom: var(--spacing-md);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .lesson-videos h4 {
-    margin: 0 0 var(--spacing-sm) 0;
-    font-size: 14px;
+    font-size: 12px;
     color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+    opacity: 0.6;
+    margin-bottom: 12px;
 }
-
-.lesson-videos h4 svg { font-size: 16px; }
-.videos-list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
-
 .video-link {
     display: flex;
     align-items: center;
@@ -515,6 +432,61 @@
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2);
 }
 
+.btn-cancel {
+    /* Синхронизируем базу с кнопкой редактирования */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    /* Высота должна быть строго как у btn-edit */
+    height: var( 38px);
+    padding: 0 18px;
+
+    border-radius: var(--radius-md);
+    /* Тонкая белая граница как у "Редактировать" */
+    border: 1px solid rgba(255, 255, 255, 0.15);
+
+    /* Glassmorphism эффект */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    /* Типографика */
+    color: var(--text-primary, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Тень без неона */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Эффект при наведении — повторяем btn-edit */
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+
+    /* Мягкая глубина */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Эффект нажатия */
+.btn-cancel:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Состояние Disabled */
+.btn-cancel:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
 .file-link:hover::before { transform: scaleY(1); }
 .file-icon { font-size: 16px; flex-shrink: 0; }
 .file-link span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -533,7 +505,11 @@
     .course-hero-header { flex-direction: column; align-items: flex-start; }
     .course-hero-meta { flex-direction: column; align-items: flex-start; gap: var(--spacing-sm); }
     .meta-item { width: 100%; }
-    .lessons-header { flex-direction: column; align-items: flex-start; }
+    .lessons-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+    }
     .lessons-header h2 { font-size: 24px; }
     .lesson-card { flex-direction: column; gap: var(--spacing-md); }
     .lesson-number { width: 40px; height: 40px; font-size: 16px; }
