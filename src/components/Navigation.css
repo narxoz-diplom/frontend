@@ -247,18 +247,23 @@
 }
 .notification-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 18px;
-    height: 18px;
+    top: 5px;   /* Чуть сместили, чтобы точка смотрелась гармонично */
+    right: 5px;
+
+    /* Устанавливаем фиксированный размер для точки */
+    width: 8px;
+    height: 8px;
+    min-width: 8px; /* Перезаписываем старое значение */
+
     background: var(--primary-color);
-    color: #fff;
     border-radius: 50%;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid var(--bg-primary);
+
+    /* Убираем всё, что касалось текста */
+    font-size: 0;
+    display: block;
+
+    /* Белая обводка вокруг точки (если нужна для контраста) */
+    border: 1.5px solid var(--bg-primary);
 }
 /* Theme toggle */
 .theme-toggle-btn {

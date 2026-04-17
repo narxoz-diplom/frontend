@@ -7,6 +7,7 @@ import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import { pickLocalized } from '../i18n/localize'
 import { useTranslation } from 'react-i18next'
 import './Courses.css'
+import CreateCourseModal from './CreateCourseModal';
 
 const Courses = () => {
   const { t } = useTranslation()
@@ -233,40 +234,10 @@ const Courses = () => {
       {error && <div className="error">{error}</div>}
       {success && <div className="success">{success}</div>}
 
-      {showCreateForm && (
-        <div className="card create-course-form">
-          <h3>{t('coursesPage.createNew')}</h3>
-          <form onSubmit={handleCreateCourse}>
-            <div className="form-group">
-              <label>{t('courseModal.courseTitle')}</label>
-              <input
-                type="text"
-                value={newCourse.title}
-                onChange={(e) => setNewCourse({...newCourse, title: e.target.value})}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>{t('coursePage.lessonDescription')}</label>
-              <textarea
-                value={newCourse.description}
-                onChange={(e) => setNewCourse({...newCourse, description: e.target.value})}
-                rows="4"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Image URL</label>
-              <input
-                type="url"
-                value={newCourse.imageUrl}
-                onChange={(e) => setNewCourse({...newCourse, imageUrl: e.target.value})}
-              />
-            </div>
-            <button type="submit" className="btn btn-primary">{t('coursesPage.createNew')}</button>
-          </form>
-        </div>
-      )}
+      <CreateCourseModal
+          isOpen={showCreateForm}
+          onClose={() => setShowCreateForm(false)}
+      />
 
       <div className="courses-grid">
         {courses.length === 0 ? (

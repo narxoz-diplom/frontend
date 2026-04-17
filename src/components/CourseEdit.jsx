@@ -636,7 +636,7 @@ const CourseEdit = () => {
           <h1>{course.title}</h1>
           <button
             type="button"
-            className="btn btn-secondary"
+            className="btn btn-secondary btn-trans"
             onClick={handleBackfillLocalizations}
             disabled={backfillingLocales}
             title={t('courseEdit.backfillTitle')}
@@ -671,7 +671,6 @@ const CourseEdit = () => {
         <aside className="course-edit-sidebar gen-sources-panel">
           <div className="sidebar-section gen-source-card">
             <h3>
-              <FiLink aria-hidden /> Страница по URL
               <FiLink aria-hidden /> {t('courseEdit.urlTitle')}
             </h3>
             <p className="gen-source-hint">

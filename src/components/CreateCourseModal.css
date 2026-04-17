@@ -93,7 +93,14 @@
 
 .create-course-form .form-actions {
   display: flex;
+  justify-content: center; /* Центрирует по горизонтали */
+  align-items: center;     /* Не дает кнопке растягиваться по вертикали */
   gap: 12px;
-  justify-content: flex-end;
   margin-top: 24px;
+  width: 100%;             /* Контейнер на всю ширину */
+}
+
+.create-course-form .form-actions .btn {
+  width: auto;             /* Кнопка занимает только нужное ей место */
+  min-width: 160px;        /* Опционально: чтобы кнопка не была слишком маленькой */
 }

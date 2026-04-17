@@ -257,6 +257,28 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
 }
+/* Контейнер для кнопок управления */
+.course-management-controls {
+    display: flex;
+    flex-direction: column; /* Ставим их друг под друга */
+    gap: 10px;              /* Отступ между кнопками */
+    align-items: flex-start; /* Выравнивание по левому краю (или flex-end, если нужно справа) */
+    margin-top: 15px;
+}
+
+/* Настройка конкретно кнопки "Добавить урок" */
+.btn-add-lesson {
+    width: 200px;           /* Укажи любую нужную длину (например, 100% или 250px) */
+    padding: 10px 15px;     /* Внутренние отступы, чтобы кнопка была "пухлее" */
+    justify-content: center; /* Центрируем иконку и текст внутри */
+}
+
+/* Если хочешь, чтобы кнопка была такой же длины, как "Редактировать курс" */
+.course-management-controls .btn-edit,
+.course-management-controls .btn-add-lesson {
+    min-width: 220px;       /* Одинаковая ширина для обеих кнопок */
+    text-align: center;
+}
 
 .empty-state {
     text-align: center;
@@ -556,17 +578,20 @@
     margin-left: -4px;
     font-size: 14px;
     font-weight: 600;
-    color: var(--cp-accent);
+    /* Заменяем на черный или системный темный цвет */
+    color: #000;
     text-decoration: none;
     border-radius: 10px;
-    border: 1px solid rgba(184, 56, 72, 0.22);
-    background: rgba(184, 56, 72, 0.05);
+    /* Заменили красный на полупрозрачный черный (0, 0, 0) */
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.04);
     transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .course-detail--v2 .course-page__back:hover {
-    background: rgba(184, 56, 72, 0.09);
-    border-color: rgba(184, 56, 72, 0.38);
+    /* Чуть более насыщенный черный при наведении */
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.3);
 }
 
 .course-detail--v2 .course-page__cover-wrap {
@@ -592,7 +617,8 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--cp-accent);
+    /* Вместо красного акцента ставим черный */
+    color: #000;
 }
 
 .course-detail--v2 .course-page__title-row {
@@ -740,9 +766,9 @@
 
 .course-detail--v2 .course-content-section {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-    gap: 20px;
+    grid-template-columns: 1fr;
     align-items: start;
+    gap: 30px; /* Добавь отступ между секциями уроков и тестов */
 }
 
 @media (max-width: 960px) {

@@ -111,7 +111,7 @@
     display: flex !important;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
+    border-radius: 8px !important;
     cursor: pointer;
     /* Убираем жесткий белый фон, берем системный или прозрачный */
     background: var(--bg-primary) !important;
@@ -142,7 +142,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm);
+    border-radius: 8px;
     font-weight: 600;
     font-size: 14px;
     transition: all var(--transition-base);

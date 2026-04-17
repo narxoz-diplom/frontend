@@ -8,23 +8,25 @@ import './CreateCourseModal.css'
 const CreateCourseModal = ({ isOpen, onClose }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ title: '', description: '' })
+  const [form, setForm] = useState({ title: '', description: '', imageUrl: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
       const response = await api.post('/courses', {
-        ...form,
+        title: form.title,
+        description: form.description,
+        imageUrl: form.imageUrl, // Отправляем URL картинки
         status: 'DRAFT'
-      })
-      onClose()
-      setForm({ title: '', description: '' })
-      navigate(`/courses/${response.data.id}/edit`)
-    } catch (err) {
+      });
+      onClose();
+      setForm({ title: '', description: '', imageUrl: '' }); // Сбрасываем всё
+      navigate(`/courses/${response.data.id}/edit`);
+    }catch (err) {
       console.error('Error creating course:', err)
       setError(err.response?.data?.message || t('courseModal.createError'))
     } finally {
@@ -57,18 +59,26 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
           <div className="form-group">
             <label>{t('courseModal.courseDescription')}</label>
             <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              rows="5"
-              required
-              placeholder={t('courseModal.courseDescriptionPlaceholder')}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows="5"
+                required
+                placeholder={t('courseModal.courseDescriptionPlaceholder')}
+            />
+          </div>
+
+          {/* Новое поле для URL изображения */}
+          <div className="form-group">
+            <label>{t('courseModal.courseImageUrl') || 'Image URL'}</label>
+            <input
+                type="url"
+                value={form.imageUrl}
+                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+                placeholder="https://example.com/image.jpg"
             />
           </div>
           {error && <div className="form-error">{error}</div>}
           <div className="form-actions">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>
-              {t('common.cancel')}
-            </button>
             <button type="submit" className="btn btn-primary" disabled={loading}>
               {loading ? t('courseModal.createLoading') : t('courseModal.title')}
             </button>

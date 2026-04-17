@@ -371,25 +371,20 @@ const CourseDetail = () => {
             </div>
             </div>
             {canUpload(window.keycloak) && (
-              <>
-                <Link to={`/courses/${id}/edit`} className="btn-edit">
-                  {t('coursePage.editCourse')}
-                </Link>
-                <button
-                  className="btn btn-primary"
-                  onClick={() => setShowLessonForm(!showLessonForm)}
-                >
-                {showLessonForm ? (
-                  <>
-                    <FiX /> {t('common.cancel')}
-                  </>
-                ) : (
-                  <>
-                    <FiPlus /> {t('coursePage.addLesson')}
-                  </>
-                )}
-              </button>
-              </>
+                <div className="course-management-controls">
+                  <Link to={`/courses/${id}/edit`} className="btn-edit">
+                    {t('coursePage.editCourse')}
+                  </Link>
+
+                  {!showLessonForm && (
+                      <button
+                          className="btn btn-primary btn-add-lesson"
+                          onClick={() => setShowLessonForm(true)}
+                      >
+                        <FiPlus /> {t('coursePage.addLesson')}
+                      </button>
+                  )}
+                </div>
             )}
           </div>
 
@@ -442,16 +437,18 @@ const CourseDetail = () => {
             </div>
           )}
 
-          {lessons.length === 0 ? (
-            <div className="card empty-state">
-              <div className="empty-state-icon">
-                <FiBook />
+          {lessons.length === 0 && !showLessonForm && (
+              <div className="card empty-state">
+                <div className="empty-state-icon">
+                  <FiBook />
+                </div>
+                <p>
+                  {t('coursePage.emptyLessons')} {canUpload(window.keycloak) && t('coursePage.createFirstLesson')}
+                </p>
               </div>
-              <p>
-                {t('coursePage.emptyLessons')} {canUpload(window.keycloak) && t('coursePage.createFirstLesson')}
-              </p>
-            </div>
-          ) : (
+          )}
+
+          {lessons.length > 0 && (
             <div className="lessons-list">
               {lessons.map((lesson, index) => {
                 const progress = lessonProgress[lesson.id] || { completed: false, progress: 0 }

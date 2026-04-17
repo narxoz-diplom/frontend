@@ -19,49 +19,81 @@
 }
 
 .course-edit {
-  padding: 24px;
+  padding: clamp(16px, 2.5vw, 24px);
   max-width: 1400px;
   margin: 0 auto;
+  --cp-line: rgba(22, 19, 18, 0.12);
+  --cp-accent: #111111;
+  --ce-hover-bg: rgba(15, 23, 42, 0.045);
+  --ce-hover-border: rgba(15, 23, 42, 0.14);
+  --ce-hover-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  --ce-hover-text: #111111;
   --ce-control-border: rgba(22, 19, 18, 0.18);
   --ce-control-border-hover: rgba(184, 56, 72, 0.45);
   --ce-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235c5a59' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   --ce-check-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2 6.4 11.1 12.5 4.5' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --ce-check-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2 6.4 11.1 12.5 4.5' stroke='%23b83848' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ce-sticky-top: clamp(12px, 2vw, 24px);
+  --ce-sticky-height: calc(100vh - (var(--ce-sticky-top) * 2));
 }
 
 body.dark-mode .course-edit {
+  --cp-line: rgba(255, 255, 255, 0.14);
+  --cp-accent: #ffffff;
+  --ce-hover-bg: rgba(255, 255, 255, 0.05);
+  --ce-hover-border: rgba(255, 255, 255, 0.38);
+  --ce-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  --ce-hover-text: #ffffff;
   --ce-control-border: rgba(255, 255, 255, 0.35);
   --ce-control-border-hover: rgba(255, 255, 255, 0.55);
   --ce-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-opacity='0.85' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 
 .course-edit-header {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--cp-line);
 }
 
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  color: var(--text-primary);
-  font-weight: 600;
-  text-decoration: none;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  margin-left: -4px;
   font-size: 14px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid transparent;
+  font-weight: 600;
+  /* Заменяем на черный или системный темный цвет */
+  color: #000;
+  text-decoration: none;
+  border-radius: 10px;
+  /* Заменили красный на полупрозрачный черный (0, 0, 0) */
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .back-link:hover {
-  color: #b83848;
-  border-bottom-color: rgba(184, 56, 72, 0.45);
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.3);
 }
 
+body.dark-mode .back-link{
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .back-link{
+  background: rgba(255, 255, 255, 0.16);
+}
 .course-edit-title-row {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px 16px;
   margin-bottom: 8px;
 }
 
@@ -70,36 +102,101 @@ body.dark-mode .course-edit {
   flex: 1;
   min-width: 200px;
   font-size: 28px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  color: #111111;
+}
+
+/* Исправленная кнопка btn-trans */
+.btn-secondary.btn-trans {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+
+  /* Размеры, идентичные btn-danger-outline */
+  padding: 12px 24px !important;
+  min-height: 48px !important;
+  gap: 10px !important;
+
+  /* Стиль: прозрачный фон и черная рамка */
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  background: transparent !important; /* Убрали заливку */
+  border: 1px solid rgba(0, 0, 0, 0.2) !important; /* Легкая рамка */
+  border-radius: 12px !important;
+
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  width: auto !important;
+  box-shadow: none !important; /* Убираем тени, чтобы не была похожа на кнопку выхода */
+}
+
+/* Эффект при наведении для btn-trans */
+.btn-secondary.btn-trans:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.04) !important; /* Едва заметный серый налет */
+  border-color: rgba(0, 0, 0, 0.8) !important; /* Рамка становится четче */
+  color: #000000 !important;
+}
+
+/* Поддержка темной темы для этой кнопки */
+.dark-mode .btn-secondary.btn-trans {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: transparent !important;
+}
+
+.dark-mode .btn-secondary.btn-trans:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: #ffffff !important;
 }
 
 .btn-danger-outline {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
+  justify-content: center;
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
+  gap: 10px; /* Увеличили расстояние между иконкой и текстом */
+
+  /* УВЕЛИЧИВАЕМ ОТСТУПЫ */
+  padding: 12px 24px !important; /* Больше воздуха сверху/снизу и по бокам */
+
+  /* Увеличиваем высоту */
+  width: auto !important;
+
+  font-size: 15px; /* Чуть-чуть крупнее текст для читаемости */
   font-weight: 600;
   color: #b83848;
   background: #ffffff;
   border: 1px solid #b83848;
-  border-radius: 10px;
+  border-radius: 12px; /* Мягкое скругление */
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: all 0.2s ease;
+
+  /* Добавим легкую тень, чтобы кнопка не казалась плоской */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Стили для иконки внутри (если используешь react-icons) */
+.btn-danger-outline svg {
+  font-size: 18px; /* Убедись, что иконка не слишком огромная */
 }
 
 .btn-danger-outline:hover:not(:disabled) {
-  background: rgba(184, 56, 72, 0.06);
-}
-
-.btn-danger-outline:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  background: #b83848;
+  color: #ffffff;
+  box-shadow: 0 4px 8px rgba(184, 56, 72, 0.2); /* Тень при наведении */
 }
 
 .course-edit-description {
   margin: 0;
   color: var(--text-secondary, #718096);
   max-width: 600px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .course-edit-error-banner {
@@ -112,8 +209,9 @@ body.dark-mode .course-edit {
 
 .course-edit-layout {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: minmax(280px, 320px) minmax(0, 1fr);
   gap: 32px;
+  align-items: start;
 }
 
 @media (max-width: 900px) {
@@ -129,7 +227,8 @@ body.dark-mode .course-edit {
   border: 1px solid var(--border-color, #edf2f7);
   height: fit-content;
   position: sticky;
-  top: 24px;
+  top: var(--ce-sticky-top);
+  overflow: visible;
 }
 
 .sidebar-section {
@@ -150,13 +249,15 @@ body.dark-mode .course-edit {
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow-wrap: anywhere;
 }
 
 /* Кнопка открытия модалки «Доступ по email» */
 .allowed-emails-trigger {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 10px;
   width: 100%;
   padding: 12px 16px;
@@ -167,6 +268,7 @@ body.dark-mode .course-edit {
   color: var(--text-primary, #1a202c);
   cursor: pointer;
   transition: all 0.2s;
+  text-align: left;
 }
 
 .allowed-emails-trigger:hover {
@@ -187,6 +289,7 @@ body.dark-mode .course-edit {
   background: #b83848;
   color: #fff;
   border-radius: 11px;
+  margin-left: auto;
 }
 
 .btn-outline {
@@ -198,6 +301,9 @@ body.dark-mode .course-edit {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
 }
 
 /* Модальное окно */
@@ -405,7 +511,8 @@ body.dark-mode .course-edit {
 .modal-emails-item-text {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .modal-emails-empty {
@@ -464,7 +571,8 @@ body.dark-mode .course-edit {
 .file-check span {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
   font-size: 14px;
 }
 
@@ -584,6 +692,7 @@ body.dark-mode .course-edit {
 .lesson-check a {
   color: inherit;
   text-decoration: none;
+  overflow-wrap: anywhere;
 }
 
 .lesson-check a:hover {
@@ -604,8 +713,9 @@ body.dark-mode .course-edit {
 }
 
 .test-card:hover {
-  border-color: #b83848;
-  background: #fffafa;
+  border-color: var(--ce-hover-border);
+  background: var(--ce-hover-bg);
+  box-shadow: var(--ce-hover-shadow);
 }
 
 .test-card svg {
@@ -762,6 +872,7 @@ body.dark-mode .gen-textarea {
   line-height: 1.15;
   color: var(--gen-ink);
   max-width: 20ch;
+  overflow-wrap: anywhere;
 }
 
 .gen-studio__lead {
@@ -770,6 +881,7 @@ body.dark-mode .gen-textarea {
   font-size: 15px;
   line-height: 1.65;
   color: var(--gen-ink-muted);
+  overflow-wrap: anywhere;
 }
 
 .gen-studio__meta {
@@ -811,8 +923,12 @@ body.dark-mode .gen-textarea {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 720px;
+  max-width: min(100%, 860px);
   margin: 0 0 32px 0;
+  padding-bottom: 6px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
 }
 
 .gen-track__segment {
@@ -846,7 +962,8 @@ body.dark-mode .gen-textarea {
   font-weight: 600;
   color: var(--gen-ink-muted);
   line-height: 1.25;
-  max-width: 6.5rem;
+  max-width: 9rem;
+  overflow-wrap: anywhere;
 }
 
 .gen-track__segment--todo .gen-track__label {
@@ -925,13 +1042,55 @@ body.dark-mode .gen-textarea {
   flex-direction: column;
   gap: 16px;
   position: sticky;
-  top: 96px;
+  top: calc(var(--ce-sticky-top) + 72px);
+  max-height: calc(100vh - (var(--ce-sticky-top) * 2) - 72px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 1024px) {
   .gen-side-rail {
     position: static;
   }
+}
+
+.course-edit-title-row > .btn,
+.course-edit-title-row > .btn-danger-outline {
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #ffffff;
+  color: #111111;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.course-edit-title-row > .btn:hover:not(:disabled),
+.course-edit-title-row > .btn-danger-outline:hover:not(:disabled) {
+  border-color: var(--ce-hover-border);
+  background: var(--ce-hover-bg);
+  color: var(--ce-hover-text);
+  box-shadow: var(--ce-hover-shadow);
+}
+
+body.dark-mode .course-edit-title-row h1 {
+  color: #ffffff;
+}
+
+body.dark-mode .course-edit-title-row > .btn,
+body.dark-mode .course-edit-title-row > .btn-danger-outline {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  box-shadow: none;
+}
+
+body.dark-mode .course-edit-title-row > .btn:hover:not(:disabled),
+body.dark-mode .course-edit-title-row > .btn-danger-outline:hover:not(:disabled) {
+  background: var(--ce-hover-bg);
+  border-color: var(--ce-hover-border);
+  color: var(--ce-hover-text);
 }
 
 .gen-side-rail__title {
@@ -941,6 +1100,7 @@ body.dark-mode .gen-textarea {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--gen-ink-faint);
+  overflow-wrap: anywhere;
 }
 
 .gen-side-rail__hint {
@@ -948,6 +1108,7 @@ body.dark-mode .gen-textarea {
   font-size: 13px;
   line-height: 1.5;
   color: var(--gen-ink-muted);
+  overflow-wrap: anywhere;
 }
 
 .gen-side-rail .generate-card {
@@ -960,6 +1121,35 @@ body.dark-mode .gen-textarea {
 
 body.dark-mode .gen-side-rail .generate-card {
   box-shadow: var(--shadow-sm);
+}
+
+.generate-card,
+.lesson-item,
+.test-card,
+.file-item,
+.allowed-emails-trigger,
+.upload-zone,
+.gen-alt-card,
+.gen-test-card {
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+}
+
+.generate-card:hover,
+.lesson-item:hover,
+.test-card:hover,
+.file-item:hover,
+.allowed-emails-trigger:hover,
+.upload-zone:hover,
+.gen-alt-card:hover,
+.gen-test-card:hover {
+  border-color: var(--ce-hover-border);
+  background: var(--ce-hover-bg);
+  box-shadow: var(--ce-hover-shadow);
+  color: inherit;
 }
 
 .gen-form-section {
@@ -1066,6 +1256,7 @@ body.dark-mode .gen-pipeline-card {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--gen-ink);
+  overflow-wrap: anywhere;
 }
 
 .gen-pipeline-card__subtitle {
@@ -1074,6 +1265,7 @@ body.dark-mode .gen-pipeline-card {
   line-height: 1.55;
   color: var(--gen-ink-muted);
   max-width: 40rem;
+  overflow-wrap: anywhere;
 }
 
 .gen-params-grid {
@@ -1097,17 +1289,20 @@ body.dark-mode .gen-pipeline-card {
 .gen-actions-hint {
   font-size: 13px;
   color: var(--gen-ink-faint, rgba(22, 19, 18, 0.45));
+  overflow-wrap: anywhere;
 }
 
 .gen-cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 10px;
   font-weight: 600;
   padding: 12px 22px;
   border-radius: var(--radius-md, 12px);
   transition: transform 0.15s ease, box-shadow 0.2s;
+  text-align: center;
 }
 
 .gen-cta:not(:disabled):hover {
@@ -1252,8 +1447,9 @@ body.dark-mode .gen-pipeline-card {
 
 .gen-alt-card:hover,
 .gen-test-card:hover {
-  border-color: rgba(184, 56, 72, 0.22);
-  box-shadow: 0 8px 24px rgba(22, 19, 18, 0.07);
+  border-color: var(--ce-hover-border);
+  background: var(--ce-hover-bg);
+  box-shadow: var(--ce-hover-shadow);
 }
 
 .gen-alt-card__icon {
@@ -1288,6 +1484,7 @@ body.dark-mode .gen-pipeline-card {
   font-size: 13px;
   line-height: 1.55;
   color: var(--gen-ink-muted);
+  overflow-wrap: anywhere;
 }
 
 .gen-test-row {
@@ -1381,6 +1578,7 @@ body.dark-mode .gen-pipeline-card {
   font-size: 13px;
   color: var(--gen-ink-muted, rgba(22, 19, 18, 0.68));
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .gen-job-banner__meta code {
@@ -1646,9 +1844,9 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 }
 
 .course-edit .upload-zone:hover {
-  background: rgba(184, 56, 72, 0.05);
-  border-color: rgba(184, 56, 72, 0.45);
-  color: #b83848;
+  background: var(--ce-hover-bg);
+  border-color: var(--ce-hover-border);
+  color: var(--ce-hover-text);
 }
 
 body.dark-mode .course-edit .upload-zone {
@@ -1657,8 +1855,8 @@ body.dark-mode .course-edit .upload-zone {
 }
 
 body.dark-mode .course-edit .upload-zone:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.12);
+  color: var(--ce-hover-text);
+  background: var(--ce-hover-bg);
 }
 
 /* Иконки-кнопки */
@@ -1692,7 +1890,7 @@ body.dark-mode .course-edit .upload-zone:hover {
 
 .course-edit .allowed-emails-trigger:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(184, 56, 72, 0.08);
+  box-shadow: var(--ce-hover-shadow);
 }
 
 body.dark-mode .course-edit .btn-primary {
@@ -1754,5 +1952,44 @@ body.dark-mode .course-edit .btn-danger-outline:hover:not(:disabled) {
 
   .course-edit input[type='checkbox']:checked:active {
     transform: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .course-edit-sidebar,
+  .gen-side-rail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 720px) {
+  .course-edit-layout {
+    gap: 24px;
+  }
+
+  .course-edit-title-row > .btn,
+  .course-edit-title-row > .btn-danger-outline {
+    width: 100%;
+  }
+
+  .file-item,
+  .lesson-item,
+  .modal-emails-item {
+    align-items: flex-start;
+  }
+
+  .file-item,
+  .lesson-item {
+    flex-wrap: wrap;
+  }
+
+  .allowed-emails-badge {
+    margin-left: 0;
+  }
+
+  .gen-track {
+    margin-bottom: 24px;
   }
 }
