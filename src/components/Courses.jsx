@@ -35,7 +35,9 @@ const Courses = () => {
   const loadCourses = async () => {
     try {
       setLoading(true)
-      const response = await api.get('/courses')
+      // Для студента «все курсы» = каталог PUBLISHED; GET /courses отдаёт только записанные / allowedEmails
+      const catalogUrl = canUpload(window.keycloak) ? '/courses' : '/courses/published'
+      const response = await api.get(catalogUrl)
       setCourses(response.data)
       
       // Извлекаем список записанных курсов

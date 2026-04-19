@@ -15,26 +15,26 @@ const ToastStack = ({ toasts, onDismiss }) => {
 
   return (
     <div className="toast-stack" aria-live="polite" aria-atomic="true">
-      {toasts.map((t) => {
-        const Icon = icons[t.type] || FiInfo
+      {toasts.map((toast) => {
+        const Icon = icons[toast.type] || FiInfo
         const iconClass =
-          t.type === 'success'
+          toast.type === 'success'
             ? 'toast__icon toast__icon--success'
-            : t.type === 'error'
+            : toast.type === 'error'
               ? 'toast__icon toast__icon--error'
               : 'toast__icon toast__icon--info'
         return (
           <div
-            key={t.id}
-            className={`toast toast--${t.type || 'info'}`}
+            key={toast.id}
+            className={`toast toast--${toast.type || 'info'}`}
             role="status"
           >
             <Icon className={iconClass} aria-hidden />
-            <span className="toast__text">{t.message}</span>
+            <span className="toast__text">{toast.message}</span>
             <button
               type="button"
               className="toast__close"
-              onClick={() => onDismiss(t.id)}
+              onClick={() => onDismiss(toast.id)}
               aria-label={t('lessonChat.close')}
             >
               <FiX size={18} />
