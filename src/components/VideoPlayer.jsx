@@ -20,6 +20,7 @@ import {
   FiChevronRight
 } from 'react-icons/fi'
 import api from '../services/api'
+import { normalizeCourseViewerResponse } from '../utils/courseResponse'
 import { useTranslation } from 'react-i18next'
 import './VideoPlayer.css'
 
@@ -183,7 +184,7 @@ const VideoPlayer = () => {
       setLesson(foundLesson)
 
       const courseResponse = await api.get(`/courses/${courseId}`)
-      setCourse(courseResponse.data)
+      setCourse(normalizeCourseViewerResponse(courseResponse.data).course)
 
       setLoading(false)
     } catch (err) {

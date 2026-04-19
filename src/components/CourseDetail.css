@@ -222,41 +222,48 @@
     justify-content: center;
     gap: 8px;
 
-    height: var(--ui-height-md, 38px); /* Синхронизируем высоту с другими UI элементами */
+    height: var(--ui-height-md, 38px);
     padding: 0 18px;
 
     border-radius: var(--radius-md);
-    /* Убираем яркий красный бордюр, заменяем на мягкий белый */
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 
-    /* Делаем фон спокойнее */
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    /* Цвет текста спокойный белый */
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
 
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
-    /* Убираем неоновое свечение по умолчанию */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(22, 19, 18, 0.06);
 }
 
-/* Эффект при наведении — делаем его благородным, а не кричащим */
-.btn-edit:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
+.btn-edit:hover,
+.btn-edit:focus-visible {
+    background: var(--bg-tertiary);
+    border-color: color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
+    color: var(--text-primary);
 
-    /* Вместо красной тени — мягкое увеличение глубины */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(22, 19, 18, 0.08);
+    transform: translateY(-1px);
 }
+
+.btn-edit--secondary {
+    background: transparent;
+    border-style: dashed;
+}
+
+.btn-edit--secondary:hover,
+.btn-edit--secondary:focus-visible {
+    color: var(--text-primary);
+    background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-primary));
+    border-color: color-mix(in srgb, var(--primary-color) 35%, var(--border-color));
+}
+
 /* Контейнер для кнопок управления */
 .course-management-controls {
     display: flex;
@@ -278,6 +285,14 @@
 .course-management-controls .btn-add-lesson {
     min-width: 220px;       /* Одинаковая ширина для обеих кнопок */
     text-align: center;
+}
+
+.course-management-controls .btn-edit--secondary {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .empty-state {
@@ -455,47 +470,39 @@
 }
 
 .btn-cancel {
-    /* Синхронизируем базу с кнопкой редактирования */
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
 
-    /* Высота должна быть строго как у btn-edit */
-    height: var( 38px);
+    height: var(--ui-height-md, 38px);
     padding: 0 18px;
 
     border-radius: var(--radius-md);
-    /* Тонкая белая граница как у "Редактировать" */
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 
-    /* Glassmorphism эффект */
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-
-    /* Типографика */
-    color: var(--text-primary, #ffffff);
+    color: var(--text-primary);
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
 
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 
-    /* Тень без неона */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 2px rgba(22, 19, 18, 0.06);
 }
 
-/* Эффект при наведении — повторяем btn-edit */
-.btn-cancel:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.3);
-    color: #ffffff;
+.btn-cancel:hover,
+.btn-cancel:focus-visible {
+    background: var(--bg-tertiary);
+    border-color: color-mix(in srgb, var(--primary-color) 28%, var(--border-color));
+    color: var(--text-primary);
 
-    /* Мягкая глубина */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(22, 19, 18, 0.08);
+    transform: translateY(-1px);
 }
 
 /* Эффект нажатия */
@@ -1121,126 +1128,103 @@ body.dark-mode .course-detail--v2 .panel-count-badge {
     color: #fca5a5;
 }
 
-/* --- Курс қатысушылары --- */
-.course-detail--v2 .course-participants {
-    margin-bottom: 20px;
+/* --- Қатысушыларға сілтеме (толық тізім бөлек бетте) --- */
+.course-detail--v2 .course-participants-teaser {
+    margin-bottom: 0;
 }
 
-.course-detail--v2 .course-participants__lead {
-    margin-top: 8px;
-    color: var(--text-secondary, #5c5a59);
-    max-width: 720px;
+.course-detail--v2 .course-participants-teaser__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 20px;
+}
+
+.course-detail--v2 .course-participants-teaser__title {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--cp-ink);
+}
+
+.course-detail--v2 .course-participants-teaser__lead {
+    margin: 0;
+    font-size: 13px;
     line-height: 1.5;
+    color: var(--cp-muted);
+    max-width: 520px;
 }
 
-.course-detail--v2 .course-participants__grid {
-    display: grid;
-    gap: 16px;
-    grid-template-columns: 1fr;
+.course-detail--v2 .course-participants-teaser__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-primary);
+    border: 1px solid color-mix(in srgb, var(--primary-color) 22%, var(--border-color));
+    background: var(--bg-primary);
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-@media (min-width: 900px) {
-    .course-detail--v2 .course-participants__grid {
-        grid-template-columns: minmax(260px, 1fr) 2fr;
-        align-items: start;
-    }
+.course-detail--v2 .course-participants-teaser__cta:hover,
+.course-detail--v2 .course-participants-teaser__cta:focus-visible {
+    background: var(--bg-tertiary);
+    border-color: color-mix(in srgb, var(--primary-color) 38%, var(--border-color));
+    color: var(--text-primary);
 }
 
-.course-detail--v2 .course-participants__card {
-    border-radius: 14px;
-    border: 1px solid rgba(22, 19, 18, 0.12);
-    padding: 16px 18px;
-    background: var(--surface-elevated, #fffdfb);
+body.dark-mode .course-detail--v2 .course-participants-teaser__cta {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.92);
 }
 
-.course-detail--v2 .course-participants__card--instructor {
-    border-color: rgba(184, 56, 72, 0.28);
-    background: linear-gradient(145deg, rgba(184, 56, 72, 0.06), transparent);
+body.dark-mode .course-detail--v2 .course-participants-teaser__cta:hover,
+body.dark-mode .course-detail--v2 .course-participants-teaser__cta:focus-visible {
+    background: rgba(255, 255, 255, 0.08);
 }
-
-.course-detail--v2 .course-participants__card h3 {
-    margin: 0 0 12px;
-    font-size: 1rem;
-    font-weight: 700;
-}
-
-.course-detail--v2 .course-participants__row {
+.course-detail--v2 .course-page__preview-banner {
+    max-width: 1400px;
+    margin: 0 auto var(--spacing-lg);
+    padding: var(--spacing-lg) var(--spacing-xl);
+    border-radius: var(--radius-md);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.22);
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-md);
 }
 
-.course-detail--v2 .course-participants__mono {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 0.85rem;
-    word-break: break-all;
-    color: var(--text-primary, #161312);
+.course-detail--v2 .course-page__preview-banner p {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
+    line-height: 1.5;
+    color: var(--text-primary, #1a1a1a);
 }
 
-.course-detail--v2 .course-participants__label {
-    display: block;
-    margin-top: 6px;
-    font-size: 0.9rem;
-    color: var(--text-secondary, #5c5a59);
-}
-
-.course-detail--v2 .course-participants__you {
+.course-detail--v2 .course-page__preview-enroll {
     flex-shrink: 0;
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(184, 56, 72, 0.12);
-    color: #b83848;
 }
 
-.course-detail--v2 .course-participants__empty {
-    margin: 0;
-    color: var(--text-secondary, #718096);
+.course-detail--v2 .course-page__preview-gate {
+    margin-top: var(--spacing-md);
 }
 
-.course-detail--v2 .course-participants__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    max-height: 320px;
-    overflow-y: auto;
+body.dark-mode .course-detail--v2 .course-page__preview-banner {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: rgba(96, 165, 250, 0.35);
 }
 
-.course-detail--v2 .course-participants__list-item {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(22, 19, 18, 0.08);
-}
-
-.course-detail--v2 .course-participants__list-item:last-child {
-    border-bottom: none;
-}
-
-.course-detail--v2 .course-participants__list-main {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 0;
-}
-
-body.dark-mode .course-detail--v2 .course-participants__card {
-    background: rgba(0, 0, 0, 0.22);
-    border-color: rgba(255, 255, 255, 0.16);
-}
-
-body.dark-mode .course-detail--v2 .course-participants__card--instructor {
-    border-color: rgba(255, 255, 255, 0.28);
-}
-
-body.dark-mode .course-detail--v2 .course-participants__list-item {
-    border-bottom-color: rgba(255, 255, 255, 0.1);
+body.dark-mode .course-detail--v2 .course-page__preview-banner p {
+    color: rgba(255, 255, 255, 0.92);
 }
 
 @media (prefers-reduced-motion: reduce) {

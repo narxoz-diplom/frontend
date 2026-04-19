@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { FiArrowLeft, FiCheckSquare } from 'react-icons/fi'
 import api from '../services/api'
+import { normalizeCourseViewerResponse } from '../utils/courseResponse'
 import { pickLocalized } from '../i18n/localize'
 import { useTranslation } from 'react-i18next'
 import './TestDetail.css'
@@ -30,7 +31,7 @@ const TestDetail = () => {
         api.get(`/courses/${courseId}`)
       ])
       setTest(testRes.data)
-      setCourse(courseRes.data)
+      setCourse(normalizeCourseViewerResponse(courseRes.data).course)
       setError(null)
     } catch (err) {
       console.error('Error loading test:', err)

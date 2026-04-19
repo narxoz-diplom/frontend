@@ -241,6 +241,15 @@ const resources = {
         participantsLabel: 'Подпись',
         participantsLoadError: 'Не удалось загрузить список участников',
         participantsEmptyStudents: 'Пока никто не записан.',
+        participantsNote: 'Примечание',
+        participantsOpenPage: 'Полный список',
+        participantsTeaserLead: 'Преподаватель и студенты — на отдельной странице.',
+        participantsNavLink: 'Участники',
+        participantsForbidden: 'Нет доступа к списку участников этого курса.',
+        previewHint: 'Вы не записаны на этот курс. Ниже — краткая информация; материалы и тесты доступны после записи.',
+        previewEnroll: 'Записаться на курс',
+        previewLessonsHint: 'Список уроков и материалы доступны после записи на курс.',
+        previewTestsHint: 'Тесты доступны после записи на курс.',
       },
 
       testPage: {
@@ -482,6 +491,12 @@ const resources = {
         generationStopped: 'Генерация остановлена',
         generatingInBackground: 'Создаем уроки в фоне',
         statusLabel: 'Статус',
+      },
+
+      courseTestResults: {
+        backToEdit: 'К редактированию курса',
+        loadError: 'Не удалось загрузить данные курса',
+        navLink: 'Результаты тестов',
       },
 
       ragPage: {
@@ -860,6 +875,15 @@ const resources = {
         participantsLabel: 'Label',
         participantsLoadError: 'Could not load participants',
         participantsEmptyStudents: 'No students enrolled yet.',
+        participantsNote: 'Note',
+        participantsOpenPage: 'Full roster',
+        participantsTeaserLead: 'Instructor and students are shown on a separate page.',
+        participantsNavLink: 'Participants',
+        participantsForbidden: 'You do not have access to this course roster.',
+        previewHint: 'You are not enrolled in this course. Below is a short summary; lessons and tests unlock after you enroll.',
+        previewEnroll: 'Enroll in course',
+        previewLessonsHint: 'Lessons and materials are available after you enroll.',
+        previewTestsHint: 'Tests are available after you enroll.',
       },
 
       testPage: {
@@ -1101,6 +1125,12 @@ const resources = {
         generationStopped: 'Generation stopped',
         generatingInBackground: 'Creating lessons in background',
         statusLabel: 'Status',
+      },
+
+      courseTestResults: {
+        backToEdit: 'Back to course editor',
+        loadError: 'Failed to load course data',
+        navLink: 'Test results',
       },
 
       ragPage: {
@@ -1479,6 +1509,15 @@ const resources = {
         participantsLabel: 'Атауы',
         participantsLoadError: 'Қатысушылар тізімін жүктеу мүмкін болмады',
         participantsEmptyStudents: 'Әзірге ешкім жазылмаған.',
+        participantsNote: 'Ескерту',
+        participantsOpenPage: 'Толық тізім',
+        participantsTeaserLead: 'Оқытушы мен студенттер бөлек бетте көрсетіледі.',
+        participantsNavLink: 'Қатысушылар',
+        participantsForbidden: 'Бұл курстың қатысушылары тізіміне қол жеткізу жоқ.',
+        previewHint: 'Сіз бұл курска тіркелмегенсіз. Төменде қысқаша мәлімет көрсетіледі; сабақтар мен тесттер тіркелгеннен кейін ашылады.',
+        previewEnroll: 'Курска тіркелу',
+        previewLessonsHint: 'Сабақтар мен материалдар курска тіркелгеннен кейін қолжетімді.',
+        previewTestsHint: 'Тесттер курска тіркелгеннен кейін қолжетімді.',
       },
 
       testPage: {
@@ -1720,6 +1759,12 @@ const resources = {
         generationStopped: 'Генерация тоқтатылды',
         generatingInBackground: 'Сабақтар фонда жасалуда',
         statusLabel: 'Күйі',
+      },
+
+      courseTestResults: {
+        backToEdit: 'Курс редакциясына',
+        loadError: 'Курс деректерін жүктеу сәтсіз аяқталды',
+        navLink: 'Тест нәтижелері',
       },
 
       ragPage: {

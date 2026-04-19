@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiEye, FiTrash2 } from 'react-icons/fi'
+import { FiEye, FiTrash2, FiUserPlus, FiCheckCircle, FiChevronRight } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
@@ -243,69 +243,89 @@ const Courses = () => {
 
       <div className="courses-grid">
         {courses.length === 0 ? (
-          <p style={{ textAlign: 'center', color: '#7f8c8d', padding: '40px' }}>
-            {t('coursesPage.noCourses')}
-          </p>
+          <p className="courses-empty">{t('coursesPage.noCourses')}</p>
         ) : (
           courses.map((course) => (
-            <div key={course.id} className="course-card">
-              {course.imageUrl && (
-                <div className="course-image">
-                  <img src={course.imageUrl} alt={course.title} />
+            <article key={course.id} className="course-card">
+              <div className={`course-card__media${course.imageUrl ? '' : ' course-card__media--placeholder'}`}>
+                {course.imageUrl ? (
+                  <img src={course.imageUrl} alt="" decoding="async" />
+                ) : (
+                  <span className="course-card__media-fallback" aria-hidden>
+                    {String(pickLocalized(course, 'title') || course.title || '?').slice(0, 1)}
+                  </span>
+                )}
+              </div>
+              <div className="course-card__body">
+                <div className="course-card__head">
+                  <span
+                    className={`course-card__status course-card__status--${String(course.status || 'unknown').toLowerCase()}`}
+                  >
+                    {course.status || '—'}
+                  </span>
                 </div>
-              )}
-              <div className="course-content">
-                <h3>{pickLocalized(course, 'title')}</h3>
-                <p className="course-description">
+                <h3 className="course-card__title">{pickLocalized(course, 'title')}</h3>
+                <p className="course-card__description">
                   {pickLocalized(course, 'description') || t('coursesPage.noDescription')}
                 </p>
-                <div className="course-meta">
-                  <span className={`course-status ${course.status}`}>{course.status}</span>
-                  <div className="course-stats">
-                    {course.lessons && (
-                      <span className="course-lessons">
-                        {course.lessons.length} {t('coursesPage.lessonsSuffix')}
-                      </span>
-                    )}
-                    {courseViews[course.id] !== undefined && (
-                      <span className="course-views">
-                        <FiEye /> {courseViews[course.id] || 0}
-                      </span>
+                <div className="course-card__meta">
+                  {course.lessons && (
+                    <span className="course-card__stat">
+                      {course.lessons.length} {t('coursesPage.lessonsSuffix')}
+                    </span>
+                  )}
+                  {courseViews[course.id] !== undefined && (
+                    <span className="course-card__stat course-card__stat--views">
+                      <FiEye aria-hidden /> {courseViews[course.id] || 0}
+                    </span>
+                  )}
+                </div>
+                <div className="course-card__footer">
+                  <div className="course-card__actions">
+                    <Link to={`/courses/${course.id}`} className="course-card__btn course-card__btn--outline">
+                      <span>{t('coursesPage.viewCourse')}</span>
+                      <FiChevronRight className="course-card__btn-icon" aria-hidden />
+                    </Link>
+                    {!isTeacher(window.keycloak) && !isAdmin(window.keycloak) && (
+                      isEnrolled(course.id) ? (
+                        <span className="course-card__enrolled-pill" title={t('coursesPage.alreadyEnrolled')}>
+                          <FiCheckCircle aria-hidden />
+                          {t('coursesPage.enrolled')}
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="course-card__btn course-card__btn--enroll"
+                          onClick={() => handleEnroll(course.id)}
+                          disabled={enrolling.has(course.id)}
+                          title={t('coursesPage.enrollCourse')}
+                        >
+                          {enrolling.has(course.id) ? (
+                            t('coursesPage.enrolling')
+                          ) : (
+                            <>
+                              <FiUserPlus className="course-card__btn-icon course-card__btn-icon--left" aria-hidden />
+                              {t('coursesPage.enroll')}
+                            </>
+                          )}
+                        </button>
+                      )
                     )}
                   </div>
-                </div>
-                <div className="course-actions">
-                  <Link to={`/courses/${course.id}`} className="btn btn-primary">
-                    {t('coursesPage.viewCourse')}
-                  </Link>
                   {canDeleteCourse(course) && (
                     <button
                       type="button"
-                      className="btn btn-danger-outline"
+                      className="course-card__icon-btn"
                       onClick={() => handleDeleteCourse(course)}
                       disabled={deletingCourseId === course.id}
                       title={t('coursesPage.deleteCourse')}
                     >
-                      {deletingCourseId === course.id ? '…' : <FiTrash2 />}
-                    </button>
-                  )}
-                  {!isTeacher(window.keycloak) && !isAdmin(window.keycloak) && (
-                    <button
-                      className={`btn ${isEnrolled(course.id) ? 'btn-secondary' : 'btn-success'}`}
-                      onClick={() => handleEnroll(course.id)}
-                      disabled={enrolling.has(course.id) || isEnrolled(course.id)}
-                      title={isEnrolled(course.id) ? t('coursesPage.alreadyEnrolled') : t('coursesPage.enrollCourse')}
-                    >
-                      {enrolling.has(course.id) 
-                        ? t('coursesPage.enrolling')
-                        : isEnrolled(course.id) 
-                        ? t('coursesPage.enrolled')
-                        : t('coursesPage.enroll')}
+                      {deletingCourseId === course.id ? '…' : <FiTrash2 aria-hidden />}
                     </button>
                   )}
                 </div>
               </div>
-            </div>
+            </article>
           ))
         )}
       </div>

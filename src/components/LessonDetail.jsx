@@ -18,6 +18,7 @@ import {
   FiTrash2
 } from 'react-icons/fi'
 import api from '../services/api'
+import { normalizeCourseViewerResponse } from '../utils/courseResponse'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
 import LessonChat from './LessonChat'
@@ -91,7 +92,7 @@ const LessonDetail = () => {
       
       // Загружаем курс
       const courseResponse = await api.get(`/courses/${courseId}`)
-      setCourse(courseResponse.data)
+      setCourse(normalizeCourseViewerResponse(courseResponse.data).course)
       
       // Загружаем все уроки курса
       const lessonsResponse = await api.get(`/courses/${courseId}/lessons`)

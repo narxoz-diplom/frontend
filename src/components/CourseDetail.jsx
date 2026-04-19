@@ -13,11 +13,13 @@ import {
   FiEye,
   FiCheckSquare,
   FiArrowLeft,
-  FiUsers
+  FiUsers,
+  FiClipboard
 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload, isTeacher, isAdmin } from '../utils/roles'
+import { normalizeCourseViewerResponse } from '../utils/courseResponse'
 import { pickLocalized } from '../i18n/localize'
 import { useTranslation } from 'react-i18next'
 import './CourseDetail.css'
@@ -38,13 +40,12 @@ const CourseDetail = () => {
   const [statusChanging, setStatusChanging] = useState(false)
   const [lessonProgress, setLessonProgress] = useState({}) // { lessonId: { completed: bool, progress: number } }
   const [courseViews, setCourseViews] = useState(0)
-  const [participants, setParticipants] = useState(null)
+  const [participantsAccess, setParticipantsAccess] = useState(false)
+  const [previewMode, setPreviewMode] = useState(false)
+  const [enrolling, setEnrolling] = useState(false)
 
   useEffect(() => {
     loadCourse()
-    loadLessons()
-    loadTests()
-    loadProgress()
   }, [id])
 
   const loadProgress = () => {
@@ -91,18 +92,31 @@ const CourseDetail = () => {
 
   const loadCourse = async () => {
     try {
+      setLoading(true)
+      setError(null)
       const response = await api.get(`/courses/${id}`)
-      setCourse(response.data)
+      const { course: courseData, preview } = normalizeCourseViewerResponse(response.data)
+      setCourse(courseData)
+      setPreviewMode(preview)
 
-      try {
-        const pr = await api.get(`/courses/${id}/participants`)
-        setParticipants(pr.data)
-      } catch (pe) {
-        console.warn('participants', pe)
-        setParticipants(null)
+      if (preview) {
+        setLessons([])
+        setTests([])
+        setLessonFiles({})
+        setParticipantsAccess(false)
+      } else {
+        try {
+          await api.get(`/courses/${id}/participants`)
+          setParticipantsAccess(true)
+        } catch (pe) {
+          console.warn('participants', pe)
+          setParticipantsAccess(false)
+        }
+        await loadLessons()
+        await loadTests()
+        loadProgress()
       }
 
-      // Загружаем просмотры курса
       try {
         const viewsResponse = await api.get(`/courses/${id}/views`)
         setCourseViews(viewsResponse.data || 0)
@@ -110,12 +124,30 @@ const CourseDetail = () => {
         console.error('Error loading course views:', err)
         setCourseViews(0)
       }
-
-      setLoading(false)
     } catch (err) {
       console.error('Error loading course:', err)
       setError(t('coursePage.loadCourseError'))
+      setCourse(null)
+      setPreviewMode(false)
+      setParticipantsAccess(false)
+    } finally {
       setLoading(false)
+    }
+  }
+
+  const handleEnrollFromPreview = async () => {
+    if (enrolling) return
+    setEnrolling(true)
+    setError(null)
+    try {
+      await api.post(`/courses/${id}/enroll`)
+      toast(t('coursesPage.enrollSuccess', { title: pickLocalized(course, 'title') || t('common.course') }), 'success')
+      await loadCourse()
+    } catch (err) {
+      console.error('Error enrolling:', err)
+      setError(err.response?.data?.message || t('coursesPage.enrollError'))
+    } finally {
+      setEnrolling(false)
     }
   }
 
@@ -157,8 +189,7 @@ const CourseDetail = () => {
       const response = await api.get(`/courses/${id}/lessons`)
       const lessonsData = response.data
       setLessons(lessonsData)
-      
-      // Загружаем файлы для каждого урока через file-service
+
       const filesMap = {}
       for (const lesson of lessonsData) {
         try {
@@ -170,13 +201,10 @@ const CourseDetail = () => {
         }
       }
       setLessonFiles(filesMap)
-      
-      setLoading(false)
-      loadProgress() // Обновляем прогресс после загрузки уроков
+      loadProgress()
     } catch (err) {
       console.error('Error loading lessons:', err)
       setError(t('coursePage.loadLessonsError'))
-      setLoading(false)
     }
   }
 
@@ -339,27 +367,36 @@ const CourseDetail = () => {
           </div>
         </div>
         {pickLocalized(course, 'description') && <p className="course-page__lead">{pickLocalized(course, 'description')}</p>}
-        <dl className="course-page__meta">
-          <div>
-            <dt>{t('coursePage.lessons')}</dt>
-            <dd>{lessons.length}</dd>
-          </div>
-          <div>
-            <dt>{t('coursePage.tests')}</dt>
-            <dd>{tests.length}</dd>
-          </div>
-          {lessons.length > 0 && (
+        {!previewMode ? (
+          <dl className="course-page__meta">
             <div>
-              <dt>{t('coursePage.progress')}</dt>
-              <dd>{Math.round(courseProgress)}%</dd>
+              <dt>{t('coursePage.lessons')}</dt>
+              <dd>{lessons.length}</dd>
             </div>
-          )}
-          <div>
-            <dt>{t('coursePage.views')}</dt>
-            <dd>{courseViews}</dd>
-          </div>
-        </dl>
-        {lessons.length > 0 && (
+            <div>
+              <dt>{t('coursePage.tests')}</dt>
+              <dd>{tests.length}</dd>
+            </div>
+            {lessons.length > 0 && (
+              <div>
+                <dt>{t('coursePage.progress')}</dt>
+                <dd>{Math.round(courseProgress)}%</dd>
+              </div>
+            )}
+            <div>
+              <dt>{t('coursePage.views')}</dt>
+              <dd>{courseViews}</dd>
+            </div>
+          </dl>
+        ) : (
+          <dl className="course-page__meta course-page__meta--preview">
+            <div>
+              <dt>{t('coursePage.views')}</dt>
+              <dd>{courseViews}</dd>
+            </div>
+          </dl>
+        )}
+        {!previewMode && lessons.length > 0 && (
           <div className="course-page__progress" aria-label={t('coursePage.progress')}>
             <div className="course-page__progress-track">
               <div className="course-page__progress-fill" style={{ width: `${courseProgress}%` }} />
@@ -370,63 +407,49 @@ const CourseDetail = () => {
 
       {error && <div className="course-page__error">{error}</div>}
 
+      {previewMode && (
+        <div className="course-page__preview-banner" role="status">
+          <p>{t('coursePage.previewHint')}</p>
+          {!canUpload(window.keycloak) && (
+            <button
+              type="button"
+              className="btn btn-primary course-page__preview-enroll"
+              onClick={handleEnrollFromPreview}
+              disabled={enrolling}
+            >
+              {enrolling ? t('common.loading') : t('coursePage.previewEnroll')}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="course-content-section">
-        {participants && (
-          <section className="course-participants course-panel" aria-labelledby="course-participants-title">
-            <div className="course-section-head__text">
-              <span className="course-section-head__eyebrow">
-                <FiUsers aria-hidden /> {t('coursePage.participantsEyebrow')}
-              </span>
-              <h2 id="course-participants-title">{t('coursePage.participantsTitle')}</h2>
-              <p className="course-participants__lead">{t('coursePage.participantsSubtitle')}</p>
-            </div>
-            <div className="course-participants__grid">
-              <div className="course-participants__card course-participants__card--instructor">
-                <h3>{t('coursePage.participantsInstructor')}</h3>
-                <div className="course-participants__row">
-                  <div>
-                    <div className="course-participants__mono">{participants.instructor?.userId}</div>
-                    {participants.instructor?.displayLabel && (
-                      <div className="course-participants__label">{participants.instructor.displayLabel}</div>
-                    )}
-                  </div>
-                  {mySub && participants.instructor?.userId === mySub && (
-                    <span className="course-participants__you">{t('coursePage.participantsYou')}</span>
-                  )}
-                </div>
+        {participantsAccess && !previewMode && (
+          <section className="course-participants-teaser course-panel" aria-labelledby="course-participants-teaser-title">
+            <div className="course-participants-teaser__row">
+              <div>
+                <h2 id="course-participants-teaser-title" className="course-participants-teaser__title">
+                  {t('coursePage.participantsTitle')}
+                </h2>
+                <p className="course-participants-teaser__lead">{t('coursePage.participantsTeaserLead')}</p>
               </div>
-              <div className="course-participants__card">
-                <h3>
-                  {t('coursePage.participantsStudents')}{' '}
-                  <span className="course-participants__count">
-                    ({t('coursePage.participantsCount', { count: participants.studentCount ?? 0 })})
-                  </span>
-                </h3>
-                {(participants.students?.length ?? 0) === 0 ? (
-                  <p className="course-participants__empty">{t('coursePage.participantsEmptyStudents')}</p>
-                ) : (
-                  <ul className="course-participants__list">
-                    {participants.students.map((s) => (
-                      <li key={s.userId} className="course-participants__list-item">
-                        <div className="course-participants__list-main">
-                          <span className="course-participants__mono">{s.userId}</span>
-                          {s.displayLabel && (
-                            <span className="course-participants__label">{s.displayLabel}</span>
-                          )}
-                        </div>
-                        {mySub && s.userId === mySub && (
-                          <span className="course-participants__you">{t('coursePage.participantsYou')}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <Link to={`/courses/${id}/participants`} className="course-participants-teaser__cta">
+                {t('coursePage.participantsOpenPage')}
+              </Link>
             </div>
           </section>
         )}
 
         <section className="lessons-section course-panel">
+          {previewMode ? (
+            <div className="card empty-state course-page__preview-gate">
+              <div className="empty-state-icon">
+                <FiBook />
+              </div>
+              <p>{t('coursePage.previewLessonsHint')}</p>
+            </div>
+          ) : (
+          <>
           <div className="lessons-header">
             <div className="course-section-head__text">
               <span className="course-section-head__eyebrow">{t('coursePage.program')}</span>
@@ -443,6 +466,12 @@ const CourseDetail = () => {
                 <div className="course-management-controls">
                   <Link to={`/courses/${id}/edit`} className="btn-edit">
                     {t('coursePage.editCourse')}
+                  </Link>
+                  <Link to={`/courses/${id}/test-results`} className="btn-edit btn-edit--secondary">
+                    <FiClipboard aria-hidden /> {t('courseTestResults.navLink')}
+                  </Link>
+                  <Link to={`/courses/${id}/participants`} className="btn-edit btn-edit--secondary">
+                    <FiUsers aria-hidden /> {t('coursePage.participantsNavLink')}
                   </Link>
 
                   {!showLessonForm && (
@@ -677,6 +706,8 @@ const CourseDetail = () => {
               })}
             </div>
           )}
+          </>
+          )}
         </section>
 
         <section className="tests-section course-panel">
@@ -684,7 +715,14 @@ const CourseDetail = () => {
             <span className="course-section-head__eyebrow">{t('coursePage.knowledgeCheck')}</span>
             <h2>{t('coursePage.tests')}</h2>
           </div>
-          {tests.length === 0 ? (
+          {previewMode ? (
+            <div className="card empty-state course-page__preview-gate">
+              <div className="empty-state-icon">
+                <FiCheckSquare />
+              </div>
+              <p>{t('coursePage.previewTestsHint')}</p>
+            </div>
+          ) : tests.length === 0 ? (
             <div className="card empty-state">
               <div className="empty-state-icon">
                 <FiCheckSquare />

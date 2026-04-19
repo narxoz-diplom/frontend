@@ -6,6 +6,8 @@ import Dashboard from '../components/dashboard/Dashboard'
 import Courses from '../components/Courses'
 import CourseDetail from '../components/CourseDetail'
 import CourseEdit from '../components/CourseEdit'
+import CourseTestResults from '../components/CourseTestResults'
+import CourseParticipants from '../components/CourseParticipants'
 import LessonDetail from '../components/LessonDetail'
 import TestDetail from '../components/TestDetail'
 import VideoPlayer from '../components/VideoPlayer'
@@ -33,6 +35,8 @@ const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
                     <Route path="/courses" element={<Courses />} />
                     <Route path="/courses/:id" element={<CourseDetail />} />
                     <Route path="/courses/:id/edit" element={<CourseEdit />} />
+                    <Route path="/courses/:courseId/participants" element={<CourseParticipants />} />
+                    <Route path="/courses/:courseId/test-results" element={<CourseTestResults />} />
                     <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
                     <Route path="/courses/:courseId/tests/:testId" element={<TestDetail />} />
                     <Route path="/courses/:courseId/lessons/:lessonId/videos/:videoId" element={<VideoPlayer />} />
