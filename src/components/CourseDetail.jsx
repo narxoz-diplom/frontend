@@ -12,7 +12,8 @@ import {
   FiTrash2,
   FiEye,
   FiCheckSquare,
-  FiArrowLeft
+  FiArrowLeft,
+  FiUsers
 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
@@ -37,6 +38,7 @@ const CourseDetail = () => {
   const [statusChanging, setStatusChanging] = useState(false)
   const [lessonProgress, setLessonProgress] = useState({}) // { lessonId: { completed: bool, progress: number } }
   const [courseViews, setCourseViews] = useState(0)
+  const [participants, setParticipants] = useState(null)
 
   useEffect(() => {
     loadCourse()
@@ -91,7 +93,15 @@ const CourseDetail = () => {
     try {
       const response = await api.get(`/courses/${id}`)
       setCourse(response.data)
-      
+
+      try {
+        const pr = await api.get(`/courses/${id}/participants`)
+        setParticipants(pr.data)
+      } catch (pe) {
+        console.warn('participants', pe)
+        setParticipants(null)
+      }
+
       // Загружаем просмотры курса
       try {
         const viewsResponse = await api.get(`/courses/${id}/views`)
@@ -100,7 +110,7 @@ const CourseDetail = () => {
         console.error('Error loading course views:', err)
         setCourseViews(0)
       }
-      
+
       setLoading(false)
     } catch (err) {
       console.error('Error loading course:', err)
@@ -282,6 +292,10 @@ const CourseDetail = () => {
   }
 
   const courseProgress = getCourseProgress()
+  const mySub =
+    typeof window !== 'undefined' && window.keycloak?.tokenParsed?.sub
+      ? String(window.keycloak.tokenParsed.sub)
+      : ''
 
   const statusLabel =
     course.status === 'PUBLISHED'
@@ -357,6 +371,61 @@ const CourseDetail = () => {
       {error && <div className="course-page__error">{error}</div>}
 
       <div className="course-content-section">
+        {participants && (
+          <section className="course-participants course-panel" aria-labelledby="course-participants-title">
+            <div className="course-section-head__text">
+              <span className="course-section-head__eyebrow">
+                <FiUsers aria-hidden /> {t('coursePage.participantsEyebrow')}
+              </span>
+              <h2 id="course-participants-title">{t('coursePage.participantsTitle')}</h2>
+              <p className="course-participants__lead">{t('coursePage.participantsSubtitle')}</p>
+            </div>
+            <div className="course-participants__grid">
+              <div className="course-participants__card course-participants__card--instructor">
+                <h3>{t('coursePage.participantsInstructor')}</h3>
+                <div className="course-participants__row">
+                  <div>
+                    <div className="course-participants__mono">{participants.instructor?.userId}</div>
+                    {participants.instructor?.displayLabel && (
+                      <div className="course-participants__label">{participants.instructor.displayLabel}</div>
+                    )}
+                  </div>
+                  {mySub && participants.instructor?.userId === mySub && (
+                    <span className="course-participants__you">{t('coursePage.participantsYou')}</span>
+                  )}
+                </div>
+              </div>
+              <div className="course-participants__card">
+                <h3>
+                  {t('coursePage.participantsStudents')}{' '}
+                  <span className="course-participants__count">
+                    ({t('coursePage.participantsCount', { count: participants.studentCount ?? 0 })})
+                  </span>
+                </h3>
+                {(participants.students?.length ?? 0) === 0 ? (
+                  <p className="course-participants__empty">{t('coursePage.participantsEmptyStudents')}</p>
+                ) : (
+                  <ul className="course-participants__list">
+                    {participants.students.map((s) => (
+                      <li key={s.userId} className="course-participants__list-item">
+                        <div className="course-participants__list-main">
+                          <span className="course-participants__mono">{s.userId}</span>
+                          {s.displayLabel && (
+                            <span className="course-participants__label">{s.displayLabel}</span>
+                          )}
+                        </div>
+                        {mySub && s.userId === mySub && (
+                          <span className="course-participants__you">{t('coursePage.participantsYou')}</span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
         <section className="lessons-section course-panel">
           <div className="lessons-header">
             <div className="course-section-head__text">

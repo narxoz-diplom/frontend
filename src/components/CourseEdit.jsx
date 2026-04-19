@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useMemo, useCallback } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   FiFile,
@@ -16,9 +16,13 @@ import {
   FiEdit3,
   FiLink,
   FiCpu,
-  FiPlus
+  FiPlus,
+  FiDownload,
+  FiSearch,
+  FiUsers
 } from 'react-icons/fi'
 import api from '../services/api'
+import { pickLocalized } from '../i18n/localize'
 import { useAlert } from '../context/AlertProvider'
 import { canUpload } from '../utils/roles'
 import { useTranslation } from 'react-i18next'
@@ -57,6 +61,10 @@ const CourseEdit = () => {
   const [courseFiles, setCourseFiles] = useState([])
   const [lessons, setLessons] = useState([])
   const [tests, setTests] = useState([])
+  const [testResults, setTestResults] = useState([])
+  const [testResultFilterTestId, setTestResultFilterTestId] = useState('all')
+  const [testResultSearch, setTestResultSearch] = useState('')
+  const [participants, setParticipants] = useState(null)
   const [selectedFileIds, setSelectedFileIds] = useState(new Set())
   const [selectedLessonIds, setSelectedLessonIds] = useState(new Set())
   const [loading, setLoading] = useState(true)
@@ -175,6 +183,22 @@ const CourseEdit = () => {
       setLessons(lessonsRes.data || [])
       setTests(testsRes.data || [])
       setAllowedEmails(Array.isArray(courseRes.data?.allowedEmails) ? courseRes.data.allowedEmails : [])
+      try {
+        const tr = await api.get(`/courses/${id}/test-results`)
+        setTestResults(Array.isArray(tr.data) ? tr.data : [])
+      } catch (trErr) {
+        setTestResults([])
+        if (trErr?.response?.status && trErr.response.status !== 403) {
+          console.warn('Course test results:', trErr)
+        }
+      }
+      try {
+        const pr = await api.get(`/courses/${id}/participants`)
+        setParticipants(pr.data)
+      } catch (pe) {
+        console.warn('Course participants:', pe)
+        setParticipants(null)
+      }
       setError(null)
     } catch (err) {
       console.error('Error loading course:', err)
@@ -222,6 +246,69 @@ const CourseEdit = () => {
       else next.add(lessonId)
       return next
     })
+  }
+
+  const filteredTestResults = useMemo(() => {
+    let rows = testResults
+    if (testResultFilterTestId && testResultFilterTestId !== 'all') {
+      rows = rows.filter((r) => String(r.testId) === String(testResultFilterTestId))
+    }
+    const q = testResultSearch.trim().toLowerCase()
+    if (q) {
+      rows = rows.filter((r) => (r.studentId || '').toLowerCase().includes(q))
+    }
+    return rows
+  }, [testResults, testResultFilterTestId, testResultSearch])
+
+  const csvEscape = (v) => {
+    const s = v == null ? '' : String(v)
+    if (/[;"\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
+    return s
+  }
+
+  const exportTestResultsCsv = useCallback(() => {
+    const headers = [
+      t('courseEdit.testResultsColDate'),
+      t('courseEdit.testResultsColStudent'),
+      t('courseEdit.testResultsColTest'),
+      t('courseEdit.testResultsColScore'),
+      t('courseEdit.testResultsColPercent'),
+      t('courseEdit.testResultsColFlag')
+    ]
+    const rows = filteredTestResults.map((r) => {
+      const title = pickLocalized(
+        { title: r.testTitle, titleKz: r.testTitleKz, titleEn: r.testTitleEn },
+        'title'
+      )
+      const pct = r.maxScore > 0 ? Math.round((r.score / r.maxScore) * 100) : 0
+      return [
+        r.completedAt || '',
+        r.studentId || '',
+        title,
+        `${r.score ?? ''}/${r.maxScore ?? ''}`,
+        String(pct),
+        r.suspiciousFlag ? '1' : '0'
+      ]
+    })
+    const sep = ';'
+    const lines = [headers.join(sep), ...rows.map((line) => line.map(csvEscape).join(sep))]
+    const blob = new Blob([`\ufeff${lines.join('\n')}`], { type: 'text/csv;charset=utf-8;' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = `course-${id}-test-results.csv`
+    a.click()
+    URL.revokeObjectURL(a.href)
+  }, [filteredTestResults, id, t])
+
+  const formatAttemptDate = (iso) => {
+    if (!iso) return '—'
+    try {
+      const d = new Date(iso)
+      if (Number.isNaN(d.getTime())) return iso
+      return d.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+    } catch {
+      return iso
+    }
   }
 
   const buildLessonParamsPayload = () => {
@@ -1292,6 +1379,43 @@ const CourseEdit = () => {
               <p className="gen-results__sub">{t('courseEdit.contentDesc')}</p>
             </div>
           <div className="course-sections">
+            {participants && (
+              <section className="course-section course-edit-participants">
+                <div className="course-edit-participants__head">
+                  <h3>
+                    <FiUsers aria-hidden /> {t('coursePage.participantsTitle')}
+                  </h3>
+                  <p className="empty-hint">{t('coursePage.participantsSubtitle')}</p>
+                </div>
+                <div className="course-edit-participants__grid">
+                  <div>
+                    <div className="course-edit-participants__label">{t('coursePage.participantsInstructor')}</div>
+                    <code className="course-edit-participants__id">{participants.instructor?.userId}</code>
+                    {participants.instructor?.displayLabel && (
+                      <div className="course-edit-participants__email">{participants.instructor.displayLabel}</div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="course-edit-participants__label">
+                      {t('coursePage.participantsStudents')} (
+                      {t('coursePage.participantsCount', { count: participants.studentCount ?? 0 })})
+                    </div>
+                    {(participants.students?.length ?? 0) === 0 ? (
+                      <p className="empty-hint">{t('coursePage.participantsEmptyStudents')}</p>
+                    ) : (
+                      <ul className="course-edit-participants__list">
+                        {participants.students.map((s) => (
+                          <li key={s.userId}>
+                            <code>{s.userId}</code>
+                            {s.displayLabel ? <span>{s.displayLabel}</span> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
             <section className="course-section">
               <h3>{t('courseEdit.lessons')} ({lessons.length})</h3>
               {lessons.length === 0 ? (
@@ -1337,6 +1461,108 @@ const CourseEdit = () => {
                       <span>{t.title}</span>
                     </Link>
                   ))}
+                </div>
+              )}
+            </section>
+
+            <section className="course-section test-results-section">
+              <div className="test-results-head">
+                <div>
+                  <h3>{t('courseEdit.testResultsTitle')}</h3>
+                  <p className="empty-hint test-results-desc">{t('courseEdit.testResultsDesc')}</p>
+                </div>
+                <div className="test-results-toolbar">
+                  <div className="test-results-filters">
+                    <select
+                      id="test-result-filter"
+                      className="test-results-select"
+                      value={testResultFilterTestId}
+                      onChange={(e) => setTestResultFilterTestId(e.target.value)}
+                      aria-label={t('courseEdit.testResultsFilterTest')}
+                    >
+                      <option value="all">{t('courseEdit.testResultsAllTests')}</option>
+                      {tests.map((tst) => (
+                        <option key={tst.id} value={String(tst.id)}>
+                          {pickLocalized(tst, 'title') || tst.title || `#${tst.id}`}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="test-results-search-wrap">
+                      <FiSearch className="test-results-search-icon" aria-hidden />
+                      <input
+                        type="search"
+                        className="test-results-search"
+                        placeholder={t('courseEdit.testResultsSearchPlaceholder')}
+                        value={testResultSearch}
+                        onChange={(e) => setTestResultSearch(e.target.value)}
+                        aria-label={t('courseEdit.testResultsSearchPlaceholder')}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline test-results-export"
+                    onClick={exportTestResultsCsv}
+                    disabled={filteredTestResults.length === 0}
+                  >
+                    <FiDownload /> {t('courseEdit.testResultsExport')}
+                  </button>
+                </div>
+              </div>
+              {testResults.length === 0 ? (
+                <p className="empty-hint">{t('courseEdit.testResultsEmpty')}</p>
+              ) : filteredTestResults.length === 0 ? (
+                <p className="empty-hint">{t('courseEdit.testResultsNoMatch')}</p>
+              ) : (
+                <div className="test-results-table-wrap">
+                  <table className="test-results-table">
+                    <thead>
+                      <tr>
+                        <th>{t('courseEdit.testResultsColDate')}</th>
+                        <th>{t('courseEdit.testResultsColStudent')}</th>
+                        <th>{t('courseEdit.testResultsColTest')}</th>
+                        <th>{t('courseEdit.testResultsColScore')}</th>
+                        <th>{t('courseEdit.testResultsColPercent')}</th>
+                        <th>{t('courseEdit.testResultsColFlag')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredTestResults.map((r) => {
+                        const title = pickLocalized(
+                          { title: r.testTitle, titleKz: r.testTitleKz, titleEn: r.testTitleEn },
+                          'title'
+                        )
+                        const pct =
+                          r.maxScore > 0 ? Math.round((r.score / r.maxScore) * 100) : 0
+                        return (
+                          <tr key={r.attemptId}>
+                            <td className="test-results-date">{formatAttemptDate(r.completedAt)}</td>
+                            <td className="test-results-student">
+                              <code>{r.studentId}</code>
+                            </td>
+                            <td>{title || `—`}</td>
+                            <td>
+                              {r.score} / {r.maxScore}
+                            </td>
+                            <td>
+                              <span className={`test-results-pct ${pct < 50 ? 'is-low' : ''}`}>
+                                {pct}%
+                              </span>
+                            </td>
+                            <td>
+                              {r.suspiciousFlag ? (
+                                <span className="test-results-flag" title={t('courseEdit.testResultsFlagYes')}>
+                                  {t('courseEdit.testResultsFlagYes')}
+                                </span>
+                              ) : (
+                                <span className="test-results-flag-muted">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </section>

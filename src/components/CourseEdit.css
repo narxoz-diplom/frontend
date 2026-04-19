@@ -1955,6 +1955,252 @@ body.dark-mode .course-edit .btn-danger-outline:hover:not(:disabled) {
   }
 }
 
+/* --- Тест нәтижелері (LMS) --- */
+.course-edit .test-results-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--ce-control-border, rgba(22, 19, 18, 0.12));
+}
+
+.course-edit .test-results-head {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+@media (min-width: 768px) {
+  .course-edit .test-results-head {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+  }
+}
+
+.course-edit .test-results-desc {
+  margin-top: 6px;
+  max-width: 640px;
+}
+
+.course-edit .test-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.course-edit .test-results-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.course-edit .test-results-select {
+  min-width: 200px;
+  max-width: 100%;
+  padding: 10px 36px 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--ce-control-border);
+  background-color: var(--surface, #fff);
+  font-weight: 500;
+}
+
+.course-edit .test-results-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 320px;
+}
+
+.course-edit .test-results-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.course-edit .test-results-search {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  border-radius: 10px;
+  border: 1.5px solid var(--ce-control-border);
+  background: var(--surface, #fff);
+}
+
+.course-edit .test-results-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.course-edit .test-results-table-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--ce-control-border);
+  background: var(--surface, #fff);
+}
+
+.course-edit .test-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.course-edit .test-results-table th,
+.course-edit .test-results-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(22, 19, 18, 0.08);
+  vertical-align: top;
+}
+
+.course-edit .test-results-table th {
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary, #718096);
+  background: rgba(184, 56, 72, 0.06);
+}
+
+.course-edit .test-results-table tr:last-child td {
+  border-bottom: none;
+}
+
+.course-edit .test-results-table tbody tr:hover td {
+  background: rgba(184, 56, 72, 0.04);
+}
+
+.course-edit .test-results-date {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.course-edit .test-results-student code {
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.course-edit .test-results-pct {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.course-edit .test-results-pct.is-low {
+  color: #c05621;
+}
+
+.course-edit .test-results-flag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(214, 158, 46, 0.2);
+  color: #975a16;
+}
+
+.course-edit .test-results-flag-muted {
+  color: var(--text-secondary, #a0aec0);
+}
+
+body.dark-mode .course-edit .test-results-table-wrap {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .course-edit .test-results-table th {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+body.dark-mode .course-edit .test-results-table th,
+body.dark-mode .course-edit .test-results-table td {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+body.dark-mode .course-edit .test-results-select,
+body.dark-mode .course-edit .test-results-search {
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+/* --- Курс қатысушылары (редактирование) --- */
+.course-edit .course-edit-participants__head h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.course-edit .course-edit-participants__grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .course-edit .course-edit-participants__grid {
+    grid-template-columns: 1fr 1.4fr;
+  }
+}
+
+.course-edit .course-edit-participants__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #718096);
+  margin-bottom: 6px;
+}
+
+.course-edit .course-edit-participants__id {
+  display: block;
+  font-size: 0.85rem;
+  word-break: break-all;
+}
+
+.course-edit .course-edit-participants__email {
+  margin-top: 6px;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #5c5a59);
+}
+
+.course-edit .course-edit-participants__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.course-edit .course-edit-participants__list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ce-control-border, rgba(22, 19, 18, 0.12));
+  font-size: 0.88rem;
+}
+
+.course-edit .course-edit-participants__list li:last-child {
+  border-bottom: none;
+}
+
+.course-edit .course-edit-participants__list span {
+  color: var(--text-secondary, #5c5a59);
+}
+
 @media (max-width: 1024px) {
   .course-edit-sidebar,
   .gen-side-rail {
