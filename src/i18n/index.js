@@ -39,6 +39,15 @@ const resources = {
         archived: 'Архив',
       },
 
+      searchUi: {
+        loading: 'Ищем материалы...',
+        empty: 'Ничего не найдено. Попробуйте другое название.',
+        error: 'Не удалось выполнить поиск. Попробуйте еще раз.',
+        clear: 'Очистить поиск',
+        minChars: 'Введите минимум {{count}} символа',
+        inCourse: 'В курсе: {{title}}'
+      },
+
       nav: {
         home: 'Главная',
         stats: 'Статистика',
@@ -710,6 +719,15 @@ const resources = {
         archived: 'Archived',
       },
 
+      searchUi: {
+        loading: 'Searching materials...',
+        empty: 'No results found. Try another query.',
+        error: 'Search failed. Please try again.',
+        clear: 'Clear search',
+        minChars: 'Enter at least {{count}} characters',
+        inCourse: 'In course: {{title}}'
+      },
+
       nav: {
         home: 'Home',
         stats: 'Statistics',
@@ -1379,6 +1397,15 @@ const resources = {
         notVerified: 'Расталмаған',
         draft: 'Черновик',
         archived: 'Мұрағат',
+      },
+
+      searchUi: {
+        loading: 'Материалдар ізделуде...',
+        empty: 'Ештеңе табылмады. Басқа атауды қолданып көріңіз.',
+        error: 'Іздеу орындалмады. Қайтадан көріңіз.',
+        clear: 'Іздеуді тазарту',
+        minChars: 'Кемінде {{count}} таңба енгізіңіз',
+        inCourse: 'Курс: {{title}}'
       },
 
       nav: {

@@ -144,6 +144,11 @@
 }
 
 .test-card-link:hover { border-color: var(--primary-gradient-start); background: var(--glass-bg); }
+.test-card-link--search-hit {
+    border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 16%, transparent);
+    background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-primary));
+}
 .test-icon { font-size: 24px; color: var(--primary-color); }
 
 .lessons-header {
@@ -318,6 +323,12 @@
     border-radius: 20px;
     padding: 24px;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.lesson-card--search-hit {
+    border-color: color-mix(in srgb, var(--primary-color) 45%, var(--border-color));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 16%, transparent);
+    background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-primary));
 }
 
 .lesson-card:hover {
