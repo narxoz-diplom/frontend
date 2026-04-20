@@ -100,9 +100,33 @@ const CourseEdit = () => {
   const [testDifficulty, setTestDifficulty] = useState('medium')
   const [quickGenLoading, setQuickGenLoading] = useState(false)
   const [backfillingLocales, setBackfillingLocales] = useState(false)
+  const [backfillJobId, setBackfillJobId] = useState(null)
+  const [backfillJob, setBackfillJob] = useState(null)
+  const [backfillSummary, setBackfillSummary] = useState({ kz: null, en: null })
 
   useEffect(() => {
     loadData()
+  }, [id])
+
+  useEffect(() => {
+    if (!id) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const [kzRes, enRes] = await Promise.all([
+          api.get(`/courses/${id}/backfill-localizations/summary?lang=kz`),
+          api.get(`/courses/${id}/backfill-localizations/summary?lang=en`)
+        ])
+        if (!cancelled) {
+          setBackfillSummary({ kz: kzRes.data || null, en: enRes.data || null })
+        }
+      } catch (e) {
+        if (!cancelled) setBackfillSummary({ kz: null, en: null })
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [id])
 
   useLayoutEffect(() => {
@@ -586,12 +610,21 @@ const CourseEdit = () => {
     }
   }
 
-  const handleBackfillLocalizations = async () => {
+  const handleBackfillLocalizations = async (lang) => {
     setBackfillingLocales(true)
     setError(null)
     try {
-      await api.post(`/courses/${id}/backfill-localizations`)
-      await loadData()
+      const endpoint = lang === 'kz'
+        ? `/courses/${id}/backfill-localizations/kz`
+        : lang === 'en'
+          ? `/courses/${id}/backfill-localizations/en`
+          : `/courses/${id}/backfill-localizations`
+      const res = await api.post(endpoint)
+      const jobId = res?.data?.jobId
+      if (!jobId) {
+        throw new Error('No jobId returned')
+      }
+      setBackfillJobId(jobId)
     } catch (err) {
       console.error('Error backfilling localizations:', err)
       setError(err.response?.data?.message || t('courseEdit.backfillError'))
@@ -599,6 +632,52 @@ const CourseEdit = () => {
       setBackfillingLocales(false)
     }
   }
+
+  useEffect(() => {
+    if (!backfillJobId) return
+    let cancelled = false
+    const poll = async () => {
+      try {
+        const res = await api.get(`/courses/${id}/backfill-localizations/jobs/${backfillJobId}`)
+        if (!cancelled) setBackfillJob(res.data || null)
+        const st = res?.data?.status
+        if (st === 'COMPLETED') {
+          if (!cancelled) {
+            setBackfillJobId(null)
+            await loadData()
+          }
+          return true
+        }
+        if (st === 'FAILED') {
+          if (!cancelled) {
+            setError(res?.data?.message || t('courseEdit.backfillError'))
+            setBackfillJobId(null)
+          }
+          return true
+        }
+        return false
+      } catch (e) {
+        if (!cancelled) {
+          console.error('Backfill job poll error', e)
+          setError(e.response?.data?.message || t('courseEdit.backfillError'))
+          setBackfillJobId(null)
+        }
+        return true
+      }
+    }
+
+    const tick = async () => {
+      const done = await poll()
+      if (done) return
+      timer = window.setTimeout(tick, 1500)
+    }
+
+    let timer = window.setTimeout(tick, 300)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [backfillJobId, id])
 
   const isValidEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((e || '').trim())
 
@@ -705,11 +784,24 @@ const CourseEdit = () => {
           <button
             type="button"
             className="btn btn-secondary btn-trans"
-            onClick={handleBackfillLocalizations}
-            disabled={backfillingLocales}
+            onClick={() => handleBackfillLocalizations('kz')}
+            disabled={backfillingLocales || !!backfillJobId || (backfillSummary.kz?.missingTotal === 0)}
             title={t('courseEdit.backfillTitle')}
           >
-            {backfillingLocales ? t('courseEdit.backfilling') : t('courseEdit.backfill')}
+            {backfillingLocales || backfillJobId
+              ? `${t('courseEdit.backfilling')}${backfillJob?.total ? ` (${Math.min(100, Math.round(((backfillJob?.processed || 0) / Math.max(1, backfillJob.total)) * 100))}%)` : ''}`
+              : backfillSummary.kz?.missingTotal === 0 ? t('courseEdit.backfillKzDone') : t('courseEdit.backfillKz')}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-trans"
+            onClick={() => handleBackfillLocalizations('en')}
+            disabled={backfillingLocales || !!backfillJobId || (backfillSummary.en?.missingTotal === 0)}
+            title={t('courseEdit.backfillTitle')}
+          >
+            {backfillingLocales || backfillJobId
+              ? `${t('courseEdit.backfilling')}${backfillJob?.total ? ` (${Math.min(100, Math.round(((backfillJob?.processed || 0) / Math.max(1, backfillJob.total)) * 100))}%)` : ''}`
+              : backfillSummary.en?.missingTotal === 0 ? t('courseEdit.backfillEnDone') : t('courseEdit.backfillEn')}
           </button>
           <button
             type="button"
