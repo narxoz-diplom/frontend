@@ -4,7 +4,7 @@ import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
     FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor,
-    FiBarChart2, FiFolder, FiCpu, FiEdit3
+    FiBarChart2, FiFolder, FiCpu, FiEdit3, FiGlobe
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
@@ -13,6 +13,12 @@ import { useTranslation } from 'react-i18next'
 import { setLang } from '../i18n'
 import NotificationPopover from './NotificationPopover'
 import "./Navigation.css"
+
+const LANG_OPTIONS = [
+    { code: 'ru', label: 'RU' },
+    { code: 'en', label: 'EN' },
+    { code: 'kz', label: 'KZ' },
+]
 
 const NavItem = ({ to, icon, label, isActive, isCollapsed, className = '' }) => {
     return (
@@ -166,6 +172,8 @@ const Navigation = ({ userRoles = [] }) => {
         }
     }
 
+    const currentLang = (i18n.language || 'ru').split('-')[0]
+
     const isActive = useCallback(
         (path) => {
             if (path === '/') {
@@ -203,18 +211,31 @@ const Navigation = ({ userRoles = [] }) => {
                 </div>
 
                 <div className="top-right-actions">
-                    <label className="top-lang-select" title={t('lang')}>
-                        <span className="sr-only">{t('lang')}</span>
-                        <select
-                            value={i18n.language}
-                            onChange={(e) => setLang(e.target.value)}
-                            aria-label={t('lang')}
-                        >
-                            <option value="kz">{t('kz')}</option>
-                            <option value="ru">{t('ru')}</option>
-                            <option value="en">{t('en')}</option>
-                        </select>
-                    </label>
+                    <div
+                        className="lang-switcher"
+                        role="group"
+                        aria-label={t('lang')}
+                        title={t('lang')}
+                    >
+                        <span className="lang-switcher__globe" aria-hidden>
+                            <FiGlobe />
+                        </span>
+                        <div className="lang-switcher__track">
+                            {LANG_OPTIONS.map(({ code, label }) => (
+                                <button
+                                    key={code}
+                                    type="button"
+                                    className={`lang-switcher__btn ${currentLang === code ? 'is-active' : ''}`}
+                                    onClick={() => setLang(code)}
+                                    aria-pressed={currentLang === code}
+                                    aria-label={t(code)}
+                                    title={t(code)}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <button
                         className="top-action-btn theme-toggle-btn"
                         onClick={toggleTheme}

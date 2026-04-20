@@ -14,7 +14,7 @@ import React, {
 } from 'react'
 import { createPortal } from 'react-dom'
 import axios from 'axios'
-import { FiMessageCircle, FiSend, FiX, FiTrash2, FiChevronDown } from 'react-icons/fi'
+import { FiMessageCircle, FiSend, FiX, FiTrash2, FiChevronDown, FiSquare, FiRefreshCw } from 'react-icons/fi'
 import { HttpAgent, randomUUID } from '@ag-ui/client'
 import {
   ResponsiveContainer,
@@ -78,20 +78,35 @@ function clampPanelWidth(w) {
   return Math.min(max, Math.max(PANEL_MIN_WIDTH, Math.round(w)))
 }
 
-function ragPost(gatewayPath, body) {
+function ragPost(gatewayPath, body, axiosConfig = {}) {
+  const baseOpts = { timeout: 60000, ...axiosConfig }
   if (RAG_DIRECT_URL) {
     const base = RAG_DIRECT_URL.replace(/\/$/, '')
     const path = gatewayPath.startsWith('/') ? gatewayPath.slice(1) : gatewayPath
     return axios.post(`${base}/api/v1/${path}`, body, {
       headers: { 'Content-Type': 'application/json' },
-      timeout: 60000,
+      ...baseOpts,
     })
   }
-  return api.post('/rag/' + gatewayPath.replace(/^\//, ''), body)
+  return api.post('/rag/' + gatewayPath.replace(/^\//, ''), body, baseOpts)
+}
+
+function cloneMessages(msgs) {
+  if (typeof structuredClone === 'function') return structuredClone(msgs)
+  return JSON.parse(JSON.stringify(msgs))
+}
+
+function getMessageText(msg) {
+  if (!msg) return ''
+  const c = msg.content
+  if (typeof c === 'string') return c
+  if (Array.isArray(c)) return c.map(part => part?.text ?? part ?? '').join('')
+  return ''
 }
 
 /** Рендер одного сообщения или результата инструмента в чате AG-UI */
 function renderAGUIMessage(msg) {
+  if (msg.role === 'activity') return null
   if (msg.role === 'tool' && typeof msg.content === 'string') {
     let result
     try {
@@ -122,8 +137,15 @@ function renderAGUIMessage(msg) {
     }
     return null
   }
-  const text = msg.content ?? (Array.isArray(msg.content) ? msg.content.map(c => c?.text ?? c).join('') : '')
+  const text = getMessageText(msg)
   if (!text && msg.role !== 'user') return null
+  if (msg.role === 'assistant') {
+    return (
+      <div key={msg.id} className="lesson-chat-msg assistant lesson-chat-msg-md">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+      </div>
+    )
+  }
   return (
     <div key={msg.id} className={`lesson-chat-msg ${msg.role}`}>
       {text}
@@ -136,14 +158,16 @@ function renderAGUIMessage(msg) {
  * По умолчанию запросы идут в gateway на `/api/ag-ui`, который проксирует их в RAG service.
  */
 const AGUIChat = forwardRef(function AGUIChat(
-  { lessonId, courseId, lessonTitle, courseTitle, lessonContent },
+  { lessonId, courseId, lessonTitle, courseTitle, lessonContent, panelOpen },
   ref
 ) {
   const { t } = useTranslation()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingPhase, setLoadingPhase] = useState('idle')
   const [error, setError] = useState(null)
+  const messagesRef = useRef(messages)
   const threadId = `lesson-${String(lessonId ?? '')}-${String(courseId ?? '')}`
   const textareaRef = useRef(null)
   const messagesEndRef = useRef(null)
@@ -168,6 +192,25 @@ const AGUIChat = forwardRef(function AGUIChat(
     }
   }, [lessonId, courseId, lessonTitle, courseTitle, lessonContent])
 
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
+  const streamSubscriber = useMemo(
+    () => ({
+      onMessagesChanged: ({ messages: agentMessages }) => {
+        const cloned = cloneMessages(agentMessages)
+        messagesRef.current = cloned
+        setMessages(cloned)
+        const hasAssistantText = cloned.some(
+          m => m.role === 'assistant' && getMessageText(m).trim().length > 0
+        )
+        setLoadingPhase(hasAssistantText ? 'streaming' : 'thinking')
+      },
+    }),
+    []
+  )
+
   const scrollToBottom = useCallback((smooth = true) => {
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' })
   }, [])
@@ -179,6 +222,8 @@ const AGUIChat = forwardRef(function AGUIChat(
         setMessages([])
         setError(null)
         setInput('')
+        setLoadingPhase('idle')
+        messagesRef.current = []
         try {
           agent?.setMessages([])
         } catch {
@@ -186,6 +231,7 @@ const AGUIChat = forwardRef(function AGUIChat(
         }
       },
       scrollToBottom: () => scrollToBottom(true),
+      focusInput: () => textareaRef.current?.focus(),
     }),
     [agent, scrollToBottom]
   )
@@ -198,39 +244,104 @@ const AGUIChat = forwardRef(function AGUIChat(
   }, [input])
 
   useEffect(() => {
-    scrollToBottom(true)
-  }, [messages, loading, error, scrollToBottom])
+    if (!panelOpen) return
+    const id = requestAnimationFrame(() => textareaRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [panelOpen])
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading || !agent) return
-    const userContent = input.trim()
-    const runId = randomUUID()
+  useEffect(() => {
+    scrollToBottom(true)
+  }, [messages, loading, loadingPhase, error, scrollToBottom])
+
+  const sendMessage = async (textOverride) => {
+    const raw = typeof textOverride === 'string' ? textOverride : input.trim()
+    if (!raw || loading || !agent) return
+    const userContent = raw.trim()
     setInput('')
     setError(null)
     const userMsg = { id: randomUUID(), role: 'user', content: userContent }
-    const nextMessages = [...messages, userMsg]
+    const nextMessages = [...messagesRef.current, userMsg]
     setMessages(nextMessages)
+    messagesRef.current = nextMessages
     setLoading(true)
+    setLoadingPhase('thinking')
+    const runId = randomUUID()
     try {
       agent.setMessages(nextMessages)
       agent.setState(lessonState)
-      const result = await agent.runAgent({ runId })
-      if (result?.newMessages?.length) {
-        setMessages(prev => [...prev, ...result.newMessages])
-      }
+      await agent.runAgent({ runId }, streamSubscriber)
+      const final = cloneMessages(agent.messages)
+      messagesRef.current = final
+      setMessages(final)
     } catch (err) {
-      const errMsg = err?.message || String(err)
-      setError(errMsg)
-      setMessages(prev => [
-        ...prev,
-        { id: randomUUID(), role: 'assistant', content: t('lessonChat.aguiError', { error: errMsg, url: AG_UI_URL }) },
-      ])
+      const errStr = String(err?.message || err || '')
+      const isAbort =
+        err?.name === 'AbortError' ||
+        errStr.toLowerCase().includes('abort') ||
+        errStr.includes('signal is aborted')
+      if (isAbort) {
+        const final = cloneMessages(agent.messages)
+        messagesRef.current = final
+        setMessages(final)
+      } else {
+        setError(t('lessonChat.aguiError', { error: errStr, url: AG_UI_URL }))
+      }
     } finally {
       setLoading(false)
+      setLoadingPhase('idle')
     }
   }
 
+  const handleStop = () => {
+    try {
+      agent?.abortRun()
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const handleRetry = async () => {
+    if (!agent || loading) return
+    setError(null)
+    const msgs = messagesRef.current
+    setLoading(true)
+    setLoadingPhase('thinking')
+    const runId = randomUUID()
+    try {
+      agent.setMessages(msgs)
+      agent.setState(lessonState)
+      await agent.runAgent({ runId }, streamSubscriber)
+      const final = cloneMessages(agent.messages)
+      messagesRef.current = final
+      setMessages(final)
+    } catch (err) {
+      const errStr = String(err?.message || err || '')
+      const isAbort =
+        err?.name === 'AbortError' ||
+        errStr.toLowerCase().includes('abort') ||
+        errStr.includes('signal is aborted')
+      if (!isAbort) {
+        setError(t('lessonChat.aguiError', { error: errStr, url: AG_UI_URL }))
+      }
+    } finally {
+      setLoading(false)
+      setLoadingPhase('idle')
+    }
+  }
+
+  const suggestedChips = useMemo(
+    () => [
+      t('lessonChat.chipExplain'),
+      t('lessonChat.chipSummary'),
+      t('lessonChat.chipQuiz'),
+      t('lessonChat.chipTerms'),
+    ],
+    [t]
+  )
+
   if (!AG_UI_URL) return null
+
+  const showThinkingDots = loading && loadingPhase === 'thinking'
 
   return (
     <div className="lesson-chat ag-ui-chat direct-ag-ui">
@@ -239,19 +350,43 @@ const AGUIChat = forwardRef(function AGUIChat(
           <div className="lesson-chat-empty">
             <FiMessageCircle />
             <p>{t('lessonChat.askLesson')}</p>
+            <div className="lesson-chat-suggestions" role="group" aria-label={t('lessonChat.suggestedPrompts')}>
+              {suggestedChips.map((label, idx) => (
+                <button
+                  key={`agui-chip-${idx}`}
+                  type="button"
+                  className="lesson-chat-chip"
+                  disabled={loading}
+                  onClick={() => requestAnimationFrame(() => sendMessage(label))}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map(renderAGUIMessage)}
-        {loading && (
-          <div className="lesson-chat-msg assistant typing" aria-hidden>
-            <span className="lesson-chat-typing-dot" />
-            <span className="lesson-chat-typing-dot" />
-            <span className="lesson-chat-typing-dot" />
+        {showThinkingDots && (
+          <div className="lesson-chat-status" aria-live="polite">
+            <span className="lesson-chat-status-label">{t('lessonChat.thinking')}</span>
+            <div className="lesson-chat-msg assistant typing" aria-hidden>
+              <span className="lesson-chat-typing-dot" />
+              <span className="lesson-chat-typing-dot" />
+              <span className="lesson-chat-typing-dot" />
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} className="lesson-chat-messages-anchor" />
       </div>
-      {error && <div className="lesson-chat-error">{error}</div>}
+      {error && (
+        <div className="lesson-chat-error lesson-chat-error--with-action">
+          <span>{error}</span>
+          <button type="button" className="lesson-chat-retry-btn" onClick={handleRetry}>
+            <FiRefreshCw aria-hidden />
+            {t('lessonChat.retry')}
+          </button>
+        </div>
+      )}
       <div className="lesson-chat-input-shell">
         <div className="lesson-chat-input-meta">
           <span className="lesson-chat-char-count">{input.length}/4000</span>
@@ -273,9 +408,21 @@ const AGUIChat = forwardRef(function AGUIChat(
             rows={1}
             maxLength={4000}
           />
-          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title={t('lessonChat.send')}>
-            <FiSend />
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              className="lesson-chat-stop"
+              onClick={handleStop}
+              title={t('lessonChat.stop')}
+              aria-label={t('lessonChat.stop')}
+            >
+              <FiSquare />
+            </button>
+          ) : (
+            <button type="button" className="lesson-chat-send" onClick={() => sendMessage()} title={t('lessonChat.send')}>
+              <FiSend />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -287,13 +434,16 @@ AGUIChat.displayName = 'AGUIChat'
  * Простой чат — прямые запросы к RAG (без AG-UI агента).
  */
 const SimpleLessonChat = forwardRef(function SimpleLessonChat(
-  { lessonId, courseId, lessonTitle: _lessonTitle, courseTitle: _courseTitle },
+  { lessonId, courseId, lessonTitle: _lessonTitle, courseTitle: _courseTitle, panelOpen },
   ref
 ) {
   const { t } = useTranslation()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [pendingQuestion, setPendingQuestion] = useState(null)
+  const abortRef = useRef(null)
   const textareaRef = useRef(null)
   const messagesEndRef = useRef(null)
 
@@ -307,8 +457,16 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
       clear: () => {
         setMessages([])
         setInput('')
+        setError(null)
+        setPendingQuestion(null)
+        try {
+          abortRef.current?.abort()
+        } catch {
+          /* ignore */
+        }
       },
       scrollToBottom: () => scrollToBottom(true),
+      focusInput: () => textareaRef.current?.focus(),
     }),
     [scrollToBottom]
   )
@@ -320,26 +478,54 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`
   }, [input])
 
+  useEffect(() => {
+    if (!panelOpen) return
+    const id = requestAnimationFrame(() => textareaRef.current?.focus())
+    return () => cancelAnimationFrame(id)
+  }, [panelOpen])
+
   const collectionName = courseId ? `course_${courseId}` : 'default'
   const metadataFilter = {}
   if (lessonId) metadataFilter.lesson_id = String(lessonId)
   if (courseId) metadataFilter.course_id = String(courseId)
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return
-    const userMsg = input.trim()
-    setInput('')
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+  const suggestedChips = useMemo(
+    () => [
+      t('lessonChat.chipExplain'),
+      t('lessonChat.chipSummary'),
+      t('lessonChat.chipQuiz'),
+      t('lessonChat.chipTerms'),
+    ],
+    [t]
+  )
+
+  const runAsk = async (userMsg) => {
+    const controller = new AbortController()
+    abortRef.current = controller
     setLoading(true)
+    setError(null)
     try {
-      const r = await ragPost('ask', {
-        question: userMsg,
-        collection_name: collectionName,
-        top_k: 8,
-        metadata_filter: Object.keys(metadataFilter).length ? metadataFilter : undefined,
-      })
+      const r = await ragPost(
+        'ask',
+        {
+          question: userMsg,
+          collection_name: collectionName,
+          top_k: 8,
+          metadata_filter: Object.keys(metadataFilter).length ? metadataFilter : undefined,
+        },
+        { signal: controller.signal }
+      )
       setMessages(prev => [...prev, { role: 'assistant', content: r.data?.answer ?? t('lessonChat.noAnswer') }])
+      setPendingQuestion(null)
     } catch (err) {
+      if (
+        axios.isCancel?.(err) ||
+        err.code === 'ERR_CANCELED' ||
+        err.name === 'CanceledError' ||
+        err.name === 'AbortError'
+      ) {
+        return
+      }
       const status = err.response?.status
       const detail = err.response?.data?.detail || err.message || t('ragPage.genericError')
       let msg = `${t('ragPage.genericError')}: ${detail}`
@@ -353,15 +539,41 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
       } else if (status === 404) {
         msg = t('lessonChat.ragRouteNotFound')
       }
-      setMessages(prev => [...prev, { role: 'assistant', content: msg }])
+      setError(msg)
+      setPendingQuestion(userMsg)
     } finally {
+      abortRef.current = null
       setLoading(false)
+    }
+  }
+
+  const sendMessage = async (textOverride) => {
+    const raw = typeof textOverride === 'string' ? textOverride : input.trim()
+    if (!raw || loading) return
+    const userMsg = raw.trim()
+    setInput('')
+    setError(null)
+    setMessages(prev => [...prev, { role: 'user', content: userMsg }])
+    await runAsk(userMsg)
+  }
+
+  const handleRetry = () => {
+    if (!pendingQuestion || loading) return
+    setError(null)
+    runAsk(pendingQuestion)
+  }
+
+  const handleStop = () => {
+    try {
+      abortRef.current?.abort()
+    } catch {
+      /* ignore */
     }
   }
 
   useEffect(() => {
     scrollToBottom(true)
-  }, [messages, loading, scrollToBottom])
+  }, [messages, loading, error, scrollToBottom])
 
   return (
     <div className="lesson-chat simple-chat">
@@ -370,22 +582,51 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
           <div className="lesson-chat-empty">
             <FiMessageCircle />
             <p>{t('lessonChat.askMaterial')}</p>
+            <div className="lesson-chat-suggestions" role="group" aria-label={t('lessonChat.suggestedPrompts')}>
+              {suggestedChips.map((label, idx) => (
+                <button
+                  key={`chip-${idx}`}
+                  type="button"
+                  className="lesson-chat-chip"
+                  disabled={loading}
+                  onClick={() => requestAnimationFrame(() => sendMessage(label))}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
         {messages.map((m, i) => (
-          <div key={i} className={`lesson-chat-msg ${m.role}`}>
-            {m.content}
+          <div key={i} className={`lesson-chat-msg ${m.role}${m.role === 'assistant' ? ' lesson-chat-msg-md' : ''}`}>
+            {m.role === 'assistant' ? (
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+            ) : (
+              m.content
+            )}
           </div>
         ))}
         {loading && (
-          <div className="lesson-chat-msg assistant typing" aria-hidden>
-            <span className="lesson-chat-typing-dot" />
-            <span className="lesson-chat-typing-dot" />
-            <span className="lesson-chat-typing-dot" />
+          <div className="lesson-chat-status" aria-live="polite">
+            <span className="lesson-chat-status-label">{t('lessonChat.thinking')}</span>
+            <div className="lesson-chat-msg assistant typing" aria-hidden>
+              <span className="lesson-chat-typing-dot" />
+              <span className="lesson-chat-typing-dot" />
+              <span className="lesson-chat-typing-dot" />
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} className="lesson-chat-messages-anchor" />
       </div>
+      {error && (
+        <div className="lesson-chat-error lesson-chat-error--with-action">
+          <span>{error}</span>
+          <button type="button" className="lesson-chat-retry-btn" onClick={handleRetry} disabled={loading}>
+            <FiRefreshCw aria-hidden />
+            {t('lessonChat.retry')}
+          </button>
+        </div>
+      )}
       <div className="lesson-chat-input-shell">
         <div className="lesson-chat-input-meta">
           <span className="lesson-chat-char-count">{input.length}/4000</span>
@@ -407,9 +648,21 @@ const SimpleLessonChat = forwardRef(function SimpleLessonChat(
             rows={1}
             maxLength={4000}
           />
-          <button type="button" className="lesson-chat-send" onClick={sendMessage} disabled={loading} title={t('lessonChat.send')}>
-            <FiSend />
-          </button>
+          {loading ? (
+            <button
+              type="button"
+              className="lesson-chat-stop"
+              onClick={handleStop}
+              title={t('lessonChat.stop')}
+              aria-label={t('lessonChat.stop')}
+            >
+              <FiSquare />
+            </button>
+          ) : (
+            <button type="button" className="lesson-chat-send" onClick={() => sendMessage()} disabled={loading} title={t('lessonChat.send')}>
+              <FiSend />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -889,47 +1142,55 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
             />
             <div className="lesson-chat-panel-inner">
               <div className="lesson-chat-header lesson-chat-panel-header">
-                <h2 id="lesson-chat-panel-title">
-                  <FiMessageCircle aria-hidden /> {t('lessonChat.assistantTitle')}
-                  {AG_UI_URL && <span className="lesson-chat-badge">AG-UI</span>}
-                </h2>
-                <button
-                  type="button"
-                  className="lesson-chat-panel-close"
-                  onClick={() => setPanelOpen(false)}
-                  aria-label={t('lessonChat.closeChat')}
-                  title={t('lessonChat.close')}
-                >
-                  <FiX aria-hidden />
-                </button>
+                <div className="lesson-chat-panel-header-title">
+                  <h2 id="lesson-chat-panel-title">
+                    <FiMessageCircle aria-hidden /> {t('lessonChat.assistantTitle')}
+                    {AG_UI_URL && <span className="lesson-chat-badge">AG-UI</span>}
+                  </h2>
+                </div>
+                <div className="lesson-chat-panel-actions" role="toolbar" aria-label={t('lessonChat.chatActions')}>
+                  <button
+                    type="button"
+                    className="lesson-chat-action-btn lesson-chat-action-btn--clear"
+                    onClick={() => chatRef.current?.clear()}
+                    title={t('lessonChat.clearHistory')}
+                    aria-label={t('lessonChat.clearHistory')}
+                  >
+                    <FiTrash2 aria-hidden />
+                  </button>
+                  <button
+                    type="button"
+                    className="lesson-chat-action-btn lesson-chat-action-btn--ghost"
+                    onClick={() => chatRef.current?.scrollToBottom()}
+                    title={t('lessonChat.scrollBottom')}
+                    aria-label={t('lessonChat.scrollBottom')}
+                  >
+                    <FiChevronDown aria-hidden />
+                  </button>
+                  <span className="lesson-chat-panel-actions-divider" aria-hidden />
+                  <button
+                    type="button"
+                    className="lesson-chat-action-btn lesson-chat-action-btn--close"
+                    onClick={() => setPanelOpen(false)}
+                    aria-label={t('lessonChat.closeChat')}
+                    title={t('lessonChat.close')}
+                  >
+                    <FiX aria-hidden />
+                  </button>
+                </div>
               </div>
-
-              <div className="lesson-chat-panel-toolbar" role="toolbar" aria-label={t('lessonChat.chatActions')}>
-                <button
-                  type="button"
-                  className="lesson-chat-toolbar-btn"
-                  onClick={() => chatRef.current?.clear()}
-                  title={t('lessonChat.clearHistory')}
-                >
-                  <FiTrash2 aria-hidden />
-                  <span>{t('lessonChat.clear')}</span>
-                </button>
-                <button
-                  type="button"
-                  className="lesson-chat-toolbar-btn lesson-chat-toolbar-btn--ghost"
-                  onClick={() => chatRef.current?.scrollToBottom()}
-                  title={t('lessonChat.scrollBottom')}
-                >
-                  <FiChevronDown aria-hidden />
-                  <span>{t('lessonChat.down')}</span>
-                </button>
-              </div>
+              <p className="lesson-chat-panel-subtitle">
+                {lessonTitle
+                  ? t('lessonChat.contextWithLesson', { lesson: lessonTitle })
+                  : t('lessonChat.contextScope')}
+              </p>
 
               <div className="lesson-chat-panel-body">
                 <div className="lesson-chat-panel-chat-area">
                   {AG_UI_URL ? (
                     <AGUIChat
                       ref={chatRef}
+                      panelOpen={panelOpen}
                       lessonId={lessonId}
                       courseId={courseId}
                       lessonTitle={lessonTitle}
@@ -939,6 +1200,7 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
                   ) : (
                     <SimpleLessonChat
                       ref={chatRef}
+                      panelOpen={panelOpen}
                       lessonId={lessonId}
                       courseId={courseId}
                       lessonTitle={lessonTitle}
@@ -954,5 +1216,5 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
     </>
   )
 
-  return createPortal(portalContent, document.body)
+  return createPortal(<div className="lesson-chat-portal-root">{portalContent}</div>, document.body)
 }
