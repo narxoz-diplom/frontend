@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useRef, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiBell, FiArrowRight, FiClock } from 'react-icons/fi'
+import { FiBell, FiArrowLeft, FiArrowRight, FiClock } from 'react-icons/fi'
 import api from '../../services/api'
 import './Dashboard.css'
 
@@ -22,6 +22,7 @@ const formatTime = (iso) => {
 const HomeNewsFeed = () => {
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
+    const scrollerRef = useRef(null)
 
     useEffect(() => {
         let cancelled = false
@@ -47,6 +48,15 @@ const HomeNewsFeed = () => {
         }
     }, [])
 
+    const canScroll = useMemo(() => items.length > 0, [items.length])
+
+    const scrollByCards = (dir) => {
+        const el = scrollerRef.current
+        if (!el) return
+        const amount = Math.max(280, Math.floor(el.clientWidth * 0.85))
+        el.scrollBy({ left: dir * amount, behavior: 'smooth' })
+    }
+
     return (
         <div className="dashboard-section home-news-section">
             <div className="section-header">
@@ -65,31 +75,55 @@ const HomeNewsFeed = () => {
                     </Link>
                 </div>
             ) : (
-                <ul className="home-news-list">
-                    {items.map((n) => (
-                        <li key={n.id} className="home-news-card">
-                            {n.imageUrl ? (
-                                <img
-                                    src={n.imageUrl}
-                                    alt=""
-                                    style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, marginBottom: 12 }}
-                                />
-                            ) : null}
-                            <div className="home-news-card-top">
-                                <span className="home-news-type">Новость</span>
-                                <span className="home-news-time">
-                                    <FiClock />
-                                    {formatTime(n.publishedAt)}
-                                </span>
-                            </div>
-                            <h3 className="home-news-title">{n.title}</h3>
-                            {n.authorName ? (
-                                <p className="home-news-author">{n.authorName}</p>
-                            ) : null}
-                            <p className="home-news-message">{n.shortDescription}</p>
-                        </li>
-                    ))}
-                </ul>
+                <div className="home-news-carousel">
+                    <button
+                        type="button"
+                        className="home-news-nav-btn home-news-nav-btn--left"
+                        onClick={() => scrollByCards(-1)}
+                        disabled={!canScroll}
+                        aria-label="Прокрутить новости влево"
+                    >
+                        <FiArrowLeft />
+                    </button>
+
+                    <ul className="home-news-list" ref={scrollerRef}>
+                        {items.map((n) => (
+                            <li key={n.id} className="home-news-card">
+                                <Link to={`/news/${n.id}`} className="home-news-card-link" aria-label={`Открыть новость: ${n.title || ''}`}>
+                                    {n.imageUrl ? (
+                                        <img
+                                            src={n.imageUrl}
+                                            alt=""
+                                            style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, marginBottom: 12 }}
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    ) : null}
+                                    <div className="home-news-card-top">
+                                        <span className="home-news-type">Новость</span>
+                                        <span className="home-news-time">
+                                            <FiClock />
+                                            {formatTime(n.publishedAt)}
+                                        </span>
+                                    </div>
+                                    <h3 className="home-news-title">{n.title}</h3>
+                                    {n.authorName ? <p className="home-news-author">{n.authorName}</p> : null}
+                                    <p className="home-news-message">{n.shortDescription}</p>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <button
+                        type="button"
+                        className="home-news-nav-btn home-news-nav-btn--right"
+                        onClick={() => scrollByCards(1)}
+                        disabled={!canScroll}
+                        aria-label="Прокрутить новости вправо"
+                    >
+                        <FiArrowRight />
+                    </button>
+                </div>
             )}
 
             {!loading && items.length > 0 && (
