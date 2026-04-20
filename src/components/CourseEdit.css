@@ -109,86 +109,84 @@ body.dark-mode .back-link{
 
 /* Исправленная кнопка btn-trans */
 .btn-secondary.btn-trans {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  flex-wrap: nowrap !important;
-  white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
 
-  /* Размеры, идентичные btn-danger-outline */
-  padding: 12px 24px !important;
-  min-height: 48px !important;
-  gap: 10px !important;
+    padding: 12px 24px !important;
+    min-height: 48px !important;
+    gap: 10px !important;
 
-  /* Стиль: прозрачный фон и черная рамка */
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  color: #000000 !important;
-  background: transparent !important; /* Убрали заливку */
-  border: 1px solid rgba(0, 0, 0, 0.2) !important; /* Легкая рамка */
-  border-radius: 12px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
 
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
-  width: auto !important;
-  box-shadow: none !important; /* Убираем тени, чтобы не была похожа на кнопку выхода */
+    /* ЦВЕТА ДЛЯ СВЕТЛОЙ ТЕМЫ */
+    color: #000000 !important;
+    background: #ffffff !important; /* Сделали внутри белой */
+    border: 1px solid rgba(0, 0, 0, 0.1) !important; /* Сделали рамку еще мягче */
+    border-radius: 12px !important;
+
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    width: auto !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important; /* Добавили легкую тень для объема */
+}
+/* Эффект при наведении (светлая тема) */
+.btn-secondary.btn-trans:hover {
+    background: #f8f9fa !important; /* Чуть сереет при наведении */
+    border-color: rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-1px) !important;
 }
 
-/* Эффект при наведении для btn-trans */
-.btn-secondary.btn-trans:hover:not(:disabled) {
-  background: rgba(0, 0, 0, 0.04) !important; /* Едва заметный серый налет */
-  border-color: rgba(0, 0, 0, 0.8) !important; /* Рамка становится четче */
-  color: #000000 !important;
+/* АДАПТАЦИЯ ПОД ТВОЮ ТЕМНУЮ ТЕМУ */
+body.dark-mode .btn-secondary.btn-trans {
+    background: var(--bg-tertiary, #2c2c2c) !important; /* В темной теме будет темно-серой */
+    color: var(--text-primary, #e8e8e8) !important;
+    border: 1px solid var(--border-color, #2f2f2f) !important;
+    box-shadow: none !important;
 }
 
-/* Поддержка темной темы для этой кнопки */
-.dark-mode .btn-secondary.btn-trans {
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  background: transparent !important;
-}
-
-.dark-mode .btn-secondary.btn-trans:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: #ffffff !important;
+body.dark-mode .btn-secondary.btn-trans:hover {
+    background: #363636 !important; /* Чуть светлеет при наведении в темной теме */
+    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .btn-danger-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: nowrap !important;
-  white-space: nowrap;
-  gap: 10px; /* Увеличили расстояние между иконкой и текстом */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap !important;
+    white-space: nowrap;
+    gap: 10px;
+    padding: 12px 24px !important; /* Больше воздуха сверху/снизу и по бокам */
 
-  /* УВЕЛИЧИВАЕМ ОТСТУПЫ */
-  padding: 12px 24px !important; /* Больше воздуха сверху/снизу и по бокам */
+    /* Увеличиваем высоту */
+    width: auto !important;
 
-  /* Увеличиваем высоту */
-  width: auto !important;
+    font-size: 15px; /* Чуть-чуть крупнее текст для читаемости */
+    font-weight: 600;
+    color: var(--primary-color);
+    background: #ffffff;
+    border: 1px solid var(--primary-color);
+    border-radius: 12px; /* Мягкое скругление */
+    cursor: pointer;
+    transition: all 0.2s ease;
 
-  font-size: 15px; /* Чуть-чуть крупнее текст для читаемости */
-  font-weight: 600;
-  color: var(--primary-color);
-  background: #ffffff;
-  border: 1px solid var(--primary-color);
-  border-radius: 12px; /* Мягкое скругление */
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  /* Добавим легкую тень, чтобы кнопка не казалась плоской */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    /* Добавим легкую тень, чтобы кнопка не казалась плоской */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 /* Стили для иконки внутри (если используешь react-icons) */
 .btn-danger-outline svg {
-  font-size: 18px; /* Убедись, что иконка не слишком огромная */
+    font-size: 18px; /* Убедись, что иконка не слишком огромная */
 }
 
 .btn-danger-outline:hover:not(:disabled) {
-  background: var(--primary-color);
-  color: #ffffff;
-  box-shadow: var(--red-glow);
+    background: var(--primary-color);
+    color: #ffffff;
+    box-shadow: var(--red-glow);
 }
 
 .course-edit-description {
@@ -227,7 +225,7 @@ body.dark-mode .back-link{
   border: 1px solid var(--border-color, #edf2f7);
   height: fit-content;
   position: sticky;
-  top: var(--ce-sticky-top);
+  top: 100px;
   overflow: visible;
 }
 
@@ -674,6 +672,11 @@ body.dark-mode .back-link{
 .course-edit .tests-results-page-link {
   text-decoration: none;
   white-space: nowrap;
+    margin-top: 8px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .lessons-grid,
@@ -783,24 +786,32 @@ body.dark-mode .back-link{
 /* ------------------------------------------------------------------ */
 
 .gen-studio {
-  position: relative;
-  --gen-ink: #161312;
-  --gen-ink-muted: rgba(22, 19, 18, 0.68);
-  --gen-ink-faint: rgba(22, 19, 18, 0.45);
-  --gen-surface: #ffffff;
-  --gen-surface-raised: #fbfaf9;
-  --gen-line: rgba(22, 19, 18, 0.1);
-  --gen-accent: var(--primary-color, #e41616);
-  --gen-accent-soft: var(--glass-bg);
+    position: relative;
+    /* Светлая тема остается без изменений */
+    --gen-ink: #161312;
+    --gen-ink-muted: rgba(22, 19, 18, 0.68);
+    --gen-ink-faint: rgba(22, 19, 18, 0.45);
+    --gen-surface: #ffffff;
+    --gen-surface-raised: #fbfaf9;
+    --gen-line: rgba(22, 19, 18, 0.1);
+    --gen-accent: var(--primary-color, #e41616);
+    --gen-accent-soft: var(--glass-bg);
 }
 
+/* Обновленная темная тема для блока gen-studio */
 body.dark-mode .gen-studio {
-  --gen-ink: rgba(255, 255, 255, 0.96);
-  --gen-ink-muted: rgba(255, 255, 255, 0.78);
-  --gen-ink-faint: rgba(255, 255, 255, 0.5);
-  --gen-surface: rgba(0, 0, 0, 0.15);
-  --gen-surface-raised: rgba(255, 255, 255, 0.06);
-  --gen-line: rgba(255, 255, 255, 0.18);
+    /* Привязываем локальные переменные студии к твоим глобальным цветам */
+    --gen-ink: var(--text-primary);         /* Мягкий белый #e8e8e8 */
+    --gen-ink-muted: var(--text-secondary);   /* Серый #9a9a9a */
+    --gen-ink-faint: var(--text-light);       /* Темно-серый #6b6b6b */
+
+    --gen-surface: var(--bg-primary);         /* Темно-серый #212121 (для карточек) */
+    --gen-surface-raised: var(--bg-tertiary); /* Вторичный #2c2c2c */
+    --gen-line: var(--border-color);          /* Цвет границ #2f2f2f */
+
+    /* Акценты оставляем красными с твоим новым свечением */
+    --gen-accent: var(--primary-color, #e41616);
+    --gen-accent-soft: var(--glass-bg);
 }
 
 .gen-sources-panel {
@@ -850,7 +861,11 @@ body.dark-mode .gen-sidebar-files-count {
 }
 
 .gen-source-btn {
-  margin-top: 4px;
+    margin-top: 8px;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-weight: 600;
+    transition: all 0.2s ease;
 }
 
 .gen-input,

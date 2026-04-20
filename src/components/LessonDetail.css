@@ -747,25 +747,47 @@
   min-width: 0;
 }
 
+/* Мини-контейнеры (секции) */
 .sidebar-section {
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 2px solid var(--border-color);
-  transition: all 0.3s ease;
+    background: var(--bg-primary, #ffffff);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    /* transition важен для плавности затемнения/осветления */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* Эффект наведения для СВЕТЛОЙ темы — ЗАТЕМНЕНИЕ */
 .sidebar-section:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: var(--primary-light);
+    /* Мы подмешиваем немного черного к фону, чтобы он стал темнее */
+    background-color: #f5f5f5 !important;
+    border-color: rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Настройки для ТЕМНОЙ темы */
+body.dark-mode .sidebar-section {
+    background: #1e1e1e !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff;
+}
+
+/* Эффект наведения для ТЕМНОЙ темы — ОСВЕТЛЕНИЕ */
+body.dark-mode .sidebar-section:hover {
+    /* Делаем фон светлее (серый вместо почти черного) */
+    background-color: #2a2a2a !important;
+    /* Подсвечиваем рамку */
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar-section h3 {
-  margin: 0 0 var(--spacing-md) 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
+    margin: 0 0 12px 0;
+    font-size: 16px; /* Чуть уменьшил, чтобы не конфликтовало с компактным видом */
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .course-link {
