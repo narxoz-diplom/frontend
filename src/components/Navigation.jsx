@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState, useCallback } from 'react'
+import React, { useMemo, useEffect, useState, useCallback, useRef } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
     FiHome, FiBook, FiBell, FiLogOut,
@@ -33,8 +33,9 @@ const Navigation = ({ userRoles = [] }) => {
     const [mobileOpen, setMobileOpen] = useState(false)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [userName, setUserName] = useState('User')
+    const notifRef = useRef(null); // Реф для закрытия кликом вне
 
-    // --- Логика Темы (Light -> Dark -> System) ---
+    // --- Логика Темы ---
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('theme') || 'system';
     });
@@ -102,6 +103,19 @@ const Navigation = ({ userRoles = [] }) => {
         return () => clearInterval(interval)
     }, [loadNotifications])
 
+    // Закрытие уведомлений при клике вне
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notifRef.current && !notifRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        };
+        if (showNotifications) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [showNotifications]);
+
     useEffect(() => {
         const kc = window.keycloak || auth
         if (kc?.tokenParsed) {
@@ -140,6 +154,10 @@ const Navigation = ({ userRoles = [] }) => {
 
     const handleMarkRead = async (id) => {
         try {
+            // Чтобы не спамить запросами, если уже прочитано
+            const notif = notifications.find(n => n.id === id);
+            if (notif && notif.read) return;
+
             await api.put(`/notifications/${id}/read`)
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
             setUnreadCount(prev => Math.max(0, prev - 1))
@@ -205,14 +223,14 @@ const Navigation = ({ userRoles = [] }) => {
                         {getThemeIcon()}
                     </button>
 
-                    <div className="notif-wrapper">
+                    <div className="notif-wrapper" ref={notifRef}>
                         <button
                             className={`top-action-btn ${unreadCount > 0 ? 'has-unread' : ''}`}
                             title={t('nav.notifications')}
                             onClick={() => setShowNotifications(!showNotifications)}
                         >
                             <FiBell />
-                            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+                            {unreadCount > 0 && <span className="notification-badge" />}
                         </button>
 
                         {showNotifications && (

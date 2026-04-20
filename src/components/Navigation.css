@@ -252,23 +252,15 @@
 }
 .notification-badge {
     position: absolute;
-    top: 5px;   /* Чуть сместили, чтобы точка смотрелась гармонично */
-    right: 5px;
-
-    /* Устанавливаем фиксированный размер для точки */
-    width: 8px;
-    height: 8px;
-    min-width: 8px; /* Перезаписываем старое значение */
-
+    top: -3px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
     background: var(--primary-color);
     border-radius: 50%;
-
-    /* Убираем всё, что касалось текста */
+    border: 2px solid var(--bg-primary);
+    /* Скрываем текст цифр, если он там остался */
     font-size: 0;
-    display: block;
-
-    /* Белая обводка вокруг точки (если нужна для контраста) */
-    border: 1.5px solid var(--bg-primary);
 }
 /* Theme toggle */
 .theme-toggle-btn {
