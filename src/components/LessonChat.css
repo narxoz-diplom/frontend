@@ -1,5 +1,16 @@
 /* LessonChat — FAB, выезжающая панель справа на всю высоту, ресайз ширины */
 
+.lesson-chat-portal-root {
+  --lc-radius: 12px;
+  --lc-radius-lg: 16px;
+  --lc-radius-full: 999px;
+  --lc-shadow-elevated: 0 8px 32px rgba(15, 23, 42, 0.12);
+  --lc-shadow-fab: 0 4px 20px color-mix(in srgb, var(--primary-color) 38%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 22%, transparent);
+  --lc-shadow-bubble-user: 0 2px 10px color-mix(in srgb, var(--primary-color) 28%, transparent);
+  --lc-shadow-bubble-assistant: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
 .lesson-chat-fab {
   position: fixed;
   right: max(20px, env(safe-area-inset-right, 0px));
@@ -12,21 +23,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--primary-color);
+  background: linear-gradient(
+    145deg,
+    var(--primary-color) 0%,
+    color-mix(in srgb, var(--primary-color) 82%, var(--primary-hover, #000)) 100%
+  );
   color: #fff;
   cursor: pointer;
-  box-shadow: var(--shadow-lg, 0 8px 28px rgba(92, 32, 42, 0.2));
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  box-shadow: var(--lc-shadow-fab);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
 }
 
 .lesson-chat-fab:hover {
-  transform: scale(1.06);
-  box-shadow: var(--shadow-xl, 0 12px 40px rgba(92, 32, 42, 0.15));
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--primary-color) 42%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+
+.lesson-chat-fab:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .lesson-chat-fab:focus-visible {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: var(--lc-shadow-fab), 0 0 0 3px color-mix(in srgb, var(--primary-color) 45%, transparent);
 }
 
 .lesson-chat-fab-icon {
@@ -35,25 +55,27 @@
 
 .lesson-chat-fab-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  font-size: 0.55rem;
+  top: 4px;
+  right: 4px;
+  font-size: 0.5rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
-  padding: 2px 4px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.95);
+  letter-spacing: 0.04em;
+  padding: 3px 5px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.96);
   color: var(--primary-color);
   line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
 .lesson-chat-backdrop {
   position: fixed;
   inset: 0;
   z-index: 10980;
-  background: rgba(15, 23, 42, 0.35);
-  backdrop-filter: blur(2px);
-  animation: lesson-chat-backdrop-in 0.2s ease;
+  background: rgba(15, 23, 42, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: lesson-chat-backdrop-in 0.24s ease;
 }
 
 @keyframes lesson-chat-backdrop-in {
@@ -75,10 +97,10 @@
   z-index: 10990;
   background: var(--bg-primary);
   border-left: 1px solid var(--border-color);
-  box-shadow: -12px 0 40px rgba(92, 32, 42, 0.12);
+  box-shadow: var(--lc-shadow-elevated, -12px 0 40px rgba(15, 23, 42, 0.1));
   display: flex;
   flex-direction: row;
-  animation: lesson-chat-panel-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: lesson-chat-panel-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes lesson-chat-panel-in {
@@ -96,6 +118,14 @@
   .lesson-chat-panel,
   .lesson-chat-backdrop {
     animation: none;
+  }
+
+  .lesson-chat-fab:hover {
+    transform: none;
+  }
+
+  .lesson-chat-chip:hover:not(:disabled) {
+    transform: none;
   }
 }
 
@@ -140,75 +170,87 @@
 
 .lesson-chat-panel-header {
   flex-shrink: 0;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
 }
 
-.lesson-chat-panel-header h2 {
+.lesson-chat-panel-header-title {
   flex: 1;
   min-width: 0;
 }
 
-.lesson-chat-panel-close {
-  width: 40px;
-  height: 40px;
+.lesson-chat-panel-header-title h2 {
+  margin: 0;
+}
+
+.lesson-chat-panel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--primary-color) 6%, var(--bg-primary));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.lesson-chat-panel-actions-divider {
+  width: 1px;
+  height: 22px;
+  margin: 0 4px;
+  flex-shrink: 0;
+  background: var(--border-color);
+  border-radius: 1px;
+  opacity: 0.85;
+}
+
+.lesson-chat-action-btn {
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 1.25rem;
-  transition: background var(--transition-base), border-color var(--transition-base);
-}
-
-.lesson-chat-panel-close:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--primary-color);
-}
-
-.lesson-chat-panel-toolbar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--primary-color) 3%, var(--bg-canvas, #fefefe));
-}
-
-.lesson-chat-toolbar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: background var(--transition-base), border-color var(--transition-base), color var(--transition-base);
-}
-
-.lesson-chat-toolbar-btn:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--primary-color);
-}
-
-.lesson-chat-toolbar-btn--ghost {
+  border: none;
+  border-radius: 10px;
   background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.15rem;
+  transition:
+    background var(--transition-base),
+    color var(--transition-base),
+    transform 0.15s ease;
 }
 
-.lesson-chat-toolbar-btn svg {
-  font-size: 1rem;
-  opacity: 0.9;
+.lesson-chat-action-btn:hover {
+  background: color-mix(in srgb, var(--primary-color) 14%, var(--bg-primary));
+}
+
+.lesson-chat-action-btn:active {
+  transform: scale(0.94);
+}
+
+.lesson-chat-action-btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.lesson-chat-action-btn--clear:hover {
+  background: color-mix(in srgb, #dc2626 16%, var(--bg-primary));
+  color: #b91c1c;
+}
+
+.lesson-chat-action-btn--close:hover {
+  background: color-mix(in srgb, var(--primary-color) 22%, var(--bg-primary));
+  color: var(--primary-color);
+}
+
+.lesson-chat-action-btn svg {
+  flex-shrink: 0;
+  opacity: 0.92;
 }
 
 .lesson-chat-panel-body {
@@ -244,11 +286,37 @@
   min-height: 0;
   max-height: none;
   margin-bottom: var(--spacing-sm);
-  background: linear-gradient(
-    180deg,
-    var(--bg-canvas, #fefefe) 0%,
-    color-mix(in srgb, var(--primary-color) 2.5%, var(--bg-canvas, #fefefe)) 100%
-  );
+  background: var(--bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--border-color) 85%, transparent);
+  border-radius: var(--lc-radius);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--primary-color) 35%, transparent) transparent;
+}
+
+.lesson-chat-panel .lesson-chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lesson-chat-panel .lesson-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+
+.lesson-chat-panel .lesson-chat-messages::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-light) 45%, transparent);
+  border-radius: 8px;
+}
+
+.lesson-chat-panel .lesson-chat-messages::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--primary-color) 40%, transparent);
+}
+
+.lesson-chat-panel .lesson-chat-messages > .lesson-chat-msg {
+  margin-bottom: 0;
 }
 
 .lesson-chat-panel .lesson-chat.direct-ag-ui .lesson-chat-messages {
@@ -314,29 +382,39 @@
 .lesson-chat-input-meta {
   display: flex;
   justify-content: flex-end;
-  padding: 0 0.15rem;
+  align-items: center;
+  padding: 0 0.2rem;
 }
 
 .lesson-chat-char-count {
   font-size: 0.7rem;
-  color: var(--text-light, rgba(227, 0, 0, 0.55));
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .lesson-chat-input-shell .lesson-chat-input-wrap {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.35rem 0.35rem 0.65rem;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--lc-radius);
+  padding: 0.4rem 0.45rem 0.4rem 0.75rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lesson-chat-input-shell .lesson-chat-input-wrap:focus-within {
+  border-color: color-mix(in srgb, var(--primary-color) 42%, var(--border-color));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 16%, transparent);
 }
 
 .lesson-chat-input-shell .lesson-chat-textarea {
   border: none;
   box-shadow: none;
+  background: transparent;
 }
 
 .lesson-chat-input-shell .lesson-chat-textarea:focus {
+  outline: none;
   box-shadow: none;
 }
 
@@ -395,12 +473,14 @@
 }
 
 .lesson-chat-error {
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
-  color: #b91c1c;
-  background: #fef2f2;
-  border-radius: 8px;
-  margin: 0 1rem 0.5rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: color-mix(in srgb, #b91c1c 92%, var(--text-primary));
+  background: color-mix(in srgb, #fef2f2 96%, var(--bg-primary));
+  border: 1px solid color-mix(in srgb, #fecaca 80%, transparent);
+  border-radius: var(--lc-radius);
+  margin: 0 0 0.5rem;
 }
 
 .lesson-copilot-chat {
@@ -410,6 +490,13 @@
 .lesson-chat.ag-ui-inline-quiz,
 .lesson-chat.ag-ui-inline-gen {
   margin-top: 0.75rem;
+}
+
+.lesson-chat-panel .lesson-chat.ag-ui-inline-quiz,
+.lesson-chat-panel .lesson-chat.ag-ui-inline-gen {
+  margin-top: 0;
+  width: 100%;
+  max-width: min(100%, 36rem);
 }
 
 .ag-ui-gen-error {
@@ -761,47 +848,85 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 160px;
-  color: var(--text-light, #94a3b8);
-  gap: 0.5rem;
-  border: 1px dashed color-mix(in srgb, var(--border-color) 70%, transparent);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-lg);
-  margin: var(--spacing-sm) 0;
+  text-align: center;
+  min-height: 168px;
+  gap: 0.65rem;
+  color: var(--text-secondary);
+  border-radius: var(--lc-radius);
+  padding: var(--spacing-lg) var(--spacing-md);
+  margin: 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--primary-color) 5%, var(--bg-primary)) 0%,
+    var(--bg-primary) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.lesson-chat-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 22rem;
+  color: var(--text-secondary);
 }
 
 .lesson-chat-empty svg {
-  font-size: 2rem;
-  opacity: 0.6;
+  font-size: 2.25rem;
+  color: color-mix(in srgb, var(--primary-color) 75%, var(--text-light));
+  opacity: 0.9;
 }
 
 .lesson-chat-msg {
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 1rem;
   margin-bottom: 0.5rem;
-  border-radius: 10px;
+  border-radius: var(--lc-radius);
   max-width: 90%;
-  box-shadow: 0 1px 2px rgba(92, 32, 42, 0.04);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  word-break: break-word;
+}
+
+.lesson-chat-panel .lesson-chat-msg.user {
+  align-self: flex-end;
 }
 
 .lesson-chat-msg.user {
   margin-left: auto;
-  max-width: 92%;
-  background: var(--primary-color);
+  max-width: min(92%, 26rem);
+  background: linear-gradient(
+    145deg,
+    var(--primary-color) 0%,
+    color-mix(in srgb, var(--primary-color) 88%, var(--primary-hover, #8b0000)) 100%
+  );
   color: #fff;
-  border-radius: var(--radius-md) var(--radius-sm) var(--radius-md) var(--radius-md);
+  border-radius: var(--lc-radius) var(--lc-radius) 4px var(--lc-radius);
+  box-shadow: var(--lc-shadow-bubble-user);
+}
+
+.lesson-chat-msg.user a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .lesson-chat-msg.assistant {
-  max-width: 100%;
-  background: var(--bg-tertiary);
+  align-self: flex-start;
+  width: fit-content;
+  max-width: min(100%, 36rem);
+  background: var(--bg-primary);
   color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm) var(--radius-md) var(--radius-md) var(--radius-md);
-  border-left: 3px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  border-radius: 4px var(--lc-radius) var(--lc-radius) var(--lc-radius);
+  box-shadow: var(--lc-shadow-bubble-assistant);
+  border-left: 3px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
 }
 
 .lesson-chat-msg.assistant.typing {
-  border-left-color: color-mix(in srgb, var(--border-color) 60%, transparent);
+  min-height: 2.6rem;
+  border-left-color: color-mix(in srgb, var(--border-color) 55%, transparent);
+  background: var(--bg-tertiary);
 }
 
 .lesson-chat-input-wrap {
@@ -834,7 +959,7 @@
 }
 
 .lesson-chat-textarea::placeholder {
-  color: #94a3b8;
+  color: var(--text-light);
 }
 
 .lesson-chat-send {
@@ -847,14 +972,19 @@
   background: var(--primary-color);
   color: #fff;
   border: none;
-  border-radius: var(--radius-md, 10px);
+  border-radius: var(--lc-radius);
   cursor: pointer;
-  transition: background var(--transition-base), box-shadow var(--transition-base);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease, filter 0.18s ease;
 }
 
 .lesson-chat-send:hover:not(:disabled) {
   background: color-mix(in srgb, var(--primary-color) 88%, black);
   box-shadow: var(--shadow-sm);
+  filter: brightness(1.04);
+}
+
+.lesson-chat-send:active:not(:disabled) {
+  transform: scale(0.96);
 }
 
 .lesson-chat-send:disabled {
@@ -1080,4 +1210,235 @@
   color: #dc2626;
   background: #fef2f2;
   border-radius: 8px;
+}
+
+/* Контекст урока под заголовком панели */
+.lesson-chat-panel-subtitle {
+  margin: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+@media (max-width: 640px) {
+  .lesson-chat-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  .lesson-chat-chip {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.65rem;
+  }
+}
+
+/* Подсказки-чипы в пустом чате */
+.lesson-chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.lesson-chat-chip {
+  display: inline-flex;
+  align-items: center;
+  text-align: left;
+  padding: 0.5rem 0.9rem;
+  min-height: 2.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  border-radius: var(--lc-radius-full);
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  max-width: 100%;
+}
+
+.lesson-chat-chip:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--primary-color) 55%, var(--border-color));
+  background: color-mix(in srgb, var(--primary-color) 7%, var(--bg-primary));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+.lesson-chat-chip:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.lesson-chat-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Статусы «думает» / стриминг */
+.lesson-chat-status {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.25rem 0 0.35rem;
+}
+
+.lesson-chat-status-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748b);
+  white-space: nowrap;
+}
+
+/* Кнопка остановки генерации */
+.lesson-chat-stop {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-secondary);
+  color: #fff;
+  border: none;
+  border-radius: var(--lc-radius);
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lesson-chat-stop:hover {
+  background: var(--text-primary);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+.lesson-chat-stop:active {
+  transform: scale(0.96);
+}
+
+.lesson-chat-stop svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Markdown в ответах ассистента */
+.lesson-chat-msg-md {
+  line-height: 1.55;
+}
+
+.lesson-chat-msg-md a {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lesson-chat-msg-md a:hover {
+  color: var(--primary-hover, #b31212);
+}
+
+.lesson-chat-msg-md strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.lesson-chat-msg-md p {
+  margin: 0.4em 0;
+}
+
+.lesson-chat-msg-md p:first-child {
+  margin-top: 0;
+}
+
+.lesson-chat-msg-md p:last-child {
+  margin-bottom: 0;
+}
+
+.lesson-chat-msg-md ul,
+.lesson-chat-msg-md ol {
+  margin: 0.35em 0;
+  padding-left: 1.35rem;
+}
+
+.lesson-chat-msg-md li {
+  margin: 0.2em 0;
+}
+
+.lesson-chat-msg-md pre {
+  margin: 0.5rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--bg-tertiary, #f1f5f9);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  font-size: 0.88rem;
+}
+
+.lesson-chat-msg-md code {
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-tertiary, #f1f5f9));
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+
+.lesson-chat-msg-md pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.lesson-chat-msg-md table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.88rem;
+  margin: 0.5rem 0;
+}
+
+.lesson-chat-msg-md th,
+.lesson-chat-msg-md td {
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.5rem;
+}
+
+.lesson-chat-msg-md blockquote {
+  margin: 0.5rem 0;
+  padding-left: 0.85rem;
+  border-left: 3px solid color-mix(in srgb, var(--primary-color) 45%, transparent);
+  color: var(--text-secondary, #64748b);
+}
+
+/* Ошибка + повтор */
+.lesson-chat-error--with-action {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.lesson-chat-retry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--primary-color);
+  background: #fff;
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lesson-chat-retry-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary-color) 10%, white);
+}
+
+.lesson-chat-retry-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
