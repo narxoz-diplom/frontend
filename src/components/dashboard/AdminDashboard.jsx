@@ -195,7 +195,7 @@ const AdminDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="hero-illustration">
                     <div className="illustration-circle">
-                        <FiCpu size={56} color="white" />
+                        <FiCpu size={34} strokeWidth={1.75} aria-hidden />
                     </div>
                 </div>
             </div>

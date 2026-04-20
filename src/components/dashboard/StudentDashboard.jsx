@@ -172,7 +172,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="hero-illustration">
                     <div className="illustration-circle">
-                        <FiPlayCircle size={60} color="white" />
+                        <FiPlayCircle size={34} strokeWidth={1.75} aria-hidden />
                     </div>
                 </div>
             </div>

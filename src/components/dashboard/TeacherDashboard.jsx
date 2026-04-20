@@ -62,13 +62,22 @@ const TeacherDashboard = ({ view = 'home' }) => {
 
     const draftCount = useMemo(() => courses.filter((c) => c.status === 'DRAFT').length, [courses])
 
-    const getStatusCfg = (status) => {
+    const getStatusBadgeClass = (status) => {
         const map = {
-            PUBLISHED: { label: t('dashboard.published'), color: '#16a34a', bg: '#dcfce7' },
-            DRAFT: { label: 'Draft', color: '#d97706', bg: '#fef3c7' },
-            ARCHIVED: { label: 'Archived', color: '#64748b', bg: '#f1f5f9' },
+            PUBLISHED: 'course-status-badge--published',
+            DRAFT: 'course-status-badge--draft',
+            ARCHIVED: 'course-status-badge--archived',
         }
-        return map[status] || { label: status, color: '#64748b', bg: '#f1f5f9' }
+        return map[status] || 'course-status-badge--muted'
+    }
+
+    const getStatusLabel = (status) => {
+        const map = {
+            PUBLISHED: t('dashboard.published'),
+            DRAFT: t('dashboard.statusDraft'),
+            ARCHIVED: t('dashboard.statusArchived'),
+        }
+        return map[status] ?? status ?? '—'
     }
 
     const statsBlock = (
@@ -146,7 +155,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 </div>
                 <div className="hero-illustration">
                     <div className="illustration-circle">
-                        <FiBookOpen size={60} color="white" />
+                        <FiBookOpen size={34} strokeWidth={1.75} aria-hidden />
                     </div>
                 </div>
             </div>
@@ -200,19 +209,15 @@ const TeacherDashboard = ({ view = 'home' }) => {
                         <p>{t('dashboard.addFirstCourse')}</p>
                     </div>
                 ) : (
-                    <div className="courses-grid">
+                    <div className="courses-grid courses-grid--lms">
                         {courses.map((course) => {
-                            const cfg = getStatusCfg(course.status)
                             return (
-                                <div key={course.id} className="course-card">
-                                    <div className="course-card-top" />
-
+                                <div key={course.id} className="course-card course-card--lms">
                                     <div className="course-card-body">
                                         <span
-                                            className="course-status-badge"
-                                            style={{ color: cfg.color, background: cfg.bg }}
+                                            className={`course-status-badge ${getStatusBadgeClass(course.status)}`}
                                         >
-                                            {cfg.label}
+                                            {getStatusLabel(course.status)}
                                         </span>
 
                                         <h3 className="course-title">{pickLocalized(course, 'title')}</h3>
