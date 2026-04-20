@@ -75,16 +75,23 @@ body {
     transition: background-color var(--transition-base);
 }
 
-/* Главная область контента */
+/* Главная область контента
+   Явная ширина + min-width:0: иначе flex:1 даёт 100% ширины, а margin-left для
+   фикс-сайдбара «надстраивается» сбоку — контент вылезает вправо при смене --nav-width.
+   width и margin-left анимируются вместе при сворачивании/разворачивании сайдбара. */
 .main-content {
-    flex: 1;
+    flex: 0 1 auto;
+    width: calc(100% - var(--nav-width));
+    min-width: 0;
     margin-left: var(--nav-width);
     padding: var(--spacing-lg);
     padding-top: 90px;
-    max-width: calc(100% - var(--nav-width));
     min-height: 100vh;
     background-color: var(--bg-secondary); /* Фикс белого фона здесь */
-    transition: margin-left var(--transition-base), background-color var(--transition-base);
+    transition:
+        margin-left var(--transition-base),
+        width var(--transition-base),
+        background-color var(--transition-base);
 }
 
 /* Универсальный стиль карточек */
@@ -154,7 +161,7 @@ input:-webkit-autofill {
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
-        max-width: 100%;
+        width: 100%;
         padding: calc(100px + env(safe-area-inset-top, 0px)) 12px max(20px, env(safe-area-inset-bottom, 0px));
     }
 
