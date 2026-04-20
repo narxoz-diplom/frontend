@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState, useCallback, useRef } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
@@ -8,6 +8,8 @@ import {
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
+import { searchMaterials, SEARCH_MIN_QUERY_LENGTH } from '../services/search'
+import { pickLocalized } from '../i18n/localize'
 import { isAdmin } from '../utils/roles'
 import { useTranslation } from 'react-i18next'
 import { setLang } from '../i18n'
@@ -19,6 +21,27 @@ const LANG_OPTIONS = [
     { code: 'en', label: 'EN' },
     { code: 'kz', label: 'KZ' },
 ]
+
+const SEARCH_GROUP_ORDER = ['course', 'lesson', 'test']
+
+const getSearchGroupLabel = (type, t) => {
+    if (type === 'course') return t('common.courses')
+    if (type === 'lesson') return t('common.lessons')
+    return t('common.tests')
+}
+
+const getSearchResultTarget = (item) => {
+    if (!item?.courseId) {
+        return '/courses'
+    }
+    if (item.type === 'lesson' && item.lessonId) {
+        return `/courses/${item.courseId}?lessonId=${item.lessonId}`
+    }
+    if (item.type === 'test' && item.testId) {
+        return `/courses/${item.courseId}?testId=${item.testId}`
+    }
+    return `/courses/${item.courseId}`
+}
 
 const NavItem = ({ to, icon, label, isActive, isCollapsed, className = '' }) => {
     return (
@@ -35,58 +58,66 @@ const NavItem = ({ to, icon, label, isActive, isCollapsed, className = '' }) => 
 
 const Navigation = ({ userRoles = [] }) => {
     const location = useLocation()
+    const navigate = useNavigate()
     const { t, i18n } = useTranslation()
     const [mobileOpen, setMobileOpen] = useState(false)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [userName, setUserName] = useState('User')
-    const notifRef = useRef(null); // Реф для закрытия кликом вне
+    const notifRef = useRef(null)
+    const searchRef = useRef(null)
+    const searchRequestIdRef = useRef(0)
 
-    // --- Логика Темы ---
     const [theme, setTheme] = useState(() => {
-        return localStorage.getItem('theme') || 'system';
-    });
+        return localStorage.getItem('theme') || 'system'
+    })
+
+    const [searchQuery, setSearchQuery] = useState('')
+    const [searchResults, setSearchResults] = useState([])
+    const [searchLoading, setSearchLoading] = useState(false)
+    const [searchError, setSearchError] = useState('')
+    const [searchOpen, setSearchOpen] = useState(false)
+    const [highlightedIndex, setHighlightedIndex] = useState(-1)
 
     useEffect(() => {
         const applyTheme = () => {
-            const root = document.body;
-            root.classList.remove('dark-mode');
+            const root = document.body
+            root.classList.remove('dark-mode')
 
             if (theme === 'dark') {
-                root.classList.add('dark-mode');
+                root.classList.add('dark-mode')
             } else if (theme === 'system') {
                 if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    root.classList.add('dark-mode');
+                    root.classList.add('dark-mode')
                 }
             }
-        };
+        }
 
-        applyTheme();
-        localStorage.setItem('theme', theme);
+        applyTheme()
+        localStorage.setItem('theme', theme)
 
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
         const handleSystemChange = () => {
-            if (theme === 'system') applyTheme();
-        };
+            if (theme === 'system') applyTheme()
+        }
 
-        mediaQuery.addEventListener('change', handleSystemChange);
-        return () => mediaQuery.removeEventListener('change', handleSystemChange);
-    }, [theme]);
+        mediaQuery.addEventListener('change', handleSystemChange)
+        return () => mediaQuery.removeEventListener('change', handleSystemChange)
+    }, [theme])
 
     const toggleTheme = () => {
         setTheme(prev => {
-            if (prev === 'light') return 'dark';
-            if (prev === 'dark') return 'system';
-            return 'light';
-        });
-    };
+            if (prev === 'light') return 'dark'
+            if (prev === 'dark') return 'system'
+            return 'light'
+        })
+    }
 
     const getThemeIcon = () => {
-        if (theme === 'light') return <FiSun />;
-        if (theme === 'dark') return <FiMoon />;
-        return <FiMonitor />;
-    };
+        if (theme === 'light') return <FiSun />
+        if (theme === 'dark') return <FiMoon />
+        return <FiMonitor />
+    }
 
-    // --- Уведомления ---
     const [profileOpen, setProfileOpen] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
     const [notifications, setNotifications] = useState([])
@@ -113,14 +144,14 @@ const Navigation = ({ userRoles = [] }) => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (notifRef.current && !notifRef.current.contains(event.target)) {
-                setShowNotifications(false);
+                setShowNotifications(false)
             }
-        };
-        if (showNotifications) {
-            document.addEventListener('mousedown', handleClickOutside);
         }
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showNotifications]);
+        if (showNotifications) {
+            document.addEventListener('mousedown', handleClickOutside)
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [showNotifications])
 
     useEffect(() => {
         const kc = window.keycloak || auth
@@ -133,7 +164,71 @@ const Navigation = ({ userRoles = [] }) => {
         setMobileOpen(false)
         setShowNotifications(false)
         setProfileOpen(false)
+        setSearchOpen(false)
     }, [location.pathname])
+
+    useEffect(() => {
+        const query = searchQuery.trim()
+        if (!query) {
+            searchRequestIdRef.current += 1
+            setSearchResults([])
+            setSearchError('')
+            setSearchLoading(false)
+            setHighlightedIndex(-1)
+            return
+        }
+
+        if (query.length < SEARCH_MIN_QUERY_LENGTH) {
+            searchRequestIdRef.current += 1
+            setSearchResults([])
+            setSearchError('')
+            setSearchLoading(false)
+            setHighlightedIndex(-1)
+            return
+        }
+
+        const requestId = ++searchRequestIdRef.current
+        const timeoutId = window.setTimeout(async () => {
+            setSearchLoading(true)
+            setSearchError('')
+            setSearchOpen(true)
+
+            try {
+                const results = await searchMaterials(query)
+                if (searchRequestIdRef.current !== requestId) {
+                    return
+                }
+                setSearchResults(results)
+                setHighlightedIndex(results.length > 0 ? 0 : -1)
+            } catch (error) {
+                if (searchRequestIdRef.current !== requestId) {
+                    return
+                }
+                console.error('Failed to search materials', error)
+                setSearchResults([])
+                setHighlightedIndex(-1)
+                setSearchError(t('searchUi.error'))
+            } finally {
+                if (searchRequestIdRef.current === requestId) {
+                    setSearchLoading(false)
+                }
+            }
+        }, 250)
+
+        return () => window.clearTimeout(timeoutId)
+    }, [searchQuery, t])
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setSearchOpen(false)
+                setHighlightedIndex(-1)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => document.removeEventListener('mousedown', handleClickOutside)
+    }, [])
 
     useEffect(() => {
         if (!profileOpen) return
@@ -158,11 +253,25 @@ const Navigation = ({ userRoles = [] }) => {
         kc?.logout ? kc.logout() : auth.logout()
     }, [])
 
+    const resetSearch = useCallback(() => {
+        searchRequestIdRef.current += 1
+        setSearchQuery('')
+        setSearchResults([])
+        setSearchError('')
+        setSearchLoading(false)
+        setSearchOpen(false)
+        setHighlightedIndex(-1)
+    }, [])
+
+    const handleSelectSearchResult = useCallback((item) => {
+        resetSearch()
+        navigate(getSearchResultTarget(item))
+    }, [navigate, resetSearch])
+
     const handleMarkRead = async (id) => {
         try {
-            // Чтобы не спамить запросами, если уже прочитано
-            const notif = notifications.find(n => n.id === id);
-            if (notif && notif.read) return;
+            const notif = notifications.find(n => n.id === id)
+            if (notif && notif.read) return
 
             await api.put(`/notifications/${id}/read`)
             setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
@@ -173,6 +282,35 @@ const Navigation = ({ userRoles = [] }) => {
     }
 
     const currentLang = (i18n.language || 'ru').split('-')[0]
+
+    const groupedSearchResults = useMemo(() => {
+        let optionIndex = 0
+
+        return SEARCH_GROUP_ORDER
+            .map((type) => {
+                const items = searchResults
+                    .filter(item => item.type === type)
+                    .map(item => ({
+                        ...item,
+                        optionIndex: optionIndex++
+                    }))
+
+                return { type, items }
+            })
+            .filter(group => group.items.length > 0)
+    }, [searchResults])
+
+    const flattenedSearchResults = useMemo(
+        () => groupedSearchResults.flatMap(group => group.items),
+        [groupedSearchResults]
+    )
+
+    const showSearchDropdown = searchOpen && (
+        Boolean(searchQuery.trim()) ||
+        searchLoading ||
+        Boolean(searchError) ||
+        searchResults.length > 0
+    )
 
     const isActive = useCallback(
         (path) => {
@@ -202,12 +340,136 @@ const Navigation = ({ userRoles = [] }) => {
         return () => mq.removeEventListener('change', syncNavForMobile)
     }, [])
 
+    const handleSearchKeyDown = (event) => {
+        if (!showSearchDropdown && event.key !== 'Escape') {
+            setSearchOpen(true)
+        }
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            if (!flattenedSearchResults.length) return
+            setHighlightedIndex((prev) => (prev + 1) % flattenedSearchResults.length)
+            return
+        }
+
+        if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            if (!flattenedSearchResults.length) return
+            setHighlightedIndex((prev) => (prev <= 0 ? flattenedSearchResults.length - 1 : prev - 1))
+            return
+        }
+
+        if (event.key === 'Enter') {
+            const selectedItem = highlightedIndex >= 0
+                ? flattenedSearchResults[highlightedIndex]
+                : flattenedSearchResults[0]
+            if (!selectedItem) {
+                return
+            }
+            event.preventDefault()
+            handleSelectSearchResult(selectedItem)
+            return
+        }
+
+        if (event.key === 'Escape') {
+            setSearchOpen(false)
+            setHighlightedIndex(-1)
+        }
+    }
+
     return (
         <>
             <header className={`top-navbar ${isCollapsed ? 'collapsed' : ''}`}>
-                <div className="top-search">
+                <div
+                    className={`top-search ${showSearchDropdown ? 'is-open' : ''}`}
+                    ref={searchRef}
+                >
                     <FiSearch className="search-icon" />
-                    <input type="text" placeholder={t('common.search')} />
+                    <input
+                        type="search"
+                        placeholder={t('common.search')}
+                        value={searchQuery}
+                        onChange={(event) => {
+                            setSearchQuery(event.target.value)
+                            setSearchOpen(true)
+                        }}
+                        onFocus={() => setSearchOpen(true)}
+                        onKeyDown={handleSearchKeyDown}
+                        aria-label={t('common.search')}
+                        aria-expanded={showSearchDropdown}
+                        aria-controls="global-search-results"
+                        aria-autocomplete="list"
+                    />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            className="top-search__clear"
+                            onClick={resetSearch}
+                            aria-label={t('searchUi.clear')}
+                        >
+                            <FiX />
+                        </button>
+                    )}
+
+                    {showSearchDropdown && (
+                        <div className="top-search__dropdown" id="global-search-results" role="listbox">
+                            {searchQuery.trim().length > 0 && searchQuery.trim().length < SEARCH_MIN_QUERY_LENGTH && (
+                                <div className="top-search__state">{t('searchUi.minChars', { count: SEARCH_MIN_QUERY_LENGTH })}</div>
+                            )}
+
+                            {searchLoading && (
+                                <div className="top-search__state">{t('searchUi.loading')}</div>
+                            )}
+
+                            {!searchLoading && searchError && (
+                                <div className="top-search__state top-search__state--error">{searchError}</div>
+                            )}
+
+                            {!searchLoading && !searchError && searchQuery.trim().length >= SEARCH_MIN_QUERY_LENGTH && groupedSearchResults.length === 0 && (
+                                <div className="top-search__state">{t('searchUi.empty')}</div>
+                            )}
+
+                            {!searchLoading && !searchError && groupedSearchResults.length > 0 && groupedSearchResults.map((group) => (
+                                <div key={group.type} className="top-search__group">
+                                    <div className="top-search__group-title">{getSearchGroupLabel(group.type, t)}</div>
+                                    <div className="top-search__group-items">
+                                        {group.items.map((item) => {
+                                            const title = pickLocalized(item, 'title') || t(`common.${item.type}`)
+                                            const description = pickLocalized(item, 'description')
+                                            const courseTitle = pickLocalized(item, 'courseTitle')
+                                            const isActiveOption = item.optionIndex === highlightedIndex
+
+                                            return (
+                                                <button
+                                                    key={`${item.type}-${item.courseId}-${item.lessonId || item.testId || item.courseId}`}
+                                                    type="button"
+                                                    className={`top-search__result ${isActiveOption ? 'is-active' : ''}`}
+                                                    onClick={() => handleSelectSearchResult(item)}
+                                                    onMouseEnter={() => setHighlightedIndex(item.optionIndex)}
+                                                    onMouseDown={(event) => event.preventDefault()}
+                                                    role="option"
+                                                    aria-selected={isActiveOption}
+                                                >
+                                                    <span className="top-search__badge">{t(`common.${item.type}`)}</span>
+                                                    <div className="top-search__result-body">
+                                                        <span className="top-search__result-title">{title}</span>
+                                                        {courseTitle && item.type !== 'course' && (
+                                                            <span className="top-search__result-meta">
+                                                                {t('searchUi.inCourse', { title: courseTitle })}
+                                                            </span>
+                                                        )}
+                                                        {description && (
+                                                            <span className="top-search__result-desc">{description}</span>
+                                                        )}
+                                                    </div>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 <div className="top-right-actions">

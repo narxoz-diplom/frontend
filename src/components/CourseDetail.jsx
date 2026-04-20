@@ -1,20 +1,22 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { 
-  FiPlay, 
-  FiFile, 
-  FiUpload, 
-  FiPlus, 
+import React, { useState, useEffect, useRef } from 'react'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
+import {
+  FiPlay,
+  FiFile,
+  FiUpload,
+  FiPlus,
   FiX,
   FiCheckCircle,
   FiClock,
   FiBook,
   FiTrash2,
-  FiEye,
   FiCheckSquare,
   FiArrowLeft,
-  FiUsers,
-  FiClipboard
+  FiClipboard,
+  FiChevronRight,
+  FiEdit3,
+  FiGlobe,
+  FiArchive
 } from 'react-icons/fi'
 import api from '../services/api'
 import { useAlert } from '../context/AlertProvider'
@@ -24,9 +26,19 @@ import { pickLocalized } from '../i18n/localize'
 import { useTranslation } from 'react-i18next'
 import './CourseDetail.css'
 
+/** Совпадает с course-service LessonTestQualityGate (min-lesson-content-length по умолчанию 50). */
+const MIN_LESSON_CONTENT_LENGTH = 50
+
+const COURSE_STATUS_OPTIONS = [
+  { value: 'DRAFT', labelKey: 'common.draft', Icon: FiEdit3 },
+  { value: 'PUBLISHED', labelKey: 'dashboard.published', Icon: FiGlobe },
+  { value: 'ARCHIVED', labelKey: 'common.archived', Icon: FiArchive }
+]
+
 const CourseDetail = () => {
   const { t } = useTranslation()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const { confirm, toast } = useAlert()
   const [course, setCourse] = useState(null)
   const [lessons, setLessons] = useState([])
@@ -35,7 +47,7 @@ const CourseDetail = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [showLessonForm, setShowLessonForm] = useState(false)
-  const [newLesson, setNewLesson] = useState({ title: '', description: '', orderNumber: 1 })
+  const [newLesson, setNewLesson] = useState({ title: '', description: '', content: '', orderNumber: 1 })
   const [uploadingFile, setUploadingFile] = useState(null) // { lessonId: true/false }
   const [statusChanging, setStatusChanging] = useState(false)
   const [lessonProgress, setLessonProgress] = useState({}) // { lessonId: { completed: bool, progress: number } }
@@ -43,10 +55,47 @@ const CourseDetail = () => {
   const [participantsAccess, setParticipantsAccess] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
   const [enrolling, setEnrolling] = useState(false)
+  const [highlightedLessonId, setHighlightedLessonId] = useState(null)
+  const [highlightedTestId, setHighlightedTestId] = useState(null)
+  const lessonRefs = useRef({})
+  const testRefs = useRef({})
+
+  const selectedLessonId = searchParams.get('lessonId')
+  const selectedTestId = searchParams.get('testId')
 
   useEffect(() => {
     loadCourse()
   }, [id])
+
+  useEffect(() => {
+    let timeoutId
+
+    if (selectedLessonId && lessons.some((lesson) => String(lesson.id) === String(selectedLessonId))) {
+      setHighlightedLessonId(String(selectedLessonId))
+      setHighlightedTestId(null)
+      const node = lessonRefs.current[selectedLessonId]
+      if (node) {
+        node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+      timeoutId = window.setTimeout(() => setHighlightedLessonId(null), 2200)
+      return () => window.clearTimeout(timeoutId)
+    }
+
+    if (selectedTestId && tests.some((test) => String(test.id) === String(selectedTestId))) {
+      setHighlightedTestId(String(selectedTestId))
+      setHighlightedLessonId(null)
+      const node = testRefs.current[selectedTestId]
+      if (node) {
+        node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+      timeoutId = window.setTimeout(() => setHighlightedTestId(null), 2200)
+      return () => window.clearTimeout(timeoutId)
+    }
+
+    setHighlightedLessonId(null)
+    setHighlightedTestId(null)
+    return undefined
+  }, [selectedLessonId, selectedTestId, lessons, tests])
 
   const loadProgress = () => {
     // Загружаем прогресс из localStorage
@@ -151,10 +200,21 @@ const CourseDetail = () => {
     }
   }
 
+  const statusLabelFor = (s) =>
+    s === 'PUBLISHED'
+      ? t('dashboard.published')
+      : s === 'DRAFT'
+        ? t('common.draft')
+        : s === 'ARCHIVED'
+          ? t('common.archived')
+          : s
+
   const handleStatusChange = async (newStatus) => {
+    if (newStatus === course?.status) return
+
     const ok = await confirm({
       title: t('coursePage.changeStatusTitle'),
-      message: t('coursePage.changeStatusMessage', { status: newStatus }),
+      message: t('coursePage.changeStatusMessage', { status: statusLabelFor(newStatus) }),
       confirmText: t('common.edit'),
       cancelText: t('common.cancel'),
       variant: 'default'
@@ -166,7 +226,7 @@ const CourseDetail = () => {
       const response = await api.patch(`/courses/${id}/status`, { status: newStatus })
       setCourse(response.data)
       setError(null)
-      toast(t('coursePage.statusChanged', { status: newStatus }), 'success')
+      toast(t('coursePage.statusChanged', { status: statusLabelFor(newStatus) }), 'success')
     } catch (err) {
       console.error('Error changing course status:', err)
       setError(t('coursePage.statusChangeError'))
@@ -210,16 +270,40 @@ const CourseDetail = () => {
 
   const handleCreateLesson = async (e) => {
     e.preventDefault()
+    const trimmedContent = (newLesson.content || '').trim()
+    if (trimmedContent.length < MIN_LESSON_CONTENT_LENGTH) {
+      setError(t('coursePage.lessonContentTooShort', { min: MIN_LESSON_CONTENT_LENGTH }))
+      return
+    }
     try {
-      const response = await api.post(`/courses/${id}/lessons`, newLesson)
+      const payload = { ...newLesson, content: trimmedContent }
+      const response = await api.post(`/courses/${id}/lessons`, payload)
       const newLessonData = response.data
-      setLessons([...lessons, newLessonData])
+      setLessons((prev) => [...prev, newLessonData])
       setLessonFiles({ ...lessonFiles, [newLessonData.id]: [] })
       setShowLessonForm(false)
-      setNewLesson({ title: '', description: '', orderNumber: lessons.length + 1 })
+      setNewLesson({
+        title: '',
+        description: '',
+        content: '',
+        orderNumber: (newLessonData.orderNumber ?? 0) + 1
+      })
+      setError(null)
     } catch (err) {
       console.error('Error creating lesson:', err)
-      setError(t('coursePage.createLessonError'))
+      const status = err.response?.status
+      const body = err.response?.data
+      const msg =
+        typeof body === 'string'
+          ? body
+          : body?.message || (Array.isArray(body?.errors) ? body.errors.map((x) => x?.defaultMessage || x).join(' ') : null)
+      if (status === 403) {
+        setError(msg || t('coursePage.createLessonForbidden'))
+      } else if (msg) {
+        setError(msg)
+      } else {
+        setError(t('coursePage.createLessonError'))
+      }
     }
   }
 
@@ -325,14 +409,8 @@ const CourseDetail = () => {
       ? String(window.keycloak.tokenParsed.sub)
       : ''
 
-  const statusLabel =
-    course.status === 'PUBLISHED'
-      ? t('dashboard.published')
-      : course.status === 'DRAFT'
-        ? t('common.draft')
-        : course.status === 'ARCHIVED'
-          ? t('common.archived')
-          : course.status
+  const statusLabel = statusLabelFor(course.status)
+  const canManageCourse = isTeacher(window.keycloak) || isAdmin(window.keycloak)
 
   return (
     <div className="course-detail course-detail--v2">
@@ -349,20 +427,33 @@ const CourseDetail = () => {
         <div className="course-page__title-row">
           <h1 className="course-page__title">{pickLocalized(course, 'title')}</h1>
           <div className="course-page__status-block">
-            <span className={`course-status course-status--pill ${course.status}`}>{course.status}</span>
-            {(isTeacher(window.keycloak) || isAdmin(window.keycloak)) && (
-              <select
-                className="course-page__status-select"
-                value={course.status}
-                onChange={(e) => handleStatusChange(e.target.value)}
-                disabled={statusChanging}
-                title={t('coursePage.changeStatusTitle')}
+            {!canManageCourse && (
+              <span className={`course-status course-status--pill ${course.status}`}>{statusLabel}</span>
+            )}
+            {canManageCourse && (
+              <div
+                className={`course-status-switcher ${statusChanging ? 'is-busy' : ''}`}
+                role="group"
                 aria-label={t('coursePage.changeStatusTitle')}
               >
-                <option value="DRAFT">DRAFT (Черновик)</option>
-                <option value="PUBLISHED">PUBLISHED (Опубликован)</option>
-                <option value="ARCHIVED">ARCHIVED (Архивирован)</option>
-              </select>
+                {COURSE_STATUS_OPTIONS.map(({ value, labelKey, Icon }) => {
+                  const active = course.status === value
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`course-status-switcher__btn course-status-switcher__btn--${value.toLowerCase()} ${active ? 'is-active' : ''}`}
+                      onClick={() => handleStatusChange(value)}
+                      disabled={statusChanging}
+                      aria-pressed={active}
+                      title={t(labelKey)}
+                    >
+                      <Icon className="course-status-switcher__icon" aria-hidden />
+                      <span className="course-status-switcher__label">{t(labelKey)}</span>
+                    </button>
+                  )
+                })}
+              </div>
             )}
           </div>
         </div>
@@ -470,14 +561,20 @@ const CourseDetail = () => {
                   <Link to={`/courses/${id}/test-results`} className="btn-edit btn-edit--secondary">
                     <FiClipboard aria-hidden /> {t('courseTestResults.navLink')}
                   </Link>
-                  <Link to={`/courses/${id}/participants`} className="btn-edit btn-edit--secondary">
-                    <FiUsers aria-hidden /> {t('coursePage.participantsNavLink')}
-                  </Link>
 
                   {!showLessonForm && (
                       <button
+                          type="button"
                           className="btn btn-primary btn-add-lesson"
-                          onClick={() => setShowLessonForm(true)}
+                          onClick={() => {
+                            setNewLesson({
+                              title: '',
+                              description: '',
+                              content: '',
+                              orderNumber: lessons.length + 1
+                            })
+                            setShowLessonForm(true)
+                          }}
                       >
                         <FiPlus /> {t('coursePage.addLesson')}
                       </button>
@@ -507,6 +604,21 @@ const CourseDetail = () => {
                     onChange={(e) => setNewLesson({...newLesson, description: e.target.value})}
                     rows="3"
                     placeholder={t('coursePage.lessonDescription')}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>{t('coursePage.lessonContent')}</label>
+                  <p id="lesson-content-hint" className="form-hint form-hint--lesson-content">
+                    {t('coursePage.lessonContentHint', { min: MIN_LESSON_CONTENT_LENGTH })}
+                  </p>
+                  <textarea
+                    value={newLesson.content}
+                    onChange={(e) => setNewLesson({ ...newLesson, content: e.target.value })}
+                    rows="8"
+                    required
+                    minLength={MIN_LESSON_CONTENT_LENGTH}
+                    placeholder={t('coursePage.lessonContentPlaceholder')}
+                    aria-describedby="lesson-content-hint"
                   />
                 </div>
                 <div className="form-group">
@@ -547,52 +659,54 @@ const CourseDetail = () => {
           )}
 
           {lessons.length > 0 && (
-            <div className="lessons-list">
+            <div className="lessons-list lessons-list--lms">
               {lessons.map((lesson, index) => {
                 const progress = lessonProgress[lesson.id] || { completed: false, progress: 0 }
                 const isCompleted = progress.completed === true
                 return (
-                  <div key={lesson.id} className="lesson-card">
-                    <div className="lesson-number">
+                  <article
+                    key={lesson.id}
+                    ref={(node) => {
+                      if (node) {
+                        lessonRefs.current[lesson.id] = node
+                      } else {
+                        delete lessonRefs.current[lesson.id]
+                      }
+                    }}
+                    className={`lesson-card lesson-card--lms${isCompleted ? ' lesson-card--done' : ''}${String(lesson.id) === highlightedLessonId ? ' lesson-card--search-hit' : ''}`}
+                  >
+                    <div className="lesson-number" aria-hidden>
                       {isCompleted ? (
-                        <FiCheckCircle className="lesson-completed-icon" />
+                        <FiCheckCircle className="lesson-completed-icon" aria-hidden />
                       ) : (
                         <span className="lesson-number-text">{index + 1}</span>
                       )}
                     </div>
                     <div className="lesson-content">
                       <div className="lesson-header">
-                        <h3>{pickLocalized(lesson, 'title')}</h3>
+                        <h3 className="lesson-card__title">{pickLocalized(lesson, 'title')}</h3>
                         {progress.completed && (
-                          <span className="lesson-completed-badge">
-                            <FiCheckCircle /> {t('coursePage.completed')}
+                          <span className="lesson-completed-badge lesson-completed-badge--lms">
+                            <FiCheckCircle aria-hidden /> {t('coursePage.completed')}
                           </span>
                         )}
                       </div>
-                      {pickLocalized(lesson, 'description') && <p className="lesson-description">{pickLocalized(lesson, 'description')}</p>}
-                      
+                      {pickLocalized(lesson, 'description') && (
+                        <p className="lesson-description lesson-card__desc">{pickLocalized(lesson, 'description')}</p>
+                      )}
+
                       {progress.progress > 0 && !progress.completed && (
-                        <div className="lesson-progress">
+                        <div className="lesson-progress lesson-progress--lms">
                           <div className="lesson-progress-bar">
-                            <div 
-                              className="lesson-progress-fill" 
+                            <div
+                              className="lesson-progress-fill"
                               style={{ width: `${progress.progress}%` }}
                             />
                           </div>
                           <span className="lesson-progress-text">{Math.round(progress.progress)}%</span>
                         </div>
                       )}
-                      
-                      {/* Кнопка для перехода к уроку */}
-                      <div className="lesson-actions">
-                        <Link
-                          to={`/courses/${id}/lessons/${lesson.id}`}
-                          className="btn btn-primary"
-                        >
-                          <FiBook /> {t('coursePage.studyLesson')}
-                        </Link>
-                      </div>
-                      
+
                       {/* Видео урока (краткий список) */}
                       {lesson.videos && lesson.videos.length > 0 && (
                         <div className="lesson-videos">
@@ -701,7 +815,16 @@ const CourseDetail = () => {
                         )}
                       </div>
                     </div>
-                  </div>
+                    <div className="lesson-actions lesson-actions--lms">
+                      <Link
+                        to={`/courses/${id}/lessons/${lesson.id}`}
+                        className="lesson-card__cta"
+                      >
+                        <span className="lesson-card__cta-label">{t('coursePage.studyLesson')}</span>
+                        <FiChevronRight className="lesson-card__cta-icon" aria-hidden />
+                      </Link>
+                    </div>
+                  </article>
                 )
               })}
             </div>
@@ -734,8 +857,15 @@ const CourseDetail = () => {
               {tests.map((test) => (
                 <Link
                   key={test.id}
+                  ref={(node) => {
+                    if (node) {
+                      testRefs.current[test.id] = node
+                    } else {
+                      delete testRefs.current[test.id]
+                    }
+                  }}
                   to={`/courses/${id}/tests/${test.id}`}
-                  className="test-card-link"
+                  className={`test-card-link${String(test.id) === highlightedTestId ? ' test-card-link--search-hit' : ''}`}
                 >
                   <FiCheckSquare className="test-icon" />
                   <span>{pickLocalized(test, 'title')}</span>

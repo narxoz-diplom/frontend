@@ -39,6 +39,15 @@ const resources = {
         archived: 'Архив',
       },
 
+      searchUi: {
+        loading: 'Ищем материалы...',
+        empty: 'Ничего не найдено. Попробуйте другое название.',
+        error: 'Не удалось выполнить поиск. Попробуйте еще раз.',
+        clear: 'Очистить поиск',
+        minChars: 'Введите минимум {{count}} символа',
+        inCourse: 'В курсе: {{title}}'
+      },
+
       nav: {
         home: 'Главная',
         stats: 'Статистика',
@@ -174,6 +183,8 @@ const resources = {
         totalLessons: 'Уроков всего',
         studentEnrollments: 'Записей студентов',
         published: 'Опубликовано',
+        statusDraft: 'Черновик',
+        statusArchived: 'В архиве',
         drafts: 'Черновиков',
         lessonsCountSuffix: 'уроков',
         noDescription: 'Описание не добавлено',
@@ -222,6 +233,13 @@ const resources = {
         createLesson: 'Создать урок',
         lessonTitle: 'Название урока',
         lessonDescription: 'Описание',
+        lessonContent: 'Содержание урока',
+        lessonContentHint:
+          'Минимум {{min}} символов — так настроен сервер (качество материала). Позже текст можно изменить на странице урока.',
+        lessonContentPlaceholder: 'Текст урока, конспект или план (не меньше {{min}} символов)',
+        lessonContentTooShort: 'Введите текст урока не короче {{min}} символов.',
+        createLessonForbidden:
+          'Добавлять уроки может только преподаватель этого курса (владелец курса).',
         orderNumber: 'Порядковый номер',
         emptyLessons: 'Уроков пока нет.',
         createFirstLesson: 'Создайте первый урок!',
@@ -386,6 +404,10 @@ const resources = {
         forbidden: 'Доступ запрещён',
         backToCourse: 'К курсу',
         backfill: 'Заполнить KZ/EN',
+        backfillKz: 'Заполнить KZ',
+        backfillEn: 'Заполнить EN',
+        backfillKzDone: 'KZ готово',
+        backfillEnDone: 'EN готово',
         backfilling: 'Перевод...',
         backfillTitle: 'Заполнить переводы KZ/EN для существующего контента курса',
         deleteForever: 'Удалить курс навсегда',
@@ -701,6 +723,15 @@ const resources = {
         archived: 'Archived',
       },
 
+      searchUi: {
+        loading: 'Searching materials...',
+        empty: 'No results found. Try another query.',
+        error: 'Search failed. Please try again.',
+        clear: 'Clear search',
+        minChars: 'Enter at least {{count}} characters',
+        inCourse: 'In course: {{title}}'
+      },
+
       nav: {
         home: 'Home',
         stats: 'Statistics',
@@ -836,6 +867,8 @@ const resources = {
         totalLessons: 'Total lessons',
         studentEnrollments: 'Student enrollments',
         published: 'Published',
+        statusDraft: 'Draft',
+        statusArchived: 'Archived',
         drafts: 'Drafts',
         lessonsCountSuffix: 'lessons',
         noDescription: 'No description added',
@@ -884,6 +917,13 @@ const resources = {
         createLesson: 'Create lesson',
         lessonTitle: 'Lesson title',
         lessonDescription: 'Description',
+        lessonContent: 'Lesson content',
+        lessonContentHint:
+          'At least {{min}} characters are required by the server. You can edit the text later on the lesson page.',
+        lessonContentPlaceholder: 'Lesson text, notes, or outline (min. {{min}} characters)',
+        lessonContentTooShort: 'Please enter at least {{min}} characters of lesson content.',
+        createLessonForbidden:
+          'Only the instructor who owns this course can add lessons.',
         orderNumber: 'Order number',
         emptyLessons: 'No lessons yet.',
         createFirstLesson: 'Create the first lesson!',
@@ -1048,6 +1088,10 @@ const resources = {
         forbidden: 'Access denied',
         backToCourse: 'Back to course',
         backfill: 'Fill KZ/EN',
+        backfillKz: 'Fill KZ',
+        backfillEn: 'Fill EN',
+        backfillKzDone: 'KZ done',
+        backfillEnDone: 'EN done',
         backfilling: 'Translating...',
         backfillTitle: 'Fill KZ/EN translations for existing course content',
         deleteForever: 'Delete course permanently',
@@ -1363,6 +1407,15 @@ const resources = {
         archived: 'Мұрағат',
       },
 
+      searchUi: {
+        loading: 'Материалдар ізделуде...',
+        empty: 'Ештеңе табылмады. Басқа атауды қолданып көріңіз.',
+        error: 'Іздеу орындалмады. Қайтадан көріңіз.',
+        clear: 'Іздеуді тазарту',
+        minChars: 'Кемінде {{count}} таңба енгізіңіз',
+        inCourse: 'Курс: {{title}}'
+      },
+
       nav: {
         home: 'Басты бет',
         stats: 'Статистика',
@@ -1498,6 +1551,8 @@ const resources = {
         totalLessons: 'Барлық сабақтар',
         studentEnrollments: 'Студент жазбалары',
         published: 'Жарияланған',
+        statusDraft: 'Жоба',
+        statusArchived: 'Мұрағатта',
         drafts: 'Черновиктер',
         lessonsCountSuffix: 'сабақ',
         noDescription: 'Сипаттама қосылмаған',
@@ -1546,6 +1601,13 @@ const resources = {
         createLesson: 'Сабақ құру',
         lessonTitle: 'Сабақ атауы',
         lessonDescription: 'Сипаттама',
+        lessonContent: 'Сабақ мазмұны',
+        lessonContentHint:
+          'Кемінде {{min}} таңба — сервер талабы. Кейін сабақ бетінде өзгертуге болады.',
+        lessonContentPlaceholder: 'Сабақ мәтіні, конспект немесе жоспар (кемінде {{min}} таңба)',
+        lessonContentTooShort: 'Кемінде {{min}} таңбадан тұратын мәтін енгізіңіз.',
+        createLessonForbidden:
+          'Сабақтарды тек осы курс иесі (оқытушы) қоса алады.',
         orderNumber: 'Реттік нөмір',
         emptyLessons: 'Әзірге сабақ жоқ.',
         createFirstLesson: 'Бірінші сабақты құрыңыз!',
@@ -1710,6 +1772,10 @@ const resources = {
         forbidden: 'Қол жеткізуге тыйым салынған',
         backToCourse: 'Курсқа оралу',
         backfill: 'KZ/EN толтыру',
+        backfillKz: 'KZ толтыру',
+        backfillEn: 'EN толтыру',
+        backfillKzDone: 'KZ дайын',
+        backfillEnDone: 'EN дайын',
         backfilling: 'Аударылуда...',
         backfillTitle: 'Қолданыстағы курс мазмұны үшін KZ/EN аудармаларын толтыру',
         deleteForever: 'Курсты толық жою',
