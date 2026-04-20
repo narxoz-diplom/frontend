@@ -1,7 +1,7 @@
 /**
- * LessonChat — чат в контексте урока с AG-UI (Google AdK).
+ * LessonChat — чат в контексте урока с AG-UI (Google ADK).
  * Интегрирован с RAG: вопросы по уроку, генерация тестов с тематическим оформлением.
- * При заданном VITE_AG_UI_URL чат идёт через AG-UI агент (Google ADK).
+ * По умолчанию чат идет через gateway на встроенный AG-UI endpoint внутри RAG service.
  */
 import React, {
   useState,
@@ -62,9 +62,10 @@ function dedupeSummaryBlocks(text) {
 }
 
 const RAG_DIRECT_URL = String(import.meta.env.VITE_RAG_URL || '').trim()
-const AG_UI_URL = String(import.meta.env.VITE_AG_UI_URL || '').trim().replace(/\/$/, '')
+/** Prefer `/api/ag-ui` in dev: same origin as Vite, proxy to gateway — avoids browser CORS on SSE. */
+const AG_UI_URL = String(import.meta.env.VITE_AG_UI_URL || '/api/ag-ui').trim().replace(/\/$/, '')
 
-/** Совпадает с ag-ui-agent LESSON_PAGE_TEXT_MAX_CHARS (по умолчанию 48000) */
+/** Совпадает с AG-UI лимитом на стороне RAG service (по умолчанию 48000) */
 const LESSON_CONTENT_MAX_CHARS = Number(import.meta.env.VITE_LESSON_CONTENT_MAX_CHARS) || 48000
 
 const PANEL_WIDTH_STORAGE_KEY = 'lesson-chat-panel-width'
@@ -131,7 +132,8 @@ function renderAGUIMessage(msg) {
 }
 
 /**
- * Чат через AG-UI агент по протоколу AG-UI (HttpAgent). Запросы идут напрямую на VITE_AG_UI_URL.
+ * Чат через AG-UI endpoint по протоколу AG-UI (HttpAgent).
+ * По умолчанию запросы идут в gateway на `/api/ag-ui`, который проксирует их в RAG service.
  */
 const AGUIChat = forwardRef(function AGUIChat(
   { lessonId, courseId, lessonTitle, courseTitle, lessonContent },
@@ -202,6 +204,7 @@ const AGUIChat = forwardRef(function AGUIChat(
   const sendMessage = async () => {
     if (!input.trim() || loading || !agent) return
     const userContent = input.trim()
+    const runId = randomUUID()
     setInput('')
     setError(null)
     const userMsg = { id: randomUUID(), role: 'user', content: userContent }
@@ -211,7 +214,7 @@ const AGUIChat = forwardRef(function AGUIChat(
     try {
       agent.setMessages(nextMessages)
       agent.setState(lessonState)
-      const result = await agent.runAgent({ runId: randomUUID() })
+      const result = await agent.runAgent({ runId })
       if (result?.newMessages?.length) {
         setMessages(prev => [...prev, ...result.newMessages])
       }
