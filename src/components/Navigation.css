@@ -388,7 +388,7 @@
     color: var(--primary-color);
 }
 .logout-btn-dropdown {
-    color: #e53e3e !important;
+    color: var(--primary-color) !important;
 }
 /* ================================ */
 /* NOTIFICATION POPOVER */
@@ -444,7 +444,7 @@
 .popover-item:last-child { border-bottom: none; }
 .popover-item:hover { background: var(--bg-tertiary); }
 .popover-item.unread {
-    background: rgba(227, 0, 0, 0.03);
+    background: var(--glass-bg);
 }
 .popover-item.unread::before {
     content: '';

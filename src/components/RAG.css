@@ -72,7 +72,7 @@
 .rag-role-badge.teacher {
     background: linear-gradient(135deg, var(--primary-gradient-start), var(--primary-gradient-end));
     color: white;
-    box-shadow: 0 4px 10px rgba(228, 22, 22, 0.2);
+    box-shadow: var(--red-glow);
 }
 
 .rag-role-badge.student {
@@ -144,7 +144,7 @@
     font-weight: 700;
     font-size: 1rem;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(228, 22, 22, 0.25);
+    box-shadow: var(--red-glow);
     transition: all 0.2s ease;
 }
 

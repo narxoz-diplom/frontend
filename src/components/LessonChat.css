@@ -319,7 +319,7 @@
 
 .lesson-chat-char-count {
   font-size: 0.7rem;
-  color: var(--text-light, rgba(184, 56, 72, 0.55));
+  color: var(--text-light, rgba(227, 0, 0, 0.55));
   font-variant-numeric: tabular-nums;
 }
 
@@ -361,7 +361,7 @@
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--primary-color) 6%, var(--bg-canvas, #fefefe)) 0%,
-    var(--bg-tertiary, rgba(184, 56, 72, 0.05)) 100%
+    var(--bg-tertiary, var(--glass-bg)) 100%
   );
   border-bottom: 1px solid var(--border-color);
 }
@@ -454,7 +454,7 @@
 .ag-ui-subtitle {
   display: block;
   font-size: 0.85rem;
-  color: var(--text-light, rgba(184, 56, 72, 0.62));
+  color: var(--text-light, rgba(227, 0, 0, 0.62));
 }
 
 .ag-ui-summary-body {

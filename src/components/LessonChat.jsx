@@ -102,7 +102,7 @@ function renderAGUIMessage(msg) {
     if (result?.questions?.length) {
       return (
         <div key={msg.id} className="lesson-chat ag-ui-inline-quiz">
-          <QuizGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
+          <QuizGenerativeUI result={result} theme={result?.theme || { primary: '#e41616', accent: '#ed5a5a' }} />
         </div>
       )
     }
@@ -110,13 +110,13 @@ function renderAGUIMessage(msg) {
       if (result?.ui_type === 'analytics') {
         return (
           <div key={msg.id} className="lesson-chat ag-ui-inline-gen">
-            <AnalyticsGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
+            <AnalyticsGenerativeUI result={result} theme={result?.theme || { primary: '#e41616', accent: '#ed5a5a' }} />
           </div>
         )
       }
       return (
         <div key={msg.id} className="lesson-chat ag-ui-inline-gen">
-          <SummaryGenerativeUI result={result} theme={result?.theme || { primary: '#b83848', accent: '#dc8a95' }} />
+          <SummaryGenerativeUI result={result} theme={result?.theme || { primary: '#e41616', accent: '#ed5a5a' }} />
         </div>
       )
     }
@@ -423,8 +423,8 @@ SimpleLessonChat.displayName = 'SimpleLessonChat'
 function SummaryGenerativeUI({ result, theme = {}, onClose }) {
   const { t } = useTranslation()
   const summary = dedupeSummaryBlocks(String(result?.summary || ''))
-  const primary = theme.primary || '#b83848'
-  const accent = theme.accent || '#dc8a95'
+  const primary = theme.primary || '#e41616'
+  const accent = theme.accent || '#ed5a5a'
   if (!summary) return null
   return (
     <div className="ag-ui-summary-card" style={{ '--theme-primary': primary, '--theme-accent': accent }}>
@@ -459,8 +459,8 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
   const topList = result?.top_list || null
   const trend = result?.trend_line || null
   const insights = Array.isArray(result?.insights) ? result.insights.filter(Boolean) : []
-  const primary = theme.primary || '#b83848'
-  const accent = theme.accent || '#dc8a95'
+  const primary = theme.primary || '#e41616'
+  const accent = theme.acent || theme.accent || '#ed5a5a'
   if (!summary && !pie && !bar && !insights.length && !statCards.length && !topList && !trend) return null
 
   const pieData = pie && Array.isArray(pie.items)
@@ -475,7 +475,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
     ? trend.points.map(p => ({ name: p.label, value: Number(p.value) || 0 }))
     : []
 
-  const chartColors = ['#b83848', '#8f2d39', '#dc8a95', '#5c2030', '#c85a68', '#7a2430']
+  const chartColors = ['#e41616', '#b31212', '#ed5a5a', '#d10505', '#e41616', '#b31212']
 
   return (
     <div className="ag-ui-analytics-card" style={{ '--theme-primary': primary, '--theme-accent': accent }}>
@@ -649,7 +649,7 @@ function AnalyticsGenerativeUI({ result, theme = {}, onClose }) {
 function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
   const { t: tt } = useTranslation()
   const questions = result?.questions || []
-  const t = theme.primary || '#b83848'
+  const t = theme.primary || '#e41616'
   const [answers, setAnswers] = useState({})
   const [checked, setChecked] = useState(false)
   const [score, setScore] = useState(null)

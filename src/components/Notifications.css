@@ -47,7 +47,7 @@
   font-size: 13px;
   font-weight: 600;
   box-shadow: none;
-  border: 1px solid rgba(184, 56, 72, 0.35);
+  border: 1px solid var(--primary-color);
 }
 
 .notifications-header-actions {

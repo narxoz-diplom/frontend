@@ -68,7 +68,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(184, 56, 72, 0.35);
+    border: 1px solid var(--primary-color);
     box-shadow: var(--shadow-sm);
 }
 
@@ -92,8 +92,8 @@ body.dark-mode .illustration-circle {
 }
 
 body.dark-mode .illustration-circle svg {
-    stroke: #b83848 !important;
-    color: #b83848 !important;
+    stroke: var(--primary-color) !important;
+    color: var(--primary-color) !important;
 }
 
 /* ── Stats ── */
@@ -117,7 +117,7 @@ body.dark-mode .illustration-circle svg {
 }
 
 .stat-card:hover {
-    border-color: rgba(184, 56, 72, 0.35);
+    border-color: var(--primary-color);
     box-shadow: var(--shadow-md);
 }
 
@@ -132,7 +132,7 @@ body.dark-mode .illustration-circle svg {
     flex-shrink: 0;
 }
 
-.stat-icon-primary { background: rgba(184, 56, 72, 0.1); color: var(--primary-color); }
+.stat-icon-primary { background: var(--glass-bg); color: var(--primary-color); }
 .stat-icon-success { background: rgba(40, 167, 69, 0.1); color: #28a745; }
 .stat-icon-info    { background: rgba(0, 123, 255, 0.1); color: #007bff; }
 .stat-icon-warning { background: rgba(255, 193, 7, 0.1);  color: #ffc107; }
@@ -202,7 +202,7 @@ body.dark-mode .illustration-circle svg {
 }
 
 .deadline-card:hover {
-    border-color: rgba(184, 56, 72, 0.35);
+    border-color: var(--primary-color);
     box-shadow: var(--shadow-md);
 }
 
@@ -318,7 +318,7 @@ body.dark-mode .deadline-card {
 
 .course-card:hover {
     box-shadow: var(--shadow-md);
-    border-color: rgba(184, 56, 72, 0.35);
+    border-color: var(--primary-color);
 }
 
 /* Акцентная верхняя полоска */
@@ -425,8 +425,8 @@ body.dark-mode .deadline-card {
 }
 
 .course-action-btn.primary {
-    background: rgba(227, 0, 0, 0.08);
-    border-color: rgba(227, 0, 0, 0.2);
+    background: var(--glass-bg);
+    border-color: var(--primary-color);
     color: var(--primary-color);
 }
 
@@ -454,7 +454,7 @@ body.dark-mode .deadline-card {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: rgba(227, 0, 0, 0.08);
+    background: var(--glass-bg);
     color: var(--primary-color);
     display: flex;
     align-items: center;
@@ -590,7 +590,7 @@ body.dark-mode .dashboard-admin-stats-note {
 }
 
 .home-news-card:hover {
-    border-color: rgba(184, 56, 72, 0.28);
+    border-color: var(--primary-color);
     box-shadow: var(--shadow-md);
 }
 

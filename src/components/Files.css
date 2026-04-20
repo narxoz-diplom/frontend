@@ -153,9 +153,9 @@
 }
 
 .files-section .btn-icon.danger:hover {
-    background: rgba(228, 22, 22, 0.06);
-    color: #e41616;
-    border-color: #ffcccc;
+    background: var(--glass-bg);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 /* Форма редактирования */

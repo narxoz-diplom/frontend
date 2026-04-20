@@ -1,7 +1,7 @@
 :root {
     /* Светлая тема (по умолчанию) */
     --primary-red: #e41616;
-    --primary-hover: #c91414;
+    --primary-hover: #b31212;
     --bg-page: #f4f6f7;
     --bg-container: #ffffff;
     --text-dark: #1a202c;
@@ -72,7 +72,7 @@ body.dark-mode {
     margin-bottom: 30px;
     transition: transform 0.5s ease;
     /* Мягкое свечение в темной теме */
-    filter: drop-shadow(0 0 15px rgba(228, 22, 22, 0.1));
+    filter: drop-shadow(0 0 15px rgba(227, 0, 0, 0.1));
 }
 
 .books-illustration:hover {
@@ -153,7 +153,7 @@ body.dark-mode {
     outline: none;
     border-color: var(--primary-red);
     background: var(--bg-container);
-    box-shadow: 0 0 0 4px rgba(228, 22, 22, 0.15);
+    box-shadow: 0 0 0 4px rgba(227, 0, 0, 0.15);
 }
 
 /* Кнопка */
@@ -167,7 +167,7 @@ body.dark-mode {
     cursor: pointer;
     background: var(--primary-red);
     color: #ffffff;
-    box-shadow: 0 10px 20px rgba(228, 22, 22, 0.2);
+    box-shadow: var(--red-glow);
     transition: all 0.3s ease;
 }
 

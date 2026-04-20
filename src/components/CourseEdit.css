@@ -29,10 +29,10 @@
   --ce-hover-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
   --ce-hover-text: #111111;
   --ce-control-border: rgba(22, 19, 18, 0.18);
-  --ce-control-border-hover: rgba(184, 56, 72, 0.45);
+  --ce-control-border-hover: rgba(227, 0, 0, 0.45);
   --ce-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%235c5a59' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   --ce-check-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2 6.4 11.1 12.5 4.5' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  --ce-check-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2 6.4 11.1 12.5 4.5' stroke='%23b83848' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --ce-check-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M3.5 8.2 6.4 11.1 12.5 4.5' stroke='%23e41616' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --ce-sticky-top: clamp(12px, 2vw, 24px);
   --ce-sticky-height: calc(100vh - (var(--ce-sticky-top) * 2));
 }
@@ -169,9 +169,9 @@ body.dark-mode .back-link{
 
   font-size: 15px; /* Чуть-чуть крупнее текст для читаемости */
   font-weight: 600;
-  color: #b83848;
+  color: var(--primary-color);
   background: #ffffff;
-  border: 1px solid #b83848;
+  border: 1px solid var(--primary-color);
   border-radius: 12px; /* Мягкое скругление */
   cursor: pointer;
   transition: all 0.2s ease;
@@ -186,9 +186,9 @@ body.dark-mode .back-link{
 }
 
 .btn-danger-outline:hover:not(:disabled) {
-  background: #b83848;
+  background: var(--primary-color);
   color: #ffffff;
-  box-shadow: 0 4px 8px rgba(184, 56, 72, 0.2); /* Тень при наведении */
+  box-shadow: var(--red-glow);
 }
 
 .course-edit-description {
@@ -200,8 +200,8 @@ body.dark-mode .back-link{
 }
 
 .course-edit-error-banner {
-  background: rgba(184, 56, 72, 0.08);
-  color: #b83848;
+  background: var(--glass-bg);
+  color: var(--primary-color);
   padding: 12px 16px;
   border-radius: 10px;
   margin-bottom: 24px;
@@ -272,9 +272,9 @@ body.dark-mode .back-link{
 }
 
 .allowed-emails-trigger:hover {
-  border-color: #b83848;
-  background: #fffafa;
-  color: #b83848;
+  border-color: var(--primary-color);
+  background: var(--glass-bg);
+  color: var(--primary-color);
 }
 
 .allowed-emails-badge {
@@ -286,7 +286,7 @@ body.dark-mode .back-link{
   padding: 0 6px;
   font-size: 12px;
   font-weight: 600;
-  background: #b83848;
+  background: var(--primary-color);
   color: #fff;
   border-radius: 11px;
   margin-left: auto;
@@ -332,7 +332,7 @@ body.dark-mode .back-link{
   flex-direction: column;
   background: var(--bg-primary, #fff);
   border-radius: 12px;
-  border: 1px solid var(--border-color, rgba(184, 56, 72, 0.15));
+  border: 1px solid var(--border-color, #e8ecef);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
   animation: modalDialogIn 0.25s ease-out;
 }
@@ -387,7 +387,7 @@ body.dark-mode .back-link{
 }
 
 .modal-close:hover {
-  background: rgba(184, 56, 72, 0.08);
+  background: var(--glass-bg);
   color: var(--text-primary);
 }
 
@@ -420,8 +420,8 @@ body.dark-mode .back-link{
   padding: 12px 16px;
   margin-bottom: 16px;
   font-size: 14px;
-  color: #b83848;
-  background: #fee2e2;
+  color: var(--primary-color);
+  background: var(--glass-bg);
   border-radius: 10px;
 }
 
@@ -451,7 +451,7 @@ body.dark-mode .back-link{
 
 .modal-emails-textarea:focus {
   outline: none;
-  border-color: #b83848;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.15);
 }
 
@@ -536,8 +536,8 @@ body.dark-mode .back-link{
 }
 
 .upload-zone:hover {
-  border-color: #b83848;
-  background: #fffafa;
+  border-color: var(--primary-color);
+  background: var(--glass-bg);
 }
 
 .files-list {
@@ -590,8 +590,8 @@ body.dark-mode .back-link{
 }
 
 .btn-icon.danger:hover {
-  background: #fee2e2;
-  color: #b83848;
+  background: var(--glass-bg);
+  color: var(--primary-color);
 }
 
 .empty-hint {
@@ -714,7 +714,7 @@ body.dark-mode .back-link{
 }
 
 .lesson-check a:hover {
-  color: #b83848;
+  color: var(--primary-color);
 }
 
 .test-card {
@@ -737,7 +737,7 @@ body.dark-mode .back-link{
 }
 
 .test-card svg {
-  color: #b83848;
+  color: var(--primary-color);
 }
 
 .test-card-link-inner {
@@ -790,8 +790,8 @@ body.dark-mode .back-link{
   --gen-surface: #ffffff;
   --gen-surface-raised: #fbfaf9;
   --gen-line: rgba(22, 19, 18, 0.1);
-  --gen-accent: var(--primary-color, #b83848);
-  --gen-accent-soft: rgba(184, 56, 72, 0.1);
+  --gen-accent: var(--primary-color, #e41616);
+  --gen-accent-soft: var(--glass-bg);
 }
 
 body.dark-mode .gen-studio {
@@ -846,7 +846,7 @@ body.dark-mode .gen-sidebar-files-count {
   margin: 0 0 14px 0;
   font-size: 13px;
   line-height: 1.55;
-  color: var(--text-light, rgba(184, 56, 72, 0.62));
+  color: var(--text-light, rgba(227, 0, 0, 0.62));
 }
 
 .gen-source-btn {
@@ -883,8 +883,8 @@ body.dark-mode .gen-textarea {
 .gen-select:focus,
 .gen-textarea:focus {
   outline: none;
-  border-color: var(--primary-color, #b83848);
-  box-shadow: 0 0 0 3px rgba(184, 56, 72, 0.12);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.12);
 }
 
 .gen-label {
@@ -1030,7 +1030,7 @@ body.dark-mode .gen-textarea {
   border-color: var(--gen-accent);
   background: var(--gen-accent);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(184, 56, 72, 0.25);
+  box-shadow: var(--red-glow);
 }
 
 .gen-track__segment--active .gen-track__label {
@@ -1038,8 +1038,8 @@ body.dark-mode .gen-textarea {
 }
 
 .gen-track__segment--done .gen-track__num {
-  border-color: rgba(184, 56, 72, 0.35);
-  background: rgba(184, 56, 72, 0.08);
+  border-color: var(--primary-color);
+  background: var(--glass-bg);
   color: var(--gen-accent);
   font-size: 15px;
 }
@@ -1059,8 +1059,8 @@ body.dark-mode .gen-textarea {
 .gen-track__connector--done {
   background: linear-gradient(
     90deg,
-    rgba(184, 56, 72, 0.45),
-    rgba(184, 56, 72, 0.2)
+    var(--primary-gradient-start),
+    var(--primary-gradient-end)
   );
 }
 
@@ -1363,7 +1363,7 @@ body.dark-mode .gen-pipeline-card {
 
 .gen-cta:not(:disabled):hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(184, 56, 72, 0.2);
+  box-shadow: var(--red-glow);
 }
 
 .gen-cta--wide {
@@ -1431,8 +1431,8 @@ body.dark-mode .gen-pipeline-card {
 }
 
 .outline-row:focus-within {
-  border-color: rgba(184, 56, 72, 0.45);
-  box-shadow: 0 0 0 3px rgba(184, 56, 72, 0.08);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.08);
 }
 
 .outline-row__toolbar {
@@ -1515,14 +1515,14 @@ body.dark-mode .gen-pipeline-card {
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: rgba(184, 56, 72, 0.09);
-  color: var(--primary-color, #b83848);
+  background: var(--glass-bg);
+  color: var(--primary-color);
   margin-bottom: 14px;
   font-size: 22px;
 }
 
 .gen-alt-card__icon--quiz {
-  background: rgba(184, 56, 72, 0.07);
+  background: var(--glass-bg);
 }
 
 .gen-alt-card h4,
@@ -1588,10 +1588,10 @@ body.dark-mode .gen-pipeline-card {
 .gen-job-banner--running {
   background: linear-gradient(
     135deg,
-    rgba(184, 56, 72, 0.07) 0%,
-    rgba(184, 56, 72, 0.02) 100%
+    var(--primary-gradient-start) 0%,
+    var(--glass-bg) 100%
   );
-  border-color: rgba(184, 56, 72, 0.22);
+  border-color: var(--primary-color);
 }
 
 .gen-job-banner--completed {
@@ -1613,7 +1613,7 @@ body.dark-mode .gen-pipeline-card {
   justify-content: center;
   border-radius: 12px;
   background: var(--bg-primary, #fff);
-  color: var(--primary-color, #b83848);
+  color: var(--primary-color);
   font-size: 22px;
   box-shadow: var(--shadow-sm);
 }
@@ -1723,12 +1723,12 @@ body.dark-mode .gen-results__heading {
 
 .course-edit input[type='checkbox']:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(184, 56, 72, 0.22);
+  box-shadow: 0 0 0 3px rgba(227, 0, 0, 0.22);
 }
 
 .course-edit input[type='checkbox']:checked {
-  background-color: #b83848;
-  border-color: #b83848;
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
   background-image: var(--ce-check-light);
   background-size: 13px;
   background-position: center;
@@ -1786,23 +1786,23 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 }
 
 .course-edit .btn:focus-visible {
-  outline: 2px solid rgba(184, 56, 72, 0.45);
+  outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
 
 .course-edit .btn-primary {
-  background: linear-gradient(180deg, #c44455 0%, #b83848 100%);
+  background: linear-gradient(180deg, var(--primary-gradient-start) 0%, var(--primary-gradient-end) 100%);
   border: 1px solid rgba(0, 0, 0, 0.06);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 4px 14px rgba(184, 56, 72, 0.22);
+    var(--red-glow);
 }
 
 .course-edit .btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.22) inset,
-    0 8px 22px rgba(184, 56, 72, 0.28);
+    var(--red-glow);
 }
 
 .course-edit .btn-primary:active:not(:disabled) {
@@ -1817,18 +1817,18 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 }
 
 .course-edit .btn-outline {
-  border: 1.5px solid rgba(184, 56, 72, 0.38);
-  color: #9c2f3e;
+  border: 1.5px solid var(--primary-color);
+  color: var(--primary-color);
   background: rgba(255, 255, 255, 0.85);
   box-shadow: 0 1px 2px rgba(22, 19, 18, 0.04);
 }
 
 .course-edit .btn-outline:hover:not(:disabled) {
-  border-color: #b83848;
-  color: #b83848;
-  background: rgba(184, 56, 72, 0.06);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--glass-bg);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(184, 56, 72, 0.1);
+  box-shadow: var(--red-glow);
 }
 
 .course-edit .btn-outline:active:not(:disabled) {
@@ -1842,8 +1842,8 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 
 .course-edit .btn-secondary {
   background: rgba(255, 255, 255, 0.95);
-  color: #b83848;
-  border: 1.5px solid rgba(184, 56, 72, 0.35);
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
   padding: 10px 20px;
   cursor: pointer;
   box-shadow: 0 1px 2px rgba(22, 19, 18, 0.05);
@@ -1851,7 +1851,7 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 
 .course-edit .btn-secondary:hover:not(:disabled) {
   background: #ffffff;
-  border-color: #b83848;
+  border-color: var(--primary-color);
   transform: translateY(-1px);
 }
 
@@ -1872,7 +1872,7 @@ body.dark-mode .course-edit input[type='checkbox']:checked {
 
 .course-edit .btn-danger-outline:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(184, 56, 72, 0.12);
+  box-shadow: var(--red-glow);
 }
 
 .course-edit .gen-cta.btn-primary {
@@ -1951,7 +1951,7 @@ body.dark-mode .course-edit .upload-zone:hover {
 
 body.dark-mode .course-edit .btn-primary {
   background: #ffffff;
-  color: #b83848 !important;
+  color: var(--primary-color) !important;
   border: 1px solid #ffffff;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
 }

@@ -575,7 +575,7 @@
 .course-link:hover {
   opacity: 0.88;
   gap: var(--spacing-md);
-  border-bottom-color: rgba(184, 56, 72, 0.35);
+  border-bottom-color: var(--primary-color);
 }
 
 .course-info h3 {
@@ -624,7 +624,7 @@
 }
 
 .lesson-item.active {
-  background: rgba(184, 56, 72, 0.08);
+  background: var(--glass-bg);
   padding: var(--spacing-md);
   border-radius: var(--radius-md);
   margin: calc(-1 * var(--spacing-md));

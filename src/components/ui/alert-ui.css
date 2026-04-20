@@ -76,15 +76,15 @@
 }
 
 .alert-modal__btn--danger, .alert-modal__btn--primary {
-  background: #e41616;
+  background: var(--primary-color);
   color: #ffffff;
-  box-shadow: 0 8px 20px rgba(228, 22, 22, 0.2);
+  box-shadow: var(--red-glow);
 }
 
 .alert-modal__btn--danger:hover {
-  background: #c11212;
+  background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(228, 22, 22, 0.3);
+  box-shadow: var(--red-glow);
 }
 
 /* ==========================================================================
@@ -144,7 +144,7 @@ body.dark-mode .toast {
 }
 
 .toast__icon {
-  background: #e41616;
+  background: var(--primary-color);
   color: white;
   width: 28px;
   height: 28px;
