@@ -222,6 +222,13 @@ const resources = {
         createLesson: 'Создать урок',
         lessonTitle: 'Название урока',
         lessonDescription: 'Описание',
+        lessonContent: 'Содержание урока',
+        lessonContentHint:
+          'Минимум {{min}} символов — так настроен сервер (качество материала). Позже текст можно изменить на странице урока.',
+        lessonContentPlaceholder: 'Текст урока, конспект или план (не меньше {{min}} символов)',
+        lessonContentTooShort: 'Введите текст урока не короче {{min}} символов.',
+        createLessonForbidden:
+          'Добавлять уроки может только преподаватель этого курса (владелец курса).',
         orderNumber: 'Порядковый номер',
         emptyLessons: 'Уроков пока нет.',
         createFirstLesson: 'Создайте первый урок!',
@@ -884,6 +891,13 @@ const resources = {
         createLesson: 'Create lesson',
         lessonTitle: 'Lesson title',
         lessonDescription: 'Description',
+        lessonContent: 'Lesson content',
+        lessonContentHint:
+          'At least {{min}} characters are required by the server. You can edit the text later on the lesson page.',
+        lessonContentPlaceholder: 'Lesson text, notes, or outline (min. {{min}} characters)',
+        lessonContentTooShort: 'Please enter at least {{min}} characters of lesson content.',
+        createLessonForbidden:
+          'Only the instructor who owns this course can add lessons.',
         orderNumber: 'Order number',
         emptyLessons: 'No lessons yet.',
         createFirstLesson: 'Create the first lesson!',
@@ -1546,6 +1560,13 @@ const resources = {
         createLesson: 'Сабақ құру',
         lessonTitle: 'Сабақ атауы',
         lessonDescription: 'Сипаттама',
+        lessonContent: 'Сабақ мазмұны',
+        lessonContentHint:
+          'Кемінде {{min}} таңба — сервер талабы. Кейін сабақ бетінде өзгертуге болады.',
+        lessonContentPlaceholder: 'Сабақ мәтіні, конспект немесе жоспар (кемінде {{min}} таңба)',
+        lessonContentTooShort: 'Кемінде {{min}} таңбадан тұратын мәтін енгізіңіз.',
+        createLessonForbidden:
+          'Сабақтарды тек осы курс иесі (оқытушы) қоса алады.',
         orderNumber: 'Реттік нөмір',
         emptyLessons: 'Әзірге сабақ жоқ.',
         createFirstLesson: 'Бірінші сабақты құрыңыз!',
