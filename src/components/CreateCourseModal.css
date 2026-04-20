@@ -104,3 +104,35 @@
   width: auto;             /* Кнопка занимает только нужное ей место */
   min-width: 160px;        /* Опционально: чтобы кнопка не была слишком маленькой */
 }
+
+@media (max-width: 768px) {
+  .create-course-modal-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .create-course-modal {
+    max-width: 100%;
+    width: 100%;
+    max-height: min(92vh, 100dvh);
+    border-radius: 16px 16px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .create-course-modal-header {
+    padding: 16px 18px;
+  }
+
+  .create-course-form {
+    padding: 18px 16px 22px;
+  }
+
+  .create-course-form .form-actions {
+    flex-direction: column;
+  }
+
+  .create-course-form .form-actions .btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}

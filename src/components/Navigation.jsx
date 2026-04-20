@@ -80,6 +80,7 @@ const Navigation = ({ userRoles = [] }) => {
     };
 
     // --- Уведомления ---
+    const [profileOpen, setProfileOpen] = useState(false)
     const [showNotifications, setShowNotifications] = useState(false)
     const [notifications, setNotifications] = useState([])
     const [unreadCount, setUnreadCount] = useState(0)
@@ -111,7 +112,26 @@ const Navigation = ({ userRoles = [] }) => {
     useEffect(() => {
         setMobileOpen(false)
         setShowNotifications(false)
+        setProfileOpen(false)
     }, [location.pathname])
+
+    useEffect(() => {
+        if (!profileOpen) return
+        const close = (e) => {
+            if (!e.target.closest('.top-profile-section')) setProfileOpen(false)
+        }
+        const onKey = (e) => {
+            if (e.key === 'Escape') setProfileOpen(false)
+        }
+        document.addEventListener('mousedown', close)
+        document.addEventListener('touchstart', close, { passive: true })
+        document.addEventListener('keydown', onKey)
+        return () => {
+            document.removeEventListener('mousedown', close)
+            document.removeEventListener('touchstart', close)
+            document.removeEventListener('keydown', onKey)
+        }
+    }, [profileOpen])
 
     const handleLogout = useCallback(() => {
         const kc = window.keycloak || auth
@@ -142,7 +162,19 @@ const Navigation = ({ userRoles = [] }) => {
         const newState = !isCollapsed;
         setIsCollapsed(newState);
         document.documentElement.style.setProperty('--nav-width', newState ? '80px' : '250px');
-    };
+    }
+
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 768px)')
+        const syncNavForMobile = () => {
+            if (!mq.matches) return
+            setIsCollapsed(false)
+            document.documentElement.style.setProperty('--nav-width', '250px')
+        }
+        syncNavForMobile()
+        mq.addEventListener('change', syncNavForMobile)
+        return () => mq.removeEventListener('change', syncNavForMobile)
+    }, [])
 
     return (
         <>
@@ -173,7 +205,7 @@ const Navigation = ({ userRoles = [] }) => {
                         {getThemeIcon()}
                     </button>
 
-                    <div className="notif-wrapper" style={{ position: 'relative' }}>
+                    <div className="notif-wrapper">
                         <button
                             className={`top-action-btn ${unreadCount > 0 ? 'has-unread' : ''}`}
                             title={t('nav.notifications')}
@@ -200,13 +232,22 @@ const Navigation = ({ userRoles = [] }) => {
                             <span className="top-user-name">{userName}</span>
                             <span className="top-user-role">{[...new Set(userRoles)].join(', ')}</span>
                         </div>
-                        <div className="top-avatar-container">
-                            <div className="top-avatar">{userName.charAt(0).toUpperCase()}</div>
-                            <div className="top-dropdown">
-                                <Link to="/profile"><FiUser /> {t('nav.profile')}</Link>
-                                <Link to="/settings"><FiSettings /> {t('nav.settings')}</Link>
+                        <div className={`top-avatar-container ${profileOpen ? 'dropdown-open' : ''}`}>
+                            <button
+                                type="button"
+                                className="top-avatar"
+                                onClick={() => setProfileOpen((v) => !v)}
+                                aria-expanded={profileOpen}
+                                aria-haspopup="true"
+                                aria-label={t('nav.profile')}
+                            >
+                                {userName.charAt(0).toUpperCase()}
+                            </button>
+                            <div className="top-dropdown" role="menu">
+                                <Link to="/profile" role="menuitem" onClick={() => setProfileOpen(false)}><FiUser /> {t('nav.profile')}</Link>
+                                <Link to="/settings" role="menuitem" onClick={() => setProfileOpen(false)}><FiSettings /> {t('nav.settings')}</Link>
                                 <hr />
-                                <button onClick={handleLogout} className="logout-btn-dropdown">
+                                <button type="button" onClick={() => { setProfileOpen(false); handleLogout() }} className="logout-btn-dropdown">
                                     <FiLogOut /> {t('nav.logout')}
                                 </button>
                             </div>

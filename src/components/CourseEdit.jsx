@@ -61,6 +61,9 @@ const CourseEdit = () => {
   const [courseFiles, setCourseFiles] = useState([])
   const [lessons, setLessons] = useState([])
   const [tests, setTests] = useState([])
+  const [testMaxAttemptsDraft, setTestMaxAttemptsDraft] = useState({})
+  const [testDueAtDraft, setTestDueAtDraft] = useState({})
+  const [savingTestSettings, setSavingTestSettings] = useState({})
   const [participants, setParticipants] = useState(null)
   const [selectedFileIds, setSelectedFileIds] = useState(new Set())
   const [selectedLessonIds, setSelectedLessonIds] = useState(new Set())
@@ -179,7 +182,32 @@ const CourseEdit = () => {
       setCourse(coursePayload.course)
       setCourseFiles(filesRes.data || [])
       setLessons(lessonsRes.data || [])
-      setTests(testsRes.data || [])
+      const testsArr = Array.isArray(testsRes.data) ? testsRes.data : []
+      setTests(testsArr)
+      setTestMaxAttemptsDraft((prev) => {
+        const next = { ...prev }
+        for (const tst of testsArr) {
+          const tid = tst?.id
+          if (tid == null) continue
+          if (next[tid] === undefined) {
+            next[tid] = tst?.maxAttempts == null ? '' : String(tst.maxAttempts)
+          }
+        }
+        return next
+      })
+      setTestDueAtDraft((prev) => {
+        const next = { ...prev }
+        for (const tst of testsArr) {
+          const tid = tst?.id
+          if (tid == null) continue
+          if (next[tid] === undefined) {
+            // backend sends LocalDateTime string: "YYYY-MM-DDTHH:mm:ss" - normalize to datetime-local ("YYYY-MM-DDTHH:mm")
+            const raw = tst?.dueAt
+            next[tid] = raw ? String(raw).slice(0, 16) : ''
+          }
+        }
+        return next
+      })
       setAllowedEmails(
         Array.isArray(coursePayload.course?.allowedEmails) ? coursePayload.course.allowedEmails : []
       )
@@ -196,6 +224,31 @@ const CourseEdit = () => {
       setError(t('courseEdit.loadError'))
     } finally {
       setLoading(false)
+    }
+  }
+
+  const saveTestSettings = async (testId) => {
+    const raw = testMaxAttemptsDraft?.[testId]
+    const trimmed = raw == null ? '' : String(raw).trim()
+    const maxAttempts = trimmed === '' ? null : Number(trimmed)
+    if (maxAttempts != null && (!Number.isFinite(maxAttempts) || maxAttempts < 1)) {
+      setError(t('courseEdit.testMaxAttemptsInvalid'))
+      return
+    }
+    const dueAtRaw = testDueAtDraft?.[testId]
+    const dueAt = dueAtRaw == null || String(dueAtRaw).trim() === '' ? null : String(dueAtRaw).trim()
+    setSavingTestSettings((p) => ({ ...p, [testId]: true }))
+    setError(null)
+    try {
+      const res = await api.patch(`/courses/tests/${testId}/settings`, { maxAttempts, dueAt })
+      setTests((prev) =>
+        prev.map((x) => (String(x.id) === String(testId) ? { ...x, ...res.data } : x))
+      )
+    } catch (err) {
+      console.error('Error saving test settings:', err)
+      setError(err.response?.data?.message || t('courseEdit.testMaxAttemptsSaveError'))
+    } finally {
+      setSavingTestSettings((p) => ({ ...p, [testId]: false }))
     }
   }
 
@@ -1388,14 +1441,50 @@ const CourseEdit = () => {
               ) : (
                 <div className="tests-grid">
                   {tests.map((testItem) => (
-                    <Link
-                      key={testItem.id}
-                      to={`/courses/${id}/tests/${testItem.id}`}
-                      className="test-card"
-                    >
-                      <FiCheckSquare />
-                      <span>{testItem.title}</span>
-                    </Link>
+                    <div key={testItem.id} className="test-card">
+                      <Link to={`/courses/${id}/tests/${testItem.id}`} className="test-card-link-inner">
+                        <FiCheckSquare />
+                        <span>{testItem.title}</span>
+                      </Link>
+                      <div className="test-card-settings">
+                        <label className="test-attempts-label">
+                          {t('courseEdit.testMaxAttemptsLabel')}
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            inputMode="numeric"
+                            className="test-attempts-input"
+                            value={testMaxAttemptsDraft?.[testItem.id] ?? (testItem.maxAttempts == null ? '' : String(testItem.maxAttempts))}
+                            placeholder={t('courseEdit.testMaxAttemptsUnlimited')}
+                            onChange={(e) =>
+                              setTestMaxAttemptsDraft((p) => ({ ...p, [testItem.id]: e.target.value }))
+                            }
+                          />
+                        </label>
+                        <label className="test-attempts-label">
+                          {t('courseEdit.testDeadlineLabel')}
+                          <input
+                            type="datetime-local"
+                            className="test-attempts-input"
+                            value={testDueAtDraft?.[testItem.id] ?? (testItem.dueAt ? String(testItem.dueAt).slice(0, 16) : '')}
+                            onChange={(e) =>
+                              setTestDueAtDraft((p) => ({ ...p, [testItem.id]: e.target.value }))
+                            }
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => saveTestSettings(testItem.id)}
+                          disabled={Boolean(savingTestSettings?.[testItem.id])}
+                        >
+                          {savingTestSettings?.[testItem.id]
+                            ? t('common.loading')
+                            : t('courseEdit.testMaxAttemptsSave')}
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

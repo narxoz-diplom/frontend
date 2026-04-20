@@ -201,3 +201,23 @@ body.dark-mode {
         padding: 40px 20px;
     }
 }
+
+@media (max-width: 480px) {
+    .login-page {
+        padding: 12px;
+        align-items: flex-start;
+    }
+
+    .login-container-wrapper {
+        min-height: auto;
+        border-radius: 20px;
+    }
+
+    .login-form-section {
+        padding: 28px 20px;
+    }
+
+    .illustration-text h2 {
+        font-size: 26px;
+    }
+}

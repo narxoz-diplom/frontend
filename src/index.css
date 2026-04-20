@@ -52,12 +52,19 @@ body.dark-mode {
 }
 
 /* Окрашиваем само тело документа */
+html {
+    overflow-x: hidden;
+    overflow-x: clip;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-secondary);
     color: var(--text-primary);
     line-height: 1.6;
     transition: background-color var(--transition-base), color var(--transition-base);
+    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 /* Контейнер всего приложения */
@@ -136,10 +143,29 @@ input:-webkit-autofill {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-/* Настройки для мобилок (если навигация скрывается) */
+.loading {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-secondary);
+    font-size: 15px;
+}
+
+/* Мобильная вёрстка: контент на всю ширину, отступы под фиксированный хедер и вырезы экрана */
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;
         max-width: 100%;
+        padding: calc(100px + env(safe-area-inset-top, 0px)) 12px max(20px, env(safe-area-inset-bottom, 0px));
+    }
+
+    .loading {
+        padding: max(32px, env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px));
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding-left: max(10px, env(safe-area-inset-left, 0px));
+        padding-right: max(10px, env(safe-area-inset-right, 0px));
     }
 }

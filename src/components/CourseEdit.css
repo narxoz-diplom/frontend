@@ -740,6 +740,44 @@ body.dark-mode .back-link{
   color: #b83848;
 }
 
+.test-card-link-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  min-width: 0;
+}
+
+.test-card-link-inner span {
+  overflow-wrap: anywhere;
+}
+
+.test-card-settings {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.test-attempts-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.test-attempts-input {
+  width: 140px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(22, 19, 18, 0.08));
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+}
+
 /* ------------------------------------------------------------------ */
 /* Студия генерации — спокойный продуктовый слой                        */
 /* ------------------------------------------------------------------ */

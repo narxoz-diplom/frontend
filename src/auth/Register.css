@@ -230,6 +230,24 @@ body.dark-mode {
         gap: 0;
     }
 }
+
+@media (max-width: 480px) {
+    .login-page {
+        padding: 12px;
+    }
+
+    .login-container-wrapper {
+        border-radius: 20px;
+    }
+
+    .registration-toast {
+        left: 12px;
+        right: 12px;
+        top: max(16px, env(safe-area-inset-top, 0px));
+        min-width: 0;
+        width: auto;
+    }
+}
 /* Всплывающее уведомление (Toast) */
 .registration-toast {
     position: fixed;

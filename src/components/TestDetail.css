@@ -171,3 +171,66 @@
   color: var(--text-secondary, #718096);
   margin: 0 0 24px 0;
 }
+
+.test-attempts-hint {
+  margin: 0 0 18px 0;
+  font-size: 13px;
+  color: var(--text-secondary, #718096);
+}
+
+.test-attempts-inline {
+  margin: 0 0 16px 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: rgba(184, 56, 72, 0.06);
+  border: 1px solid rgba(184, 56, 72, 0.14);
+  color: var(--text-primary, #1a202c);
+  font-size: 13px;
+}
+
+.test-result-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-result-actions .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .test-detail {
+    padding: 16px 4px;
+  }
+
+  .test-detail-header h1 {
+    font-size: 1.35rem;
+    line-height: 1.3;
+  }
+
+  .question-card {
+    padding: 16px 14px;
+  }
+
+  .question-text {
+    font-size: 16px;
+  }
+
+  .test-submit-section {
+    padding: 16px 0;
+  }
+
+  .result-card {
+    padding: 28px 20px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .option-label {
+    padding: 14px;
+    min-height: 44px;
+  }
+}

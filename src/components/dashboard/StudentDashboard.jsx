@@ -24,6 +24,7 @@ const StudentDashboard = ({ view = 'home' }) => {
     })
     const [loading, setLoading] = useState(true)
     const [userName, setUserName] = useState('')
+    const [upcomingDeadlines, setUpcomingDeadlines] = useState([])
 
     useEffect(() => {
         loadDashboardData()
@@ -50,28 +51,43 @@ const StudentDashboard = ({ view = 'home' }) => {
     const loadDashboardData = async () => {
         try {
             setLoading(true)
-            const [publishedRes, enrolledRes, attemptsRes] = await Promise.all([
+            const [publishedRes, enrolledRes, attemptsRes, deadlinesRes] = await Promise.all([
                 api.get('/courses/published'),
                 api.get('/courses/enrolled'),
                 api.get('/courses/my/test-attempts').catch(() => ({ data: [] })),
+                api.get('/courses/my/upcoming-test-deadlines').catch(() => ({ data: [] })),
             ])
             const catalog = Array.isArray(publishedRes.data) ? publishedRes.data.length : 0
             const enrolled = Array.isArray(enrolledRes.data) ? enrolledRes.data.length : 0
             const attempts = Array.isArray(attemptsRes.data) ? attemptsRes.data.length : 0
+            const deadlines = Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []
             setStats({
                 catalogCourses: catalog,
                 enrolledCourses: enrolled,
                 completedLessons: countCompletedLessonsFromStorage(),
                 testAttempts: attempts,
             })
+            setUpcomingDeadlines(deadlines)
         } catch (err) {
             console.error(err)
             setStats((s) => ({
                 ...s,
                 completedLessons: countCompletedLessonsFromStorage(),
             }))
+            setUpcomingDeadlines([])
         } finally {
             setLoading(false)
+        }
+    }
+
+    const formatDueAt = (iso) => {
+        if (!iso) return '—'
+        try {
+            const d = new Date(iso)
+            if (Number.isNaN(d.getTime())) return iso
+            return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+        } catch {
+            return iso
         }
     }
 
@@ -162,6 +178,40 @@ const StudentDashboard = ({ view = 'home' }) => {
             </div>
 
             <HomeNewsFeed />
+
+            <div className="dashboard-section">
+                <div className="section-header">
+                    <h2 className="section-title">{t('dashboard.upcomingDeadlinesTitle')}</h2>
+                </div>
+                {(upcomingDeadlines?.length ?? 0) === 0 ? (
+                    <div className="dashboard-empty-hint">{t('dashboard.upcomingDeadlinesEmpty')}</div>
+                ) : (
+                    <div className="deadlines-list">
+                        {upcomingDeadlines.slice(0, 5).map((d) => (
+                            <Link
+                                key={`${d.courseId}-${d.testId}-${d.dueAt}`}
+                                to={`/courses/${d.courseId}/tests/${d.testId}`}
+                                className="deadline-card"
+                            >
+                                <div className="deadline-card__meta">
+                                    <div className="deadline-card__course">
+                                        <span className="deadline-card__label">{t('dashboard.upcomingDeadlinesCourse')}</span>
+                                        <span className="deadline-card__value">{d.courseTitle || `#${d.courseId}`}</span>
+                                    </div>
+                                    <div className="deadline-card__test">
+                                        <span className="deadline-card__label">{t('dashboard.upcomingDeadlinesTest')}</span>
+                                        <span className="deadline-card__value">{d.testTitle || `#${d.testId}`}</span>
+                                    </div>
+                                </div>
+                                <div className="deadline-card__due">
+                                    <span className="deadline-card__label">{t('dashboard.upcomingDeadlinesDue')}</span>
+                                    <span className="deadline-card__dueValue">{formatDueAt(d.dueAt)}</span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
 
             <div className="dashboard-section">
                 <div className="section-header">

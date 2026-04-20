@@ -171,6 +171,75 @@ body.dark-mode .illustration-circle svg {
     margin: 4px 0 0;
 }
 
+.dashboard-empty-hint {
+    background: var(--bg-primary);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+.deadlines-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.deadline-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: var(--text-primary);
+    transition: border-color var(--transition-base), box-shadow var(--transition-base);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.deadline-card:hover {
+    border-color: rgba(184, 56, 72, 0.35);
+    box-shadow: var(--shadow-md);
+}
+
+.deadline-card__meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.deadline-card__label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-light);
+    margin-bottom: 4px;
+}
+
+.deadline-card__value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.35;
+}
+
+.deadline-card__dueValue {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+body.dark-mode .deadline-card {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
 /* Header с кнопкой */
 .courses-header {
     display: flex;
@@ -624,7 +693,48 @@ body.dark-mode .home-news-message {
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-    .dashboard-hero { flex-direction: column; gap: var(--spacing-lg); }
-    .courses-header  { flex-direction: column; align-items: flex-start; gap: var(--spacing-md); }
-    .courses-grid    { grid-template-columns: 1fr; }
+    .dashboard {
+        padding: var(--spacing-md);
+    }
+
+    .dashboard-hero {
+        flex-direction: column;
+        gap: var(--spacing-lg);
+        align-items: flex-start;
+        padding: var(--spacing-lg);
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .courses-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-create-course {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 1.25rem;
+    }
+
+    .stat-value {
+        font-size: 24px;
+    }
 }

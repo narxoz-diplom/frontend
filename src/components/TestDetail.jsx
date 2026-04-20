@@ -18,6 +18,9 @@ const TestDetail = () => {
   const [submitted, setSubmitted] = useState(false)
   const [result, setResult] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [myAttempts, setMyAttempts] = useState([])
+  const [attemptsLoading, setAttemptsLoading] = useState(false)
+  const [retakeMode, setRetakeMode] = useState(false)
 
   useEffect(() => {
     loadTest()
@@ -40,6 +43,33 @@ const TestDetail = () => {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!testId) return
+    const loadMyAttempts = async () => {
+      try {
+        setAttemptsLoading(true)
+        const res = await api.get('/courses/my/test-attempts')
+        const all = Array.isArray(res.data) ? res.data : []
+        const onlyThisTest = all.filter((a) => {
+          const tid = a?.testId ?? a?.test?.id
+          return String(tid) === String(testId)
+        })
+        setMyAttempts(onlyThisTest)
+        // If we don't have any attempts (or they were cleared), exit retake mode.
+        if (onlyThisTest.length === 0) {
+          setRetakeMode(false)
+        }
+      } catch (e) {
+        // If backend endpoint fails (e.g., serialization), don't block test UI.
+        console.warn('Failed to load my test attempts:', e)
+        setMyAttempts([])
+      } finally {
+        setAttemptsLoading(false)
+      }
+    }
+    loadMyAttempts()
+  }, [testId])
 
   const parseOptions = (optionsStr) => {
     if (!optionsStr) return []
@@ -83,6 +113,26 @@ const TestDetail = () => {
     setAnswers((prev) => ({ ...prev, [String(questionId)]: value }))
   }
 
+  const normalizeAttempt = (a) => {
+    if (!a) return null
+    return {
+      score: a.score ?? 0,
+      maxScore: a.maxScore ?? 0,
+      completedAt: a.completedAt ?? null
+    }
+  }
+
+  const latestAttempt = myAttempts && myAttempts.length > 0 ? myAttempts[0] : null
+  const latestAttemptResult = normalizeAttempt(latestAttempt)
+  const attemptsUsed = Array.isArray(myAttempts) ? myAttempts.length : 0
+  const maxAttempts =
+    test && (test.maxAttempts ?? test.allowedAttempts ?? test.attemptLimit) != null
+      ? Number(test.maxAttempts ?? test.allowedAttempts ?? test.attemptLimit)
+      : null
+  const attemptsLeft = maxAttempts != null && Number.isFinite(maxAttempts) ? Math.max(0, maxAttempts - attemptsUsed) : null
+  const isAttemptLimitReached = attemptsLeft === 0 && maxAttempts != null
+  const shouldShowQuestions = retakeMode || (!submitted && !latestAttemptResult)
+
   const handleSubmit = async () => {
     setSubmitting(true)
     setError(null)
@@ -94,6 +144,19 @@ const TestDetail = () => {
       })
       setResult(response.data)
       setSubmitted(true)
+      setRetakeMode(false)
+      // Refresh attempts so result stays visible after reload.
+      try {
+        const res = await api.get('/courses/my/test-attempts')
+        const all = Array.isArray(res.data) ? res.data : []
+        const onlyThisTest = all.filter((a) => {
+          const tid = a?.testId ?? a?.test?.id
+          return String(tid) === String(testId)
+        })
+        setMyAttempts(onlyThisTest)
+      } catch (e) {
+        // ignore
+      }
     } catch (err) {
       console.error('Error submitting test:', err)
       setError(err.response?.data?.message || t('testPage.loadError'))
@@ -153,8 +216,64 @@ const TestDetail = () => {
             </Link>
           </div>
         </div>
+      ) : !shouldShowQuestions && latestAttemptResult ? (
+        <div className="test-result">
+          <div className="result-card">
+            <FiCheckSquare className="result-icon" />
+            <h2>{t('testPage.lastResultTitle')}</h2>
+            <p className="result-score">
+              {latestAttemptResult.score} / {latestAttemptResult.maxScore} {t('testPage.points')}
+            </p>
+            <p className="result-percent">
+              {latestAttemptResult.maxScore > 0
+                ? Math.round((latestAttemptResult.score / latestAttemptResult.maxScore) * 100)
+                : 0}%
+            </p>
+            <p className="test-attempts-hint">
+              {maxAttempts != null
+                ? t('testPage.attemptsUsedOf', { used: attemptsUsed, total: maxAttempts })
+                : t('testPage.attemptsUsed', { used: attemptsUsed })}
+            </p>
+            <div className="test-result-actions">
+              {isAttemptLimitReached ? (
+                <div className="test-detail-error-banner" style={{ marginBottom: 0 }}>
+                  {t('testPage.attemptLimitReached')}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setAnswers({})
+                    setError(null)
+                    setResult(null)
+                    setSubmitted(false)
+                    setRetakeMode(true)
+                  }}
+                  disabled={attemptsLoading}
+                >
+                  {attemptsLoading ? t('common.loading') : t('testPage.tryAgain')}
+                </button>
+              )}
+              <Link to={`/courses/${courseId}`} className="btn btn-outline">
+                {t('testPage.returnToCourse')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : !shouldShowQuestions && isAttemptLimitReached ? (
+        <div className="test-detail-error-banner">{t('testPage.attemptLimitReached')}</div>
       ) : (
         <>
+          {maxAttempts != null && (
+            <div className="test-attempts-inline">
+              {t('testPage.attemptsLeft', {
+                left: attemptsLeft ?? 0,
+                total: maxAttempts,
+                used: attemptsUsed
+              })}
+            </div>
+          )}
           <div className="test-questions">
             {sortedQuestions.map((q, idx) => (
               <div key={q.id} className="question-card">
@@ -232,7 +351,7 @@ const TestDetail = () => {
             <button
               className="btn btn-primary btn-lg"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={submitting || isAttemptLimitReached}
             >
               {submitting ? t('testPage.submitting') : t('testPage.submit')}
             </button>
