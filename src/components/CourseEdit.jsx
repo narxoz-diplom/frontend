@@ -100,6 +100,7 @@ const CourseEdit = () => {
   const [testDifficulty, setTestDifficulty] = useState('medium')
   const [quickGenLoading, setQuickGenLoading] = useState(false)
   const [backfillingLocales, setBackfillingLocales] = useState(false)
+  const [backfillActiveLang, setBackfillActiveLang] = useState(null)
   const [backfillJobId, setBackfillJobId] = useState(null)
   const [backfillJob, setBackfillJob] = useState(null)
   const [backfillSummary, setBackfillSummary] = useState({ kz: null, en: null })
@@ -612,6 +613,7 @@ const CourseEdit = () => {
 
   const handleBackfillLocalizations = async (lang) => {
     setBackfillingLocales(true)
+    setBackfillActiveLang(lang === 'kz' || lang === 'en' ? lang : null)
     setError(null)
     try {
       const endpoint = lang === 'kz'
@@ -628,6 +630,7 @@ const CourseEdit = () => {
     } catch (err) {
       console.error('Error backfilling localizations:', err)
       setError(err.response?.data?.message || t('courseEdit.backfillError'))
+      setBackfillActiveLang(null)
     } finally {
       setBackfillingLocales(false)
     }
@@ -644,6 +647,7 @@ const CourseEdit = () => {
         if (st === 'COMPLETED') {
           if (!cancelled) {
             setBackfillJobId(null)
+            setBackfillActiveLang(null)
             await loadData()
           }
           return true
@@ -652,6 +656,7 @@ const CourseEdit = () => {
           if (!cancelled) {
             setError(res?.data?.message || t('courseEdit.backfillError'))
             setBackfillJobId(null)
+            setBackfillActiveLang(null)
           }
           return true
         }
@@ -661,6 +666,7 @@ const CourseEdit = () => {
           console.error('Backfill job poll error', e)
           setError(e.response?.data?.message || t('courseEdit.backfillError'))
           setBackfillJobId(null)
+          setBackfillActiveLang(null)
         }
         return true
       }
@@ -788,7 +794,7 @@ const CourseEdit = () => {
             disabled={backfillingLocales || !!backfillJobId || (backfillSummary.kz?.missingTotal === 0)}
             title={t('courseEdit.backfillTitle')}
           >
-            {backfillingLocales || backfillJobId
+            {backfillActiveLang === 'kz' && (backfillingLocales || backfillJobId)
               ? `${t('courseEdit.backfilling')}${backfillJob?.total ? ` (${Math.min(100, Math.round(((backfillJob?.processed || 0) / Math.max(1, backfillJob.total)) * 100))}%)` : ''}`
               : backfillSummary.kz?.missingTotal === 0 ? t('courseEdit.backfillKzDone') : t('courseEdit.backfillKz')}
           </button>
@@ -799,7 +805,7 @@ const CourseEdit = () => {
             disabled={backfillingLocales || !!backfillJobId || (backfillSummary.en?.missingTotal === 0)}
             title={t('courseEdit.backfillTitle')}
           >
-            {backfillingLocales || backfillJobId
+            {backfillActiveLang === 'en' && (backfillingLocales || backfillJobId)
               ? `${t('courseEdit.backfilling')}${backfillJob?.total ? ` (${Math.min(100, Math.round(((backfillJob?.processed || 0) / Math.max(1, backfillJob.total)) * 100))}%)` : ''}`
               : backfillSummary.en?.missingTotal === 0 ? t('courseEdit.backfillEnDone') : t('courseEdit.backfillEn')}
           </button>
