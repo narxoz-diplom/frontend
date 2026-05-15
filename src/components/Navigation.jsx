@@ -4,13 +4,13 @@ import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
     FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor,
-    FiBarChart2, FiFolder, FiCpu, FiEdit3, FiGlobe
+    FiBarChart2, FiFolder, FiCpu, FiEdit3, FiGlobe, FiClipboard
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
 import { searchMaterials, SEARCH_MIN_QUERY_LENGTH } from '../services/search'
 import { pickLocalized } from '../i18n/localize'
-import { isAdmin } from '../utils/roles'
+import { isAdmin, isTeacher } from '../utils/roles'
 import { useTranslation } from 'react-i18next'
 import { setLang } from '../i18n'
 import NotificationPopover from './NotificationPopover'
@@ -578,6 +578,15 @@ const Navigation = ({ userRoles = [] }) => {
                 <div className="nav-links">
                     <NavItem to="/" icon={<FiHome />} label={t('nav.home')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/courses" icon={<FiBook />} label={t('nav.courses')} isActive={isActive} isCollapsed={isCollapsed} />
+                    {isTeacher(window.keycloak || auth) && (
+                        <NavItem
+                            to="/teacher/grades"
+                            icon={<FiClipboard />}
+                            label={t('nav.gradeJournal')}
+                            isActive={isActive}
+                            isCollapsed={isCollapsed}
+                        />
+                    )}
                     <NavItem to="/stats" icon={<FiBarChart2 />} label={t('nav.stats')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/files" icon={<FiFolder />} label={t('nav.files')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/rag" icon={<FiCpu />} label={t('nav.rag')} isActive={isActive} isCollapsed={isCollapsed} />

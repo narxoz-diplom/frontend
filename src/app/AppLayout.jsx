@@ -17,6 +17,10 @@ import AdminNews from '../components/AdminNews'
 import NewsDetail from '../components/NewsDetail'
 import Profile from '../components/Profile'
 import RAG from '../components/RAG'
+import TeacherGradesLayout from '../components/teacher-grades/TeacherGradesLayout'
+import TeacherGradesCourses from '../components/teacher-grades/TeacherGradesCourses'
+import TeacherGradesLessons from '../components/teacher-grades/TeacherGradesLessons'
+import TeacherGradesTable from '../components/teacher-grades/TeacherGradesTable'
 
 // Добавляем пропсы для управления темой
 const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
@@ -47,6 +51,11 @@ const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
                     <Route path="/news/:id" element={<NewsDetail />} />
                     <Route path="/admin/news" element={<AdminNews />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/teacher/grades" element={<TeacherGradesLayout />}>
+                        <Route index element={<TeacherGradesCourses />} />
+                        <Route path=":courseId" element={<TeacherGradesLessons />} />
+                        <Route path=":courseId/lessons/:lessonId" element={<TeacherGradesTable />} />
+                    </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
             </div>
