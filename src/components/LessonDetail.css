@@ -1013,16 +1013,23 @@ body.dark-mode .sidebar-section:hover {
     flex-direction: column;
   }
 
-  .editor-actions .btn {
+  .lesson-detail--v2 .section-header {
+    align-items: stretch;
+  }
+
+  .lesson-detail--v2 .section-header__btn,
+  .lesson-detail--v2 .lesson-file-upload {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .lesson-detail--v2 .editor-actions .btn-edit,
+  .lesson-detail--v2 .form-actions .btn-edit {
     width: 100%;
   }
 
   .form-actions {
     flex-direction: column;
-  }
-
-  .form-actions .btn {
-    width: 100%;
   }
 }
 
@@ -1082,7 +1089,8 @@ body.dark-mode .sidebar-section:hover {
   border-bottom: 1px solid var(--lp-line);
 }
 
-.lesson-detail--v2 .lesson-page__back {
+/* «К курсу» — как на странице курса / редактирования */
+.lesson-detail--v2 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1091,19 +1099,19 @@ body.dark-mode .sidebar-section:hover {
   margin-left: -4px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--lp-accent);
+  color: var(--lp-ink);
   text-decoration: none;
   border-radius: 10px;
-  border: 1px solid var(--primary-color);
-  background: var(--glass-bg);
-  transition:
-    background 0.2s ease,
-    border-color 0.2s ease;
+  border: 1px solid rgba(22, 19, 18, 0.15);
+  background: rgba(22, 19, 18, 0.04);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.lesson-detail--v2 .lesson-page__back:hover {
-  background: var(--glass-bg);
-  border-color: var(--primary-color);
+.lesson-detail--v2 .back-link:hover,
+.lesson-detail--v2 .back-link:focus-visible {
+  background: rgba(22, 19, 18, 0.08);
+  border-color: rgba(22, 19, 18, 0.3);
+  color: var(--lp-ink);
 }
 
 .lesson-detail--v2 .lesson-page__kicker {
@@ -1225,7 +1233,154 @@ body.dark-mode .sidebar-section:hover {
 }
 
 .lesson-detail--v2 .section-header {
-  align-items: flex-start;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+/* Кнопки разделов и действий — в стиле course-detail */
+.lesson-detail--v2 .btn-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--lp-line);
+  background: var(--lp-surface);
+  color: var(--lp-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(22, 19, 18, 0.06);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.lesson-detail--v2 .section-header__btn {
+  flex-shrink: 0;
+}
+
+.lesson-detail--v2 .btn-edit:hover:not(:disabled),
+.lesson-detail--v2 .btn-edit:focus-visible {
+  background: var(--lp-surface-soft);
+  border-color: color-mix(in srgb, var(--lp-accent) 28%, var(--lp-line));
+  box-shadow: 0 4px 14px rgba(22, 19, 18, 0.08);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.lesson-detail--v2 .btn-edit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.lesson-detail--v2 .btn-edit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lesson-detail--v2 .btn-edit--accent {
+  color: #fff;
+  border-color: var(--lp-accent);
+  background: linear-gradient(180deg, var(--primary-gradient-start, #e41616) 0%, var(--primary-gradient-end, #c91414) 100%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, var(--red-glow, 0 4px 14px rgba(228, 22, 22, 0.25));
+}
+
+.lesson-detail--v2 .btn-edit--accent:hover:not(:disabled),
+.lesson-detail--v2 .btn-edit--accent:focus-visible {
+  color: #fff;
+  border-color: var(--lp-accent);
+  background: linear-gradient(180deg, var(--primary-gradient-start, #e41616) 0%, var(--primary-gradient-end, #c91414) 100%);
+  opacity: 0.96;
+}
+
+.lesson-detail--v2 .lesson-file-upload {
+  cursor: pointer;
+  margin: 0;
+}
+
+.lesson-detail--v2 .lesson-file-upload__input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lesson-detail--v2 .btn-icon-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  background: rgba(254, 242, 242, 0.9);
+  color: #dc2626;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.lesson-detail--v2 .btn-icon-danger:hover,
+.lesson-detail--v2 .btn-icon-danger:focus-visible {
+  background: #fee2e2;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.lesson-detail--v2 .file-card--row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.lesson-detail--v2 .file-card__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  transition: background 0.2s ease;
+}
+
+.lesson-detail--v2 .file-card__main:hover,
+.lesson-detail--v2 .file-card__main:focus-visible {
+  background: rgba(22, 19, 18, 0.04);
+  outline: none;
+}
+
+.lesson-detail--v2 .editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.lesson-detail--v2 .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.lesson-detail--v2 .markdown-embedded-images__remove {
+  align-self: flex-start;
 }
 
 .lesson-detail--v2 .section-header__text {
@@ -1531,15 +1686,40 @@ body.dark-mode .lesson-detail--v2 {
   --lp-surface-soft: rgba(255, 255, 255, 0.08);
 }
 
-body.dark-mode .lesson-detail--v2 .lesson-page__back {
-  color: #ffffff;
+body.dark-mode .lesson-detail--v2 .back-link {
+  color: #fff;
   border-color: rgba(255, 255, 255, 0.35);
   background: rgba(255, 255, 255, 0.1);
 }
 
-body.dark-mode .lesson-detail--v2 .lesson-page__back:hover {
+body.dark-mode .lesson-detail--v2 .back-link:hover,
+body.dark-mode .lesson-detail--v2 .back-link:focus-visible {
   background: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+body.dark-mode .lesson-detail--v2 .btn-edit {
+  color: var(--text-primary, #fff);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+body.dark-mode .lesson-detail--v2 .btn-edit:hover:not(:disabled),
+body.dark-mode .lesson-detail--v2 .btn-edit:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+body.dark-mode .lesson-detail--v2 .btn-icon-danger {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+body.dark-mode .lesson-detail--v2 .file-card__main:hover,
+body.dark-mode .lesson-detail--v2 .file-card__main:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 body.dark-mode .lesson-detail--v2 .lesson-page__kicker {
@@ -1588,8 +1768,15 @@ body.dark-mode .lesson-detail--v2 .markdown-content code {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lesson-detail--v2 .lesson-page__progress-fill {
+  .lesson-detail--v2 .lesson-page__progress-fill,
+  .lesson-detail--v2 .btn-edit,
+  .lesson-detail--v2 .btn-icon-danger {
     transition: none;
+  }
+
+  .lesson-detail--v2 .btn-edit:hover:not(:disabled),
+  .lesson-detail--v2 .btn-icon-danger:hover {
+    transform: none;
   }
 }
 

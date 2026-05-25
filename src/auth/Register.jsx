@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useTranslation } from 'react-i18next'
+import AuthAlert from '../components/ui/AuthAlert'
+import { getAuthApiBase, resolveRegisterError } from '../utils/authErrors'
 import './Register.css'
+import '../components/ui/auth-alert.css'
 
 const Register = () => {
     const { t } = useTranslation()
@@ -17,6 +20,15 @@ const Register = () => {
         role: 'client'
     })
 
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme')
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode')
+        } else {
+            document.body.classList.remove('dark-mode')
+        }
+    }, [])
+
     // Очищаем форму при монтировании компонента
     useEffect(() => {
         setFormData({
@@ -29,7 +41,7 @@ const Register = () => {
             role: 'client'
         })
     }, [])
-    const [error, setError] = useState('')
+    const [alert, setAlert] = useState(null)
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
 
@@ -38,28 +50,32 @@ const Register = () => {
             ...formData,
             [e.target.name]: e.target.value
         })
-        setError('')
+        setAlert(null)
+    }
+
+    const showError = (message) => {
+        setAlert({ title: null, message })
     }
 
     const validateForm = () => {
         if (!formData.username || !formData.email || !formData.password || !formData.firstName || !formData.lastName) {
-            setError(t('auth.fillAllRequired'))
+            showError(t('auth.fillAllRequired'))
             return false
         }
 
         if (formData.password.length < 6) {
-            setError(t('auth.passwordTooShort'))
+            showError(t('auth.passwordTooShort'))
             return false
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setError(t('auth.passwordsMismatch'))
+            showError(t('auth.passwordsMismatch'))
             return false
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(formData.email)) {
-            setError(t('auth.invalidEmail'))
+            showError(t('auth.invalidEmail'))
             return false
         }
 
@@ -68,7 +84,7 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        setError('')
+        setAlert(null)
         setSuccess(false)
 
         if (!validateForm()) {
@@ -80,21 +96,22 @@ const Register = () => {
         try {
             const {confirmPassword, ...registrationData} = formData
 
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
-            const response = await axios.post(`${apiUrl}/api/auth/register`, registrationData)
+            await axios.post(`${getAuthApiBase()}/auth/register`, registrationData)
 
             setSuccess(true)
             setTimeout(() => {
                 navigate('/login')
             }, 2000)
         } catch (err) {
-            if (err.response?.data?.error) {
-                setError(err.response.data.error)
-            } else if (err.response?.status === 409) {
-                setError(t('auth.userExists'))
-            } else {
-                setError(t('auth.registerDefaultError'))
-            }
+            const resolved = resolveRegisterError(
+                {
+                    status: err.response?.status,
+                    data: err.response?.data,
+                },
+                err,
+                t
+            )
+            setAlert({ title: resolved.title, message: resolved.message })
             setLoading(false)
         }
     }
@@ -281,7 +298,19 @@ const Register = () => {
                         <h1>{t('auth.registerTitle')}</h1>
                         <p className="login-subtitle">{t('auth.registerSubtitle')}</p>
 
-                        {error && <div className="error-message">{error}</div>}
+                        {alert && (
+                            <AuthAlert
+                                variant="error"
+                                title={alert.title}
+                                message={alert.message}
+                            />
+                        )}
+                        {success && (
+                            <AuthAlert
+                                variant="success"
+                                message={t('auth.registerSuccess')}
+                            />
+                        )}
 
                         <form onSubmit={handleSubmit} className="login-form" autoComplete="off">
                             <div className="form-row">

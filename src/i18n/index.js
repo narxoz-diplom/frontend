@@ -96,6 +96,11 @@ const resources = {
         invalidEmail: 'Некорректный email адрес',
         userExists: 'Пользователь с таким именем или email уже существует',
         registerDefaultError: 'Ошибка регистрации. Попробуйте еще раз.',
+        registerError: 'Ошибка регистрации',
+        registerServerError: 'Сервер регистрации временно недоступен',
+        registerSuccess: 'Регистрация успешна! Перенаправляем на страницу входа…',
+        networkError: 'Не удалось связаться с сервером. Проверьте подключение к интернету.',
+        tooManyAttempts: 'Слишком много попыток входа. Попробуйте позже.',
       },
 
       filesPage: {
@@ -818,6 +823,11 @@ const resources = {
         invalidEmail: 'Invalid email address',
         userExists: 'A user with this username or email already exists',
         registerDefaultError: 'Registration failed. Please try again.',
+        registerError: 'Registration error',
+        registerServerError: 'Registration server is temporarily unavailable',
+        registerSuccess: 'Registration successful! Redirecting to login…',
+        networkError: 'Could not reach the server. Check your internet connection.',
+        tooManyAttempts: 'Too many login attempts. Please try again later.',
       },
 
       filesPage: {
@@ -1540,6 +1550,11 @@ const resources = {
         invalidEmail: 'Email мекенжайы қате',
         userExists: 'Мұндай пайдаланушы аты немесе email бұрыннан бар',
         registerDefaultError: 'Тіркелу қатесі. Қайта көріңіз.',
+        registerError: 'Тіркелу қатесі',
+        registerServerError: 'Тіркелу сервері уақытша қолжетімсіз',
+        registerSuccess: 'Тіркелу сәтті! Кіру бетіне бағыттаймыз…',
+        networkError: 'Серверге қосылу мүмкін болмады. Интернет байланысын тексеріңіз.',
+        tooManyAttempts: 'Кіру әрекеттері тым көп. Кейінірек қайталаңыз.',
       },
 
       filesPage: {

@@ -325,7 +325,7 @@ const LessonDetail = () => {
   return (
     <div className="lesson-detail lesson-detail--v2">
       <header className="lesson-page__intro">
-        <Link to={`/courses/${courseId}`} className="lesson-page__back">
+        <Link to={`/courses/${courseId}`} className="back-link">
           <FiArrowLeft aria-hidden /> {t('lessonPage.backToCourse')}
         </Link>
         <p className="lesson-page__kicker">
@@ -370,7 +370,8 @@ const LessonDetail = () => {
               </div>
               {canEdit && (
                 <button
-                  className="btn btn-secondary btn-sm"
+                  type="button"
+                  className="btn-edit section-header__btn"
                   onClick={() => {
                     if (isEditingContent) {
                       setIsEditingContent(false)
@@ -428,7 +429,7 @@ const LessonDetail = () => {
                           </div>
                           <button
                             type="button"
-                            className="btn btn-secondary btn-sm markdown-embedded-images__remove"
+                            className="btn-edit section-header__btn markdown-embedded-images__remove"
                             onClick={() => handleRemoveEmbeddedImage(img.fullMatch)}
                             title={t('common.delete')}
                           >
@@ -440,11 +441,12 @@ const LessonDetail = () => {
                   </div>
                 )}
                 <div className="editor-actions">
-                  <button className="btn btn-primary" onClick={handleSaveContent}>
+                  <button type="button" className="btn-edit btn-edit--accent" onClick={handleSaveContent}>
                     <FiSave /> {t('lessonPage.saveNotes')}
                   </button>
-                  <button 
-                    className="btn btn-secondary"
+                  <button
+                    type="button"
+                    className="btn-edit"
                     onClick={() => {
                       setIsEditingContent(false)
                       setEditedContent(lesson.content || '')
@@ -469,7 +471,8 @@ const LessonDetail = () => {
                     <p>{t('lessonPage.noNotes')}</p>
                     {canEdit && (
                       <button
-                        className="btn btn-primary"
+                        type="button"
+                        className="btn-edit btn-edit--accent"
                         onClick={() => setIsEditingContent(true)}
                       >
                         <FiEdit3 /> {t('lessonPage.addNotes')}
@@ -492,7 +495,8 @@ const LessonDetail = () => {
               </div>
               {canEdit && (
                 <button
-                  className="btn btn-primary btn-sm"
+                  type="button"
+                  className="btn-edit btn-edit--accent section-header__btn"
                   onClick={() => setShowVideoForm(!showVideoForm)}
                 >
                   {showVideoForm ? (
@@ -551,9 +555,9 @@ const LessonDetail = () => {
                     </div>
                   </div>
                   <div className="form-actions">
-                    <button 
-                      type="submit" 
-                      className="btn btn-primary"
+                    <button
+                      type="submit"
+                      className="btn-edit btn-edit--accent"
                       disabled={uploadingVideo}
                     >
                       {uploadingVideo ? (
@@ -566,9 +570,9 @@ const LessonDetail = () => {
                         </>
                       )}
                     </button>
-                    <button 
-                      type="button" 
-                      className="btn btn-secondary"
+                    <button
+                      type="button"
+                      className="btn-edit"
                       onClick={() => {
                         setShowVideoForm(false)
                         setNewVideo({ title: '', description: '', orderNumber: videos.length + 1, file: null })
@@ -587,7 +591,8 @@ const LessonDetail = () => {
                 <p>{t('lessonPage.noVideos')}</p>
                 {canEdit && (
                   <button
-                    className="btn btn-primary"
+                    type="button"
+                    className="btn-edit btn-edit--accent"
                     onClick={() => setShowVideoForm(true)}
                   >
                     <FiUpload /> {t('lessonPage.addFirstVideo')}
@@ -637,7 +642,8 @@ const LessonDetail = () => {
                       </Link>
                       {canEdit && (
                         <button
-                          className="btn btn-danger btn-sm video-delete-btn"
+                          type="button"
+                          className="btn-icon-danger video-delete-btn"
                           onClick={(e) => {
                             e.preventDefault()
                             e.stopPropagation()
@@ -665,11 +671,11 @@ const LessonDetail = () => {
                 </h2>
               </div>
               {canEdit && (
-                <label className="btn btn-primary btn-sm" style={{ cursor: 'pointer' }}>
+                <label className="btn-edit btn-edit--accent section-header__btn lesson-file-upload">
                   <FiUpload /> {t('lessonPage.addFile')}
                   <input
                     type="file"
-                    style={{ display: 'none' }}
+                    className="lesson-file-upload__input"
                     onChange={async (e) => {
                       if (e.target.files[0]) {
                         try {
@@ -711,14 +717,18 @@ const LessonDetail = () => {
             ) : (
               <div className="files-list">
                 {files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="file-card"
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}
-                  >
+                  <div key={file.id} className="file-card file-card--row">
                     <div
+                      className="file-card__main"
                       onClick={() => handleFileDownload(file.id, file.originalFileName)}
-                      style={{ cursor: 'pointer', flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          handleFileDownload(file.id, file.originalFileName)
+                        }
+                      }}
                     >
                       <FiFile className="file-icon" />
                       <div className="file-card-content">
@@ -731,7 +741,8 @@ const LessonDetail = () => {
                     </div>
                     {canEdit && (
                       <button
-                        className="btn btn-danger btn-sm"
+                        type="button"
+                        className="btn-icon-danger"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleDeleteFile(file.id)

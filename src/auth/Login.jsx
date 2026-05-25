@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import auth from '../config/auth'
 import { useTranslation } from 'react-i18next'
+import AuthAlert from '../components/ui/AuthAlert'
+import { getAuthApiBase, resolveLoginError } from '../utils/authErrors'
 import './Login.css'
+import '../components/ui/auth-alert.css'
 
 const parseJwtPayload = (token) => {
     if (!token) return null
@@ -23,7 +26,7 @@ const Login = () => {
     const { t, i18n } = useTranslation()
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
+    const [alert, setAlert] = useState(null)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -44,31 +47,30 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault()
-        setError('')
+        setAlert(null)
         setLoading(true)
 
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
-            const response = await fetch(`${apiUrl}/api/auth/login`, {
+            const response = await fetch(`${getAuthApiBase()}/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             })
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}))
+            const data = await response.json().catch(() => ({}))
 
-                // ИСПРАВЛЕННАЯ ЛОГИКА:
-                if (response.status === 401) {
-                    throw new Error(t('auth.invalidCredentials')); // Точно неверный пароль/логин
-                } else if (response.status === 404 || response.status >= 500) {
-                    throw new Error(t('auth.serviceUnavailable'));  // Проблемы с сервером
-                } else {
-                    throw new Error(errorData.message || t('auth.loginDefaultError')); // Остальные ошибки
-                }
+            if (!response.ok) {
+                const resolved = resolveLoginError(
+                    { status: response.status, data },
+                    null,
+                    t
+                )
+                setAlert({ title: resolved.title, message: resolved.message })
+                setLoading(false)
+                return
             }
 
-            const tokenData = await response.json()
+            const tokenData = data
             const accessToken = tokenData.accessToken || tokenData.access_token
             const refreshToken = tokenData.refreshToken || tokenData.refresh_token
 
@@ -85,7 +87,8 @@ const Login = () => {
 
             window.location.replace('/')
         } catch (err) {
-            setError(err.message)
+            const resolved = resolveLoginError({ status: null, data: null }, err, t)
+            setAlert({ title: resolved.title, message: resolved.message })
             setLoading(false)
         }
     }
@@ -159,14 +162,12 @@ const Login = () => {
                         <h1>{t('auth.loginTitle')}</h1>
                         <p className="login-subtitle">{t('auth.loginSubtitle')}</p>
 
-                        {error && (
-                            <div className="error-alert">
-                                <span className="error-icon">!</span>
-                                <div className="error-text-wrapper">
-                                    <strong>{t('auth.loginError')}</strong>
-                                    <p>{error}</p>
-                                </div>
-                            </div>
+                        {alert && (
+                            <AuthAlert
+                                variant="error"
+                                title={alert.title}
+                                message={alert.message}
+                            />
                         )}
 
                         <form onSubmit={handleLogin} className="login-form">
