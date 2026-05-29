@@ -39,6 +39,18 @@ const resources = {
         archived: 'Архив',
       },
 
+      apiErrors: {
+        network: 'Нет соединения с сервером. Проверьте сеть и попробуйте снова.',
+        http400: 'Некорректный запрос.',
+        http401: 'Требуется вход в систему.',
+        http403: 'Недостаточно прав для этого действия.',
+        http404: 'Запрошенные данные не найдены.',
+        http409: 'Конфликт данных. Обновите страницу и попробуйте снова.',
+        http500: 'Ошибка на сервере. Попробуйте позже.',
+        http502: 'Сервис временно недоступен.',
+        http503: 'Сервис временно недоступен.',
+      },
+
       searchUi: {
         loading: 'Ищем материалы...',
         empty: 'Ничего не найдено. Попробуйте другое название.',
@@ -225,7 +237,8 @@ const resources = {
         statusProgress: 'Оценено {{graded}}/{{total}}',
         statusReview: 'Требует проверки',
         statusUnknown: 'Нет данных о составе',
-        backToLessons: 'Назад',
+        backToJournal: 'К списку курсов',
+        backToLessons: 'К выбору урока',
         saveChanges: 'Сохранить изменения',
         saving: 'Сохранение…',
         saveSuccess: 'Оценки сохранены',
@@ -766,6 +779,18 @@ const resources = {
         archived: 'Archived',
       },
 
+      apiErrors: {
+        network: 'Cannot reach the server. Check your connection and try again.',
+        http400: 'Invalid request.',
+        http401: 'Please sign in.',
+        http403: 'You do not have permission for this action.',
+        http404: 'The requested data was not found.',
+        http409: 'Data conflict. Refresh the page and try again.',
+        http500: 'Server error. Please try again later.',
+        http502: 'Service temporarily unavailable.',
+        http503: 'Service temporarily unavailable.',
+      },
+
       searchUi: {
         loading: 'Searching materials...',
         empty: 'No results found. Try another query.',
@@ -952,7 +977,8 @@ const resources = {
         statusProgress: 'Graded {{graded}}/{{total}}',
         statusReview: 'Needs review',
         statusUnknown: 'No enrollment data',
-        backToLessons: 'Back',
+        backToJournal: 'Back to courses',
+        backToLessons: 'Back to lessons',
         saveChanges: 'Save changes',
         saving: 'Saving…',
         saveSuccess: 'Grades saved',
@@ -1493,6 +1519,18 @@ const resources = {
         archived: 'Мұрағат',
       },
 
+      apiErrors: {
+        network: 'Серверге қосылу мүмкін болмады. Желіні тексеріп, қайта көріңіз.',
+        http400: 'Қате сұрау.',
+        http401: 'Жүйеге кіру қажет.',
+        http403: 'Бұл әрекетке рұқсат жоқ.',
+        http404: 'Сұралған деректер табылмады.',
+        http409: 'Деректер қайшылығы. Бетті жаңартып, қайта көріңіз.',
+        http500: 'Сервер қатесі. Кейінірек қайталаңыз.',
+        http502: 'Қызмет уақытша қолжетімсіз.',
+        http503: 'Қызмет уақытша қолжетімсіз.',
+      },
+
       searchUi: {
         loading: 'Материалдар ізделуде...',
         empty: 'Ештеңе табылмады. Басқа атауды қолданып көріңіз.',
@@ -1679,7 +1717,8 @@ const resources = {
         statusProgress: 'Баға қойылды {{graded}}/{{total}}',
         statusReview: 'Тексеру қажет',
         statusUnknown: 'Құрам туралы дерек жоқ',
-        backToLessons: 'Артқа',
+        backToJournal: 'Курстар тізіміне',
+        backToLessons: 'Сабақ таңдауға',
         saveChanges: 'Өзгерістерді сақтау',
         saving: 'Сақталуда…',
         saveSuccess: 'Бағалар сақталды',

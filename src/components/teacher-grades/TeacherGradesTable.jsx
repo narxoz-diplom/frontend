@@ -11,6 +11,7 @@ import {
     isGradeValid,
     parseGradeInput
 } from '../../services/teacherGradesApi'
+import { resolveApiError } from '../../utils/apiError'
 
 function rowIdentity(s) {
     return String(s.studentId || s.enrollmentId || '').trim()
@@ -62,8 +63,8 @@ export default function TeacherGradesTable() {
                 }))
             )
         } catch (e) {
-            const msg = e?.response?.data?.message || e.message || t('teacherGrades.loadSheetError')
-            toast(msg, 'error')
+            console.error('Teacher grades: load grade sheet', e)
+            toast(resolveApiError(e, t, 'teacherGrades.loadSheetError'), 'error')
             setRows([])
         } finally {
             setLoading(false)
@@ -159,8 +160,8 @@ export default function TeacherGradesTable() {
                 }))
             )
         } catch (e) {
-            const msg = e?.response?.data?.message || e.message || t('teacherGrades.saveError')
-            toast(msg, 'error')
+            console.error('Teacher grades: save grades', e)
+            toast(resolveApiError(e, t, 'teacherGrades.saveError'), 'error')
         } finally {
             setSaving(false)
         }
@@ -179,7 +180,7 @@ export default function TeacherGradesTable() {
 
     if (loading) {
         return (
-            <section className="tg-section tg-section--table tg-section-loading">
+            <section className="tg-section tg-section-loading">
                 <div className="tg-loading-block">
                     <FiLoader className="tg-spin" size={44} aria-hidden />
                     <p>{t('common.loading')}</p>
@@ -189,11 +190,11 @@ export default function TeacherGradesTable() {
     }
 
     return (
-        <section className="tg-section tg-section--table">
+        <section className="tg-section">
             <Link
                 to={`/teacher/grades/${courseId}`}
                 state={location.state}
-                className="course-page__back"
+                className="app-back-link"
             >
                 <FiArrowLeft aria-hidden /> {t('teacherGrades.backToLessons')}
             </Link>
@@ -208,7 +209,7 @@ export default function TeacherGradesTable() {
                 </div>
                 <button
                     type="button"
-                    className="tg-btn tg-btn--primary"
+                    className="btn btn-primary"
                     onClick={handleSave}
                     disabled={saving || hasInvalidGrades}
                 >
@@ -218,7 +219,7 @@ export default function TeacherGradesTable() {
             </div>
 
             {hasInvalidGrades ? (
-                <div className="tg-inline-error tg-inline-error--margin" role="alert">
+                <div className="error" role="alert">
                     {t('teacherGrades.fixInvalidGrades')}
                 </div>
             ) : null}

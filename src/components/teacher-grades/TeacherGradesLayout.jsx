@@ -20,7 +20,7 @@ export default function TeacherGradesLayout() {
                     </div>
                     <h2 className="tg-access-title">{t('teacherGrades.accessDeniedTitle')}</h2>
                     <p className="tg-access-text">{t('teacherGrades.accessDeniedBody')}</p>
-                    <Link to="/" className="tg-btn tg-btn--primary">
+                    <Link to="/" className="btn btn-primary">
                         {t('teacherGrades.backHome')}
                     </Link>
                 </div>
@@ -30,8 +30,8 @@ export default function TeacherGradesLayout() {
 
     return (
         <div className="teacher-grades">
-            <div className="courses-page teacher-grades__page">
-                <header className="courses-header teacher-grades__page-header">
+            <div className="courses-page">
+                <header className="courses-header">
                     <h1>{t('nav.gradeJournal')}</h1>
                 </header>
                 <Outlet />

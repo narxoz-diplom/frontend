@@ -9,6 +9,7 @@ import {
 } from 'react-icons/fi'
 import { pickLocalized } from '../../i18n/localize'
 import { fetchCourseLessonTree } from '../../services/teacherGradesApi'
+import { resolveApiError } from '../../utils/apiError'
 
 function statusBadgeClass(status) {
     if (status === 'complete') return 'tg-badge tg-badge--ok'
@@ -41,10 +42,9 @@ export default function TeacherGradesLessons() {
                 }
             } catch (e) {
                 if (!cancelled) {
+                    console.error('Teacher grades: load lessons', e)
                     setError(
-                        e?.response?.data?.message ||
-                            e.message ||
-                            t('teacherGrades.loadLessonsError')
+                        resolveApiError(e, t, 'teacherGrades.loadLessonsError')
                     )
                 }
             } finally {
@@ -83,15 +83,15 @@ export default function TeacherGradesLessons() {
 
     return (
         <section className="tg-section">
-            <Link to="/teacher/grades" className="course-page__back">
-                <FiArrowLeft aria-hidden /> {t('coursePage.backToCatalog')}
+            <Link to="/teacher/grades" className="app-back-link">
+                <FiArrowLeft aria-hidden /> {t('teacherGrades.backToJournal')}
             </Link>
 
             {courseTitleFromNav ? (
                 <h2 className="tg-context-title">{courseTitleFromNav}</h2>
             ) : null}
 
-            {error ? <div className="tg-inline-error">{error}</div> : null}
+            {error ? <div className="error">{error}</div> : null}
 
             {loading ? (
                 <div className="tg-accordion">
@@ -102,10 +102,7 @@ export default function TeacherGradesLessons() {
                     ))}
                 </div>
             )  : modules.length === 0 ? (
-                <div className="tg-empty">
-                    <FiLayers className="tg-empty-icon" aria-hidden />
-                    <p>{t('teacherGrades.noLessons')}</p>
-                </div>
+                <p className="courses-empty">{t('teacherGrades.noLessons')}</p>
             ) : (
                 <div className="tg-accordion">
                     {modules.map((mod) => {

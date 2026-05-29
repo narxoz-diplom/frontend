@@ -1,6 +1,6 @@
 /**
- * Журнал оценок — прежний визуальный ритм (карточки, аккордеон, таблица),
- * цвета только из глобальных токенов (:root / body.dark-mode).
+ * Журнал оценок: аккордеон, таблица, скелетоны.
+ * Карточки курсов — Courses.css; кнопки — .btn / .btn-primary; «назад» — .app-back-link.
  */
 
 /* ── Корневой фон секции ── */
@@ -9,13 +9,8 @@
     padding: var(--spacing-md) clamp(12px, 3vw, 28px) var(--spacing-2xl);
     /* Без отрицательных margin: иначе блок вылезает за main-content при overflow-x: clip у body и сетка «пропадает» */
     margin: 0;
-    background: linear-gradient(
-        165deg,
-        color-mix(in srgb, var(--bg-secondary) 100%, var(--bg-primary))
-            0%,
-        color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-tertiary)) 50%,
-        var(--bg-secondary) 100%
-    );
+    /* Фон как у main-content — без отдельного градиента */
+    background: transparent;
     color: var(--text-primary);
 }
 
@@ -41,45 +36,6 @@
     50% {
         opacity: 1;
     }
-}
-
-/* Как на странице курса (CourseDetail): стрелка + рамка */
-.teacher-grades .course-page__back {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding: 8px 12px;
-    margin-left: -4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #000;
-    text-decoration: none;
-    border-radius: 10px;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    background: rgba(0, 0, 0, 0.04);
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        opacity 0.2s ease;
-    font-family: inherit;
-    cursor: pointer;
-    box-sizing: border-box;
-}
-
-.teacher-grades .course-page__back:hover {
-    background: rgba(0, 0, 0, 0.08);
-    border-color: rgba(0, 0, 0, 0.3);
-}
-
-body.dark-mode .teacher-grades .course-page__back {
-    color: #ffffff;
-    border-color: rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .teacher-grades .course-page__back:hover {
-    background: rgba(255, 255, 255, 0.16);
 }
 
 .tg-context-title {
@@ -130,13 +86,10 @@ body.dark-mode .teacher-grades .course-page__back:hover {
     color: var(--primary-color);
 }
 
+/* Ширина задаётся .courses-page (1400px) — без отдельного сужения */
 .tg-section {
-    max-width: 1100px;
-    margin: 0 auto var(--spacing-2xl);
-}
-
-.tg-section--table {
-    max-width: 1200px;
+    max-width: none;
+    margin: 0 0 var(--spacing-2xl);
 }
 
 .tg-section-head {
@@ -149,19 +102,6 @@ body.dark-mode .teacher-grades .course-page__back:hover {
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--spacing-md);
-}
-
-.tg-section-title {
-    font-size: 1.12rem;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.tg-section-desc {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-    margin-top: var(--spacing-xs);
-    line-height: 1.45;
 }
 
 .tg-skel-line {
@@ -182,78 +122,6 @@ body.dark-mode .teacher-grades .course-page__back:hover {
     height: 18px;
 }
 
-/* Кнопки: градиент как у глобального .btn-primary */
-.tg-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    padding: 0.55rem 1.1rem;
-    border-radius: var(--radius-md);
-    font-size: 0.9rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    font-family: inherit;
-    transition: opacity var(--transition-base);
-}
-
-.tg-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-.tg-btn--primary {
-    background: linear-gradient(
-        135deg,
-        var(--primary-gradient-start) 0%,
-        var(--primary-gradient-end) 100%
-    );
-    color: #fff !important;
-    border: none;
-}
-
-.tg-btn--primary:hover:not(:disabled) {
-    opacity: 0.92;
-}
-
-.tg-inline-error {
-    background: color-mix(in srgb, var(--primary-color) 10%, var(--bg-primary));
-    border: 1px solid color-mix(in srgb, var(--primary-color) 42%, var(--border-color));
-    color: color-mix(in srgb, var(--primary-color) 55%, var(--text-primary));
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    font-size: 0.9rem;
-    margin-bottom: var(--spacing-md);
-}
-
-.tg-inline-error--margin {
-    margin-bottom: var(--spacing-sm);
-}
-
-body.dark-mode .tg-inline-error {
-    color: #fecaca;
-    border-color: color-mix(in srgb, var(--primary-color) 55%, var(--border-color));
-}
-
-/* Empty state */
-.tg-empty {
-    text-align: center;
-    padding: var(--spacing-2xl) var(--spacing-lg);
-    color: var(--text-secondary);
-    border: 2px dashed var(--border-color);
-    border-radius: var(--radius-lg);
-    background: var(--bg-primary);
-}
-
-.tg-empty-icon {
-    opacity: 0.45;
-    font-size: 2.35rem;
-    margin-bottom: var(--spacing-sm);
-    color: var(--text-secondary);
-}
-
 /* ── Аккордеон ── */
 .tg-accordion {
     display: flex;
@@ -263,10 +131,15 @@ body.dark-mode .tg-inline-error {
 
 .tg-acc-item {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 10px;
     background: var(--bg-primary);
     overflow: hidden;
-    box-shadow: var(--shadow-md);
+    box-shadow: none;
+    transition: border-color 0.15s ease;
+}
+
+.tg-acc-item:hover {
+    border-color: color-mix(in srgb, var(--text-primary) 12%, var(--border-color));
 }
 
 .tg-acc-trigger {
@@ -356,9 +229,9 @@ body.dark-mode .tg-inline-error {
 }
 
 .tg-badge--ok {
-    color: color-mix(in srgb, #22c55e 90%, var(--text-primary));
-    background: color-mix(in srgb, #22c55e 16%, var(--bg-primary));
-    border: 1px solid color-mix(in srgb, #22c55e 32%, var(--border-color));
+    color: var(--status-success);
+    background: var(--status-success-bg);
+    border: 1px solid var(--status-success-border);
 }
 
 .tg-badge--progress {
@@ -368,9 +241,9 @@ body.dark-mode .tg-inline-error {
 }
 
 .tg-badge--warn {
-    color: color-mix(in srgb, #eab308 90%, var(--text-primary));
-    background: color-mix(in srgb, #eab308 12%, var(--bg-primary));
-    border: 1px solid color-mix(in srgb, #eab308 32%, var(--border-color));
+    color: var(--status-warning);
+    background: var(--status-warning-bg);
+    border: 1px solid var(--status-warning-border);
 }
 
 /* ── Таблица ── */
@@ -415,16 +288,11 @@ body.dark-mode .tg-inline-error {
 
 .tg-table-wrap {
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: 10px;
     overflow: auto;
     background: var(--bg-primary);
-    box-shadow: var(--shadow-md);
+    box-shadow: none;
     -webkit-overflow-scrolling: touch;
-}
-
-.tg-table--skeleton {
-    padding: var(--spacing-lg);
-    min-height: 160px;
 }
 
 .tg-table {
@@ -543,7 +411,7 @@ body.dark-mode .tg-inline-error {
     padding: var(--spacing-xl) var(--spacing-xl);
     max-width: 420px;
     text-align: center;
-    box-shadow: var(--shadow-md);
+    box-shadow: none;
 }
 
 .tg-access-icon {
@@ -602,7 +470,7 @@ body.dark-mode .tg-inline-error {
         align-items: stretch;
     }
 
-    .tg-section-head--row .tg-btn {
+    .tg-section-head--row .btn {
         width: 100%;
     }
 

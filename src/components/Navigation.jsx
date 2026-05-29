@@ -65,6 +65,7 @@ const Navigation = ({ userRoles = [] }) => {
     const [userName, setUserName] = useState('User')
     const notifRef = useRef(null)
     const searchRef = useRef(null)
+    const profileRef = useRef(null)
     const searchRequestIdRef = useRef(0)
 
     const [theme, setTheme] = useState(() => {
@@ -232,21 +233,33 @@ const Navigation = ({ userRoles = [] }) => {
 
     useEffect(() => {
         if (!profileOpen) return
-        const close = (e) => {
-            if (!e.target.closest('.top-profile-section')) setProfileOpen(false)
-        }
         const onKey = (e) => {
             if (e.key === 'Escape') setProfileOpen(false)
         }
-        document.addEventListener('mousedown', close)
-        document.addEventListener('touchstart', close, { passive: true })
         document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+    }, [profileOpen])
+
+    useEffect(() => {
+        if (!profileOpen) return
+        const close = (e) => {
+            if (profileRef.current && !profileRef.current.contains(e.target)) {
+                setProfileOpen(false)
+            }
+        }
+        const id = window.setTimeout(() => {
+            document.addEventListener('click', close, true)
+        }, 0)
         return () => {
-            document.removeEventListener('mousedown', close)
-            document.removeEventListener('touchstart', close)
-            document.removeEventListener('keydown', onKey)
+            window.clearTimeout(id)
+            document.removeEventListener('click', close, true)
         }
     }, [profileOpen])
+
+    const toggleProfileMenu = useCallback((e) => {
+        e.stopPropagation()
+        setProfileOpen((v) => !v)
+    }, [])
 
     const handleLogout = useCallback(() => {
         const kc = window.keycloak || auth
@@ -528,28 +541,59 @@ const Navigation = ({ userRoles = [] }) => {
                         )}
                     </div>
 
-                    <div className="top-profile-section">
-                        <div className="top-user-info">
-                            <span className="top-user-name">{userName}</span>
-                            <span className="top-user-role">{[...new Set(userRoles)].join(', ')}</span>
-                        </div>
-                        <div className={`top-avatar-container ${profileOpen ? 'dropdown-open' : ''}`}>
+                    <div className="top-profile-section" ref={profileRef}>
+                        <div
+                            className={`top-avatar-container ${profileOpen ? 'dropdown-open' : ''}`}
+                        >
                             <button
                                 type="button"
-                                className="top-avatar"
-                                onClick={() => setProfileOpen((v) => !v)}
+                                className="top-profile-trigger"
+                                onClick={toggleProfileMenu}
                                 aria-expanded={profileOpen}
-                                aria-haspopup="true"
-                                aria-label={t('nav.profile')}
+                                aria-haspopup="menu"
+                                aria-controls="top-profile-menu"
                             >
-                                {userName.charAt(0).toUpperCase()}
+                                <span className="top-user-info">
+                                    <span className="top-user-name">{userName}</span>
+                                    <span className="top-user-role">
+                                        {[...new Set(userRoles)].join(', ')}
+                                    </span>
+                                </span>
+                                <span className="top-avatar" aria-hidden>
+                                    {userName.charAt(0).toUpperCase()}
+                                </span>
                             </button>
-                            <div className="top-dropdown" role="menu">
-                                <Link to="/profile" role="menuitem" onClick={() => setProfileOpen(false)}><FiUser /> {t('nav.profile')}</Link>
-                                <Link to="/settings" role="menuitem" onClick={() => setProfileOpen(false)}><FiSettings /> {t('nav.settings')}</Link>
-                                <hr />
-                                <button type="button" onClick={() => { setProfileOpen(false); handleLogout() }} className="logout-btn-dropdown">
-                                    <FiLogOut /> {t('nav.logout')}
+                            <div
+                                id="top-profile-menu"
+                                className="top-dropdown"
+                                role="menu"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <Link
+                                    to="/profile"
+                                    role="menuitem"
+                                    onClick={() => setProfileOpen(false)}
+                                >
+                                    <FiUser aria-hidden /> {t('nav.profile')}
+                                </Link>
+                                <Link
+                                    to="/settings"
+                                    role="menuitem"
+                                    onClick={() => setProfileOpen(false)}
+                                >
+                                    <FiSettings aria-hidden /> {t('nav.settings')}
+                                </Link>
+                                <hr className="top-dropdown-divider" />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setProfileOpen(false)
+                                        handleLogout()
+                                    }}
+                                    className="logout-btn-dropdown"
+                                    role="menuitem"
+                                >
+                                    <FiLogOut aria-hidden /> {t('nav.logout')}
                                 </button>
                             </div>
                         </div>

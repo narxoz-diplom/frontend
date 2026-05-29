@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FiBook, FiChevronRight, FiUsers } from 'react-icons/fi'
+import { FiChevronRight, FiUsers } from 'react-icons/fi'
 import { pickLocalized } from '../../i18n/localize'
 import { fetchTeacherCourses } from '../../services/teacherGradesApi'
+import { resolveApiError } from '../../utils/apiError'
 import '../Courses.css'
 
 function SkeletonGrid() {
@@ -41,10 +42,9 @@ export default function TeacherGradesCourses() {
                 if (!cancelled) setCourses(list || [])
             } catch (e) {
                 if (!cancelled) {
+                    console.error('Teacher grades: load courses', e)
                     setError(
-                        e?.response?.data?.message ||
-                            e.message ||
-                            t('teacherGrades.loadCoursesError')
+                        resolveApiError(e, t, 'teacherGrades.loadCoursesError')
                     )
                 }
             } finally {
@@ -73,10 +73,7 @@ export default function TeacherGradesCourses() {
             {loading ? (
                 <SkeletonGrid />
             ) : courses.length === 0 ? (
-                <div className="tg-empty">
-                    <FiBook className="tg-empty-icon" aria-hidden />
-                    <p>{t('teacherGrades.noCourses')}</p>
-                </div>
+                <p className="courses-empty">{t('teacherGrades.noCourses')}</p>
             ) : (
                 <div className="courses-grid">
                     {courses.map((course, index) => {
@@ -102,17 +99,6 @@ export default function TeacherGradesCourses() {
                                     )}
                                 </div>
                                 <div className="course-card__body">
-                                    <div className="course-card__head">
-                                        {course.status ? (
-                                            <span
-                                                className={`course-card__status course-card__status--${String(
-                                                    course.status || 'unknown'
-                                                ).toLowerCase()}`}
-                                            >
-                                                {course.status}
-                                            </span>
-                                        ) : null}
-                                    </div>
                                     <h3 className="course-card__title">
                                         {title || (courseId ? `#${courseId}` : `#${index + 1}`)}
                                     </h3>
