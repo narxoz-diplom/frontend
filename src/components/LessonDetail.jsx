@@ -677,31 +677,33 @@ const LessonDetail = () => {
                     type="file"
                     className="lesson-file-upload__input"
                     onChange={async (e) => {
-                      if (e.target.files[0]) {
-                        try {
-                          const formData = new FormData()
-                          formData.append('file', e.target.files[0])
-                          formData.append('lessonId', lessonId)
-                          await api.post(`/files/upload-to-lesson`, formData, {
-                            headers: {
-                              'Content-Type': 'multipart/form-data'
-                            }
-                          })
-                          // Перезагружаем файлы для получения актуального списка
-                          const filesResponse = await api.get(`/files/lesson/${lessonId}`)
-                          setFiles(filesResponse.data || [])
-                          setError(null)
-                        } catch (err) {
-                          console.error('Error uploading file:', err)
-                          if (err.response?.status === 413 || err.response?.status === 400) {
-                            const errorMessage = err.response?.data?.message || t('lessonPage.uploadVideoError')
-                            setError(errorMessage)
-                          } else if (err.response?.data?.message) {
-                            setError(err.response.data.message)
-                          } else {
-                            setError(t('filesPage.uploadError'))
+                      const input = e.target
+                      const file = input.files?.[0]
+                      if (!file) return
+                      try {
+                        const formData = new FormData()
+                        formData.append('file', file)
+                        formData.append('lessonId', lessonId)
+                        await api.post(`/files/upload-to-lesson`, formData, {
+                          headers: {
+                            'Content-Type': 'multipart/form-data'
                           }
+                        })
+                        const filesResponse = await api.get(`/files/lesson/${lessonId}`)
+                        setFiles(filesResponse.data || [])
+                        setError(null)
+                      } catch (err) {
+                        console.error('Error uploading file:', err)
+                        const apiError = err.response?.data?.message || err.response?.data?.error
+                        if (err.response?.status === 413 || err.response?.status === 400) {
+                          setError(apiError || t('lessonPage.uploadVideoError'))
+                        } else if (apiError) {
+                          setError(apiError)
+                        } else {
+                          setError(t('filesPage.uploadError'))
                         }
+                      } finally {
+                        input.value = ''
                       }
                     }}
                   />

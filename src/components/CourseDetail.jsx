@@ -327,12 +327,12 @@ const CourseDetail = () => {
       })
     } catch (err) {
       console.error('Error uploading file:', err)
+      const apiError = err.response?.data?.message || err.response?.data?.error
       if (err.response?.status === 413 || err.response?.status === 400) {
-        const errorMessage = err.response?.data?.message || 
-          'File size too large. Maximum allowed size is 2GB. Please upload a smaller file.'
-        setError(errorMessage)
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message)
+        setError(apiError ||
+          'File size too large. Maximum allowed size is 2GB. Please upload a smaller file.')
+      } else if (apiError) {
+        setError(apiError)
       } else {
         setError('Failed to upload file. Please try again.')
       }
@@ -791,8 +791,12 @@ const CourseDetail = () => {
                               id={`file-upload-${lesson.id}`}
                               style={{ display: 'none' }}
                               onChange={(e) => {
-                                if (e.target.files[0]) {
-                                  handleFileUpload(lesson.id, e.target.files[0])
+                                const input = e.target
+                                const file = input.files?.[0]
+                                if (file) {
+                                  handleFileUpload(lesson.id, file).finally(() => {
+                                    input.value = ''
+                                  })
                                 }
                               }}
                             />
