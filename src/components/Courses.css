@@ -1,8 +1,41 @@
+/* --- Page enter animation (Курсы, Оценки) --- */
+@keyframes lms-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* --- Page layout --- */
 .courses-page {
     padding: 0 0 var(--spacing-xl);
     max-width: 1400px;
     margin: 0 auto;
+    animation: lms-page-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Журнал оценок анимирует внешний .teacher-grades — без двойной анимации */
+.teacher-grades .courses-page {
+    animation: none;
+}
+
+/* Вложенные экраны (например, оценки по курсу) */
+.courses-page .course-detail--v2 {
+    animation: lms-page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .courses-page {
+        animation: none;
+    }
+
+    .courses-page .course-detail--v2 {
+        animation: none;
+    }
 }
 
 .courses-header {

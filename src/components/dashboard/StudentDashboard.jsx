@@ -11,6 +11,7 @@ import {
 import api from '../../services/api'
 import auth from '../../config/auth'
 import HomeNewsFeed from './HomeNewsFeed'
+import { StudentStatsCharts } from './StatsCharts'
 import { useTranslation } from 'react-i18next'
 import './Dashboard.css'
 
@@ -147,7 +148,10 @@ const StudentDashboard = ({ view = 'home' }) => {
                 {loading ? (
                     <div className="dashboard-loading-inline">{t('common.loading')}</div>
                 ) : (
-                    statsBlock
+                    <>
+                        {statsBlock}
+                        <StudentStatsCharts stats={stats} />
+                    </>
                 )}
             </div>
         )

@@ -3,6 +3,17 @@
  * Карточки курсов — Courses.css; кнопки — .btn / .btn-primary; «назад» — .app-back-link.
  */
 
+@keyframes lms-page-enter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* ── Корневой фон секции ── */
 .teacher-grades {
     min-height: calc(100vh - 120px);
@@ -12,6 +23,22 @@
     /* Фон как у main-content — без отдельного градиента */
     background: transparent;
     color: var(--text-primary);
+    animation: lms-page-enter 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Вложенные экраны журнала (уроки, таблица оценок) */
+.teacher-grades .tg-section {
+    animation: lms-page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .teacher-grades {
+        animation: none;
+    }
+
+    .teacher-grades .tg-section {
+        animation: none;
+    }
 }
 
 .teacher-grades--center {

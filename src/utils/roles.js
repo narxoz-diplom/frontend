@@ -42,6 +42,10 @@ export const isClient = (keycloak) => {
   return hasRole(keycloak, 'client') || hasRole(keycloak, 'ROLE_CLIENT')
 }
 
+export const isStudent = (keycloak) => {
+  return !isAdmin(keycloak) && !isTeacher(keycloak)
+}
+
 export const canUpload = (keycloak) => {
   return isAdmin(keycloak) || isTeacher(keycloak)
 }

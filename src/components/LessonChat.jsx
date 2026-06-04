@@ -69,6 +69,7 @@ const AG_UI_URL = String(import.meta.env.VITE_AG_UI_URL || '/api/ag-ui').trim().
 const LESSON_CONTENT_MAX_CHARS = Number(import.meta.env.VITE_LESSON_CONTENT_MAX_CHARS) || 48000
 
 const PANEL_WIDTH_STORAGE_KEY = 'lesson-chat-panel-width'
+const PANEL_ANIM_MS = 260
 const PANEL_MIN_WIDTH = 300
 const PANEL_DEFAULT_WIDTH = 420
 
@@ -1014,7 +1015,36 @@ function QuizGenerativeUI({ args, result, theme = {}, onClose }) {
 export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitle, lessonContent }) {
   const { t } = useTranslation()
   const chatRef = useRef(null)
-  const [panelOpen, setPanelOpen] = useState(false)
+  /** closed | entering | open | closing */
+  const [panelPhase, setPanelPhase] = useState('closed')
+  const panelAnimTimer = useRef(null)
+  const panelOpen = panelPhase === 'entering' || panelPhase === 'open' || panelPhase === 'closing'
+
+  const openPanel = useCallback(() => {
+    clearTimeout(panelAnimTimer.current)
+    setPanelPhase('entering')
+  }, [])
+
+  const closePanel = useCallback(() => {
+    setPanelPhase((p) => {
+      if (p === 'closed' || p === 'closing') return p
+      return 'closing'
+    })
+  }, [])
+
+  useEffect(() => {
+    if (panelPhase !== 'entering') return
+    const id = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setPanelPhase('open'))
+    })
+    return () => cancelAnimationFrame(id)
+  }, [panelPhase])
+
+  useEffect(() => {
+    if (panelPhase !== 'closing') return
+    panelAnimTimer.current = setTimeout(() => setPanelPhase('closed'), PANEL_ANIM_MS)
+    return () => clearTimeout(panelAnimTimer.current)
+  }, [panelPhase])
   const [panelWidth, setPanelWidth] = useState(() => {
     try {
       const raw = localStorage.getItem(PANEL_WIDTH_STORAGE_KEY)
@@ -1042,11 +1072,11 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
   useEffect(() => {
     if (!panelOpen) return
     const onKey = e => {
-      if (e.key === 'Escape') setPanelOpen(false)
+      if (e.key === 'Escape') closePanel()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [panelOpen])
+  }, [panelOpen, closePanel])
 
   useEffect(() => {
     if (!panelOpen) return
@@ -1102,7 +1132,7 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
         <button
           type="button"
           className="lesson-chat-fab"
-          onClick={() => setPanelOpen(true)}
+          onClick={openPanel}
           aria-label={t('lessonChat.openAssistant')}
           title={t('lessonChat.assistantChat')}
         >
@@ -1114,12 +1144,24 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
       {panelOpen && (
         <>
           <div
-            className="lesson-chat-backdrop"
+            className={[
+              'lesson-chat-backdrop',
+              panelPhase === 'entering' && 'is-entering',
+              panelPhase === 'closing' && 'is-closing',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             aria-hidden
-            onClick={() => setPanelOpen(false)}
+            onClick={closePanel}
           />
           <aside
-            className="lesson-chat-panel"
+            className={[
+              'lesson-chat-panel',
+              panelPhase === 'entering' && 'is-entering',
+              panelPhase === 'closing' && 'is-closing',
+            ]
+              .filter(Boolean)
+              .join(' ')}
             style={{ width: panelWidth }}
             role="dialog"
             aria-modal="true"
@@ -1171,7 +1213,7 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
                   <button
                     type="button"
                     className="lesson-chat-action-btn lesson-chat-action-btn--close"
-                    onClick={() => setPanelOpen(false)}
+                    onClick={closePanel}
                     aria-label={t('lessonChat.closeChat')}
                     title={t('lessonChat.close')}
                   >

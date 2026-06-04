@@ -15,6 +15,7 @@ import {
 import api from '../../services/api'
 import CreateCourseModal from '../CreateCourseModal'
 import HomeNewsFeed from './HomeNewsFeed'
+import { TeacherStatsCharts } from './StatsCharts'
 import { useTranslation } from 'react-i18next'
 import { pickLocalized } from '../../i18n/localize'
 import './Dashboard.css'
@@ -139,7 +140,14 @@ const TeacherDashboard = ({ view = 'home' }) => {
                         {t('dashboard.teacherStatsDesc')}
                     </p>
                 </div>
-                {loading ? <div className="dashboard-loading-inline">{t('common.loading')}</div> : statsBlock}
+                {loading ? (
+                    <div className="dashboard-loading-inline">{t('common.loading')}</div>
+                ) : (
+                    <>
+                        {statsBlock}
+                        <TeacherStatsCharts courses={courses} />
+                    </>
+                )}
             </div>
         )
     }

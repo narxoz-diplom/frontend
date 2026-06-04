@@ -21,12 +21,13 @@ import TeacherGradesLayout from '../components/teacher-grades/TeacherGradesLayou
 import TeacherGradesCourses from '../components/teacher-grades/TeacherGradesCourses'
 import TeacherGradesLessons from '../components/teacher-grades/TeacherGradesLessons'
 import TeacherGradesTable from '../components/teacher-grades/TeacherGradesTable'
+import StudentGradesLayout from '../components/student-grades/StudentGradesLayout'
+import StudentGradesCourses from '../components/student-grades/StudentGradesCourses'
+import StudentGradesCourseDetail from '../components/student-grades/StudentGradesCourseDetail'
 
-// Добавляем пропсы для управления темой
 const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
     return (
         <div className="app-container">
-            {/* Передаем состояние темы в Navigation для кнопки переключения */}
             <Navigation
                 userRoles={userRoles}
                 isDarkMode={isDarkMode}
@@ -55,6 +56,10 @@ const AppLayout = ({ userRoles, isDarkMode, setIsDarkMode }) => {
                         <Route index element={<TeacherGradesCourses />} />
                         <Route path=":courseId" element={<TeacherGradesLessons />} />
                         <Route path=":courseId/lessons/:lessonId" element={<TeacherGradesTable />} />
+                    </Route>
+                    <Route path="/my/grades" element={<StudentGradesLayout />}>
+                        <Route index element={<StudentGradesCourses />} />
+                        <Route path=":courseId" element={<StudentGradesCourseDetail />} />
                     </Route>
                     <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>

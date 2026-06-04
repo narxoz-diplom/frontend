@@ -74,6 +74,25 @@ const resources = {
         register: 'Регистрация',
         logout: 'Выйти',
         gradeJournal: 'Журнал оценок',
+        myGrades: 'Оценки',
+      },
+
+      studentGrades: {
+        subtitle: 'Ваши курсы и результаты по урокам',
+        loadError: 'Не удалось загрузить оценки',
+        noCourses: 'Вы ещё не записаны ни на один курс',
+        openCourse: 'Смотреть оценки',
+        backToList: 'К списку курсов',
+        backHome: 'На главную',
+        accessDeniedTitle: 'Раздел для студентов',
+        accessDeniedBody: 'Журнал оценок студента недоступен для вашей роли.',
+        avgShort: 'Ср. {{value}}',
+        avgGrade: 'Средний балл',
+        totalGraded: 'Оценено уроков',
+        gradedLessons: '{{count}} оценок',
+        emptyCourse: 'По этому курсу оценок пока нет',
+        defaultModule: 'Уроки курса',
+        feedbackLabel: 'Комментарий преподавателя',
       },
 
       auth: {
@@ -814,6 +833,25 @@ const resources = {
         register: 'Register',
         logout: 'Logout',
         gradeJournal: 'Lesson grades',
+        myGrades: 'Grades',
+      },
+
+      studentGrades: {
+        subtitle: 'Your courses and lesson results',
+        loadError: 'Failed to load grades',
+        noCourses: 'You are not enrolled in any courses yet',
+        openCourse: 'View grades',
+        backToList: 'Back to courses',
+        backHome: 'Home',
+        accessDeniedTitle: 'Students only',
+        accessDeniedBody: 'The student grades section is not available for your role.',
+        avgShort: 'Avg. {{value}}',
+        avgGrade: 'Average score',
+        totalGraded: 'Graded lessons',
+        gradedLessons: '{{count}} grades',
+        emptyCourse: 'No grades for this course yet',
+        defaultModule: 'Course lessons',
+        feedbackLabel: 'Teacher feedback',
       },
 
       auth: {
@@ -1554,6 +1592,25 @@ const resources = {
         register: 'Тіркелу',
         logout: 'Шығу',
         gradeJournal: 'Баға журналы',
+        myGrades: 'Бағалар',
+      },
+
+      studentGrades: {
+        subtitle: 'Курстарыңыз және сабақ нәтижелері',
+        loadError: 'Бағаларды жүктеу мүмкін болмады',
+        noCourses: 'Сіз әлі ешбір курсқа тіркелмегенсіз',
+        openCourse: 'Бағаларды көру',
+        backToList: 'Курстар тізіміне',
+        backHome: 'Басты бетке',
+        accessDeniedTitle: 'Студенттерге арналған',
+        accessDeniedBody: 'Студент бағалары бөлімі сіздің рөліңізге қолжетімсіз.',
+        avgShort: 'Орт. {{value}}',
+        avgGrade: 'Орташа балл',
+        totalGraded: 'Бағаланған сабақтар',
+        gradedLessons: '{{count}} баға',
+        emptyCourse: 'Бұл курс бойынша бағалар әлі жоқ',
+        defaultModule: 'Курс сабақтары',
+        feedbackLabel: 'Оқытушы пікірі',
       },
 
       auth: {

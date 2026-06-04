@@ -4,13 +4,13 @@ import {
     FiHome, FiBook, FiBell, FiLogOut,
     FiMenu, FiX, FiBookOpen, FiChevronLeft, FiChevronRight,
     FiSearch, FiUser, FiSettings, FiSun, FiMoon, FiMonitor,
-    FiBarChart2, FiFolder, FiCpu, FiEdit3, FiGlobe, FiClipboard
+    FiBarChart2, FiFolder, FiEdit3, FiGlobe, FiClipboard, FiAward
 } from 'react-icons/fi'
 import auth from '../config/auth'
 import api from '../services/api'
 import { searchMaterials, SEARCH_MIN_QUERY_LENGTH } from '../services/search'
 import { pickLocalized } from '../i18n/localize'
-import { isAdmin, isTeacher } from '../utils/roles'
+import { isAdmin, isTeacher, isStudent } from '../utils/roles'
 import { useTranslation } from 'react-i18next'
 import { setLang } from '../i18n'
 import NotificationPopover from './NotificationPopover'
@@ -631,10 +631,17 @@ const Navigation = ({ userRoles = [] }) => {
                             isCollapsed={isCollapsed}
                         />
                     )}
+                    {isStudent(window.keycloak || auth) && (
+                        <NavItem
+                            to="/my/grades"
+                            icon={<FiAward />}
+                            label={t('nav.myGrades')}
+                            isActive={isActive}
+                            isCollapsed={isCollapsed}
+                        />
+                    )}
                     <NavItem to="/stats" icon={<FiBarChart2 />} label={t('nav.stats')} isActive={isActive} isCollapsed={isCollapsed} />
                     <NavItem to="/files" icon={<FiFolder />} label={t('nav.files')} isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/rag" icon={<FiCpu />} label={t('nav.rag')} isActive={isActive} isCollapsed={isCollapsed} />
-                    <NavItem to="/notifications" icon={<FiBell />} label={t('nav.notifications')} isActive={isActive} isCollapsed={isCollapsed} />
                     {isAdmin(window.keycloak || auth) && (
                         <NavItem
                             to="/admin/news"

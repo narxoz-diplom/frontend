@@ -72,19 +72,23 @@
   position: fixed;
   inset: 0;
   z-index: 10980;
-  background: rgba(15, 23, 42, 0.42);
+  /* Нейтральный чёрный — slate (15,23,42) даёт синеву, особенно с blur в тёмной теме */
+  background: rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
-  animation: lesson-chat-backdrop-in 0.24s ease;
+  opacity: 1;
+  transition: opacity 0.26s ease;
 }
 
-@keyframes lesson-chat-backdrop-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.lesson-chat-backdrop.is-entering,
+.lesson-chat-backdrop.is-closing {
+  opacity: 0;
+}
+
+body.dark-mode .lesson-chat-backdrop {
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .lesson-chat-panel {
@@ -97,27 +101,26 @@
   z-index: 10990;
   background: var(--bg-primary);
   border-left: 1px solid var(--border-color);
-  box-shadow: var(--lc-shadow-elevated, -12px 0 40px rgba(15, 23, 42, 0.1));
+  box-shadow: var(--lc-shadow-elevated, -12px 0 40px rgba(0, 0, 0, 0.18));
   display: flex;
   flex-direction: row;
-  animation: lesson-chat-panel-in 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(0);
+  opacity: 1;
+  transition:
+    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.26s ease;
 }
 
-@keyframes lesson-chat-panel-in {
-  from {
-    transform: translateX(100%);
-    opacity: 0.85;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.lesson-chat-panel.is-entering,
+.lesson-chat-panel.is-closing {
+  transform: translateX(100%);
+  opacity: 0.92;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .lesson-chat-panel,
   .lesson-chat-backdrop {
-    animation: none;
+    transition: none;
   }
 
   .lesson-chat-fab:hover {

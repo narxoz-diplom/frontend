@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fi'
 import api from '../../services/api'
 import HomeNewsFeed from './HomeNewsFeed'
+import { AdminStatsCharts } from './StatsCharts'
 import './Dashboard.css'
 
 const emptyPlatformStats = {
@@ -170,7 +171,14 @@ const AdminDashboard = ({ view = 'home' }) => {
                         Сводка по курсам, контенту, записям и материалам — только для администратора
                     </p>
                 </div>
-                {loading ? <div className="dashboard-loading-inline">Загрузка…</div> : statsBlock}
+                {loading ? (
+                    <div className="dashboard-loading-inline">Загрузка…</div>
+                ) : (
+                    <>
+                        {statsBlock}
+                        <AdminStatsCharts platform={platform} filesCount={filesCount} newsCount={newsCount} />
+                    </>
+                )}
             </div>
         )
     }
