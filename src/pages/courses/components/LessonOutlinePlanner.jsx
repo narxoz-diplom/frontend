@@ -16,7 +16,8 @@ const LessonOutlinePlanner = ({
   onAddRow,
   generatingLessons,
   jobActive,
-  onApprove
+  onApprove,
+  canGenerate = true
 }) => {
   const { t } = useTranslation()
 
@@ -125,7 +126,7 @@ const LessonOutlinePlanner = ({
           type="button"
           className="btn btn-primary gen-cta"
           onClick={onGenerateOutline}
-          disabled={outlineLoading || selectedFilesCount === 0}
+          disabled={outlineLoading || selectedFilesCount === 0 || !canGenerate}
         >
           {outlineLoading ? (
             <>
@@ -161,6 +162,7 @@ const LessonOutlinePlanner = ({
           approving={generatingLessons}
           jobActive={jobActive}
           onApprove={onApprove}
+          canGenerate={canGenerate}
         />
       )}
     </section>

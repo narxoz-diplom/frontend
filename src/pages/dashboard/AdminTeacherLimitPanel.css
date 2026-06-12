@@ -1,0 +1,142 @@
+.admin-teacher-limit {
+  margin-top: 28px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.admin-teacher-limit__head h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+.admin-teacher-limit__head p {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--text-secondary, #718096);
+}
+
+.admin-teacher-limit__lookup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+}
+
+.admin-teacher-limit__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 220px;
+  flex: 1;
+}
+
+.admin-teacher-limit__field span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #718096);
+}
+
+.admin-teacher-limit__field input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--ce-control-border, rgba(22, 19, 18, 0.18));
+  background: var(--surface, #fff);
+  font-size: 14px;
+}
+
+.admin-teacher-limit__field--full {
+  width: 100%;
+}
+
+.admin-teacher-limit__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-teacher-limit__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-teacher-limit__btn--primary {
+  background: #6366f1;
+  color: #fff;
+}
+
+.admin-teacher-limit__btn--secondary {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.admin-teacher-limit__btn--ghost {
+  background: transparent;
+  border-color: rgba(22, 19, 18, 0.15);
+}
+
+.admin-teacher-limit__form {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-teacher-limit__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.admin-teacher-limit__limits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.admin-teacher-limit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-teacher-limit__usage {
+  margin: 4px 0 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.65);
+  display: grid;
+  gap: 8px;
+}
+
+.admin-teacher-limit__usage dt {
+  font-size: 11px;
+  color: var(--text-secondary, #718096);
+}
+
+.admin-teacher-limit__usage dd {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.admin-teacher-limit__error {
+  margin: 12px 0 0;
+  color: #c53030;
+  font-size: 14px;
+}
+
+.admin-teacher-limit__success {
+  margin: 12px 0 0;
+  color: #276749;
+  font-size: 14px;
+}

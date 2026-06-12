@@ -8,7 +8,7 @@ import { getLessons, deleteLesson } from '@/shared/api/lessonsApi'
 import { getCourseTests, updateTestSettings, generateTests } from '@/shared/api/testsApi'
 import { getCourseFiles, uploadToCourse, ingestUrlToCourse, deleteFile } from '@/shared/api/filesApi'
 
-export const useCourseEdit = (id) => {
+export const useCourseEdit = (id, { buildGenerationExtras, onUsageSummary, canGenerate = true } = {}) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { confirm } = useAlert()
@@ -168,6 +168,10 @@ export const useCourseEdit = (id) => {
   }
 
   const handleGenerateTest = async () => {
+    if (!canGenerate) {
+      setError(t('courseEdit.aiModelUnavailable'))
+      return
+    }
     if (selectedLessonIds.size === 0) {
       setError(t('courseEdit.selectLesson'))
       return
@@ -175,13 +179,17 @@ export const useCourseEdit = (id) => {
     setGeneratingTest(true)
     setError(null)
     try {
-      await generateTests(id, {
+      const { data } = await generateTests(id, {
         fileIds: [],
         lessonIds: Array.from(selectedLessonIds),
         title: testTitle || t('courseEdit.defaultTestTitle'),
         questionCount: questionCount || undefined,
-        difficulty: testDifficulty || undefined
+        difficulty: testDifficulty || undefined,
+        ...(buildGenerationExtras?.() ?? {})
       })
+      if (data?.usageSummary) {
+        onUsageSummary?.(data.usageSummary)
+      }
       loadData()
       setSelectedLessonIds(new Set())
       setTestTitle('')

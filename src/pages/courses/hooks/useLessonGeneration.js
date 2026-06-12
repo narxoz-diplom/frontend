@@ -6,6 +6,7 @@ import {
   generateLessonsFromOutline,
   generateLessonsFromFiles
 } from '@/shared/api/coursesApi'
+import { resolveAiApiErrorMessage } from '@/shared/lib/aiUsageFormat'
 
 const newOutlineRowId = () =>
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -30,7 +31,14 @@ const mapApiOutlineItem = (o, i) => {
 
 const courseEditGenSessionKey = (courseId) => `courseEditGen:${courseId}`
 
-export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) => {
+export const useLessonGeneration = ({
+  courseId,
+  onLessonsChanged,
+  setError,
+  buildGenerationExtras,
+  onUsageSummary,
+  canGenerate = true
+}) => {
   const { t } = useTranslation()
   const [selectedFileIds, setSelectedFileIds] = useState(new Set())
   const [genParams, setGenParams] = useState({
@@ -113,6 +121,9 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
           setJobStatus(null)
           setJobProgress(null)
           setOutlineDraft(null)
+          if (data.usageSummary) {
+            onUsageSummary?.(data.usageSummary)
+          }
           try {
             sessionStorage.removeItem(courseEditGenSessionKey(courseId))
           } catch {}
@@ -165,6 +176,10 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
   }
 
   const handleGenerateOutline = async () => {
+    if (!canGenerate) {
+      setError(t('courseEdit.aiModelUnavailable'))
+      return
+    }
     if (selectedFileIds.size === 0) {
       setError(t('courseEdit.selectFile'))
       return
@@ -175,12 +190,16 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
       const { data } = await generateLessonsOutline(courseId, {
         fileIds: Array.from(selectedFileIds),
         topK: 200,
-        params: buildLessonParamsPayload()
+        params: buildLessonParamsPayload(),
+        ...(buildGenerationExtras?.() ?? {})
       })
+      if (data.usageSummary) {
+        onUsageSummary?.(data.usageSummary)
+      }
       const rows = (data.outline || []).map((o, i) => mapApiOutlineItem(o, i))
       setOutlineDraft(rows.length > 0 ? rows : null)
     } catch (err) {
-      setError(err.response?.data?.message || t('courseEdit.outlineError'))
+      setError(resolveAiApiErrorMessage(err, t, 'courseEdit.outlineError'))
     } finally {
       setOutlineLoading(false)
     }
@@ -229,6 +248,10 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
   }
 
   const handleApproveLessonsJob = async () => {
+    if (!canGenerate) {
+      setError(t('courseEdit.aiModelUnavailable'))
+      return
+    }
     if (!outlineDraft?.length) {
       setError(t('courseEdit.editOutlineFirst'))
       return
@@ -250,19 +273,24 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
       const { data } = await generateLessonsFromOutline(courseId, {
         fileIds: Array.from(selectedFileIds),
         outline,
-        params: buildLessonParamsPayload()
+        params: buildLessonParamsPayload(),
+        ...(buildGenerationExtras?.() ?? {})
       })
       setLessonsJobId(data.jobId)
       setJobStatus('PENDING')
       setJobProgress({ total: null, completed: 0, currentTitle: null })
     } catch (err) {
-      setError(err.response?.data?.message || t('courseEdit.startLessonsError'))
+      setError(resolveAiApiErrorMessage(err, t, 'courseEdit.startLessonsError'))
     } finally {
       setGeneratingLessons(false)
     }
   }
 
   const handleQuickGenerateAllLessons = async () => {
+    if (!canGenerate) {
+      setError(t('courseEdit.aiModelUnavailable'))
+      return
+    }
     if (selectedFileIds.size === 0) {
       setError(t('courseEdit.selectFile'))
       return
@@ -270,15 +298,19 @@ export const useLessonGeneration = ({ courseId, onLessonsChanged, setError }) =>
     setQuickGenLoading(true)
     setError(null)
     try {
-      await generateLessonsFromFiles(courseId, {
+      const { data } = await generateLessonsFromFiles(courseId, {
         fileIds: Array.from(selectedFileIds),
         topK: 200,
-        params: buildLessonParamsPayload()
+        params: buildLessonParamsPayload(),
+        ...(buildGenerationExtras?.() ?? {})
       })
+      if (data?.usageSummary) {
+        onUsageSummary?.(data.usageSummary)
+      }
       onLessonsChanged()
       setSelectedFileIds(new Set())
     } catch (err) {
-      setError(err.response?.data?.message || t('courseEdit.generateLessonsError'))
+      setError(resolveAiApiErrorMessage(err, t, 'courseEdit.generateLessonsError'))
     } finally {
       setQuickGenLoading(false)
     }

@@ -14,7 +14,8 @@ const GenerationScenarios = ({
   onTestDifficultyChange,
   generatingTest,
   selectedLessonsCount,
-  onGenerateTest
+  onGenerateTest,
+  canGenerate = true
 }) => {
   const { t } = useTranslation()
 
@@ -36,7 +37,7 @@ const GenerationScenarios = ({
         type="button"
         className="btn btn-outline btn-lg gen-cta gen-cta--wide"
         onClick={onQuickGenerate}
-        disabled={quickGenLoading || selectedFilesCount === 0}
+        disabled={quickGenLoading || selectedFilesCount === 0 || !canGenerate}
       >
         {quickGenLoading ? (
           <>
@@ -92,7 +93,7 @@ const GenerationScenarios = ({
         type="button"
         className="btn btn-primary btn-lg gen-cta gen-cta--wide"
         onClick={onGenerateTest}
-        disabled={generatingTest || selectedLessonsCount === 0}
+        disabled={generatingTest || selectedLessonsCount === 0 || !canGenerate}
       >
         {generatingTest ? (
           <>

@@ -10,7 +10,8 @@ const OutlineEditor = ({
   onAddRow,
   approving,
   jobActive,
-  onApprove
+  onApprove,
+  canGenerate = true
 }) => {
   const { t } = useTranslation()
 
@@ -100,7 +101,7 @@ const OutlineEditor = ({
         type="button"
         className="btn btn-primary btn-lg gen-cta gen-cta--wide"
         onClick={onApprove}
-        disabled={approving || jobActive}
+        disabled={approving || jobActive || !canGenerate}
       >
         {approving ? (
           <>

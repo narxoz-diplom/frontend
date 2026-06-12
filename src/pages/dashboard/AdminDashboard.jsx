@@ -17,11 +17,16 @@ import {
 import HomeNewsFeed from './HomeNewsFeed'
 import { AdminStatsCharts } from './StatsCharts'
 import useAdminDashboardData from './hooks/useAdminDashboardData'
+import { useAiUsageReport } from './hooks/useAiUsageReport'
 import StatCard from './components/StatCard'
+import AiUsageDashboard from './components/AiUsageDashboard'
+import AdminAiUsageFilters from './components/AdminAiUsageFilters'
+import AdminTeacherLimitPanel from './components/AdminTeacherLimitPanel'
 import './Dashboard.css'
 
 const AdminDashboard = ({ view = 'home' }) => {
     const { platform: p, filesCount, newsCount, loading } = useAdminDashboardData()
+    const aiUsage = useAiUsageReport({ mode: 'admin' })
 
     const statItems = [
         { icon: <FiBook />, tone: 'primary', value: p.totalCourses, label: 'Курсов всего' },
@@ -70,6 +75,19 @@ const AdminDashboard = ({ view = 'home' }) => {
                     <>
                         {statsBlock}
                         <AdminStatsCharts platform={p} filesCount={filesCount} newsCount={newsCount} />
+                        <AdminAiUsageFilters
+                            filters={aiUsage.filters}
+                            onChange={aiUsage.updateFilter}
+                            onApply={aiUsage.applyFilters}
+                        />
+                        <AiUsageDashboard
+                            report={aiUsage.report}
+                            loading={aiUsage.loading}
+                            error={aiUsage.error}
+                            showRecentRuns={false}
+                            showAdminExtras
+                        />
+                        <AdminTeacherLimitPanel />
                     </>
                 )}
             </div>

@@ -15,7 +15,9 @@ import HomeNewsFeed from './HomeNewsFeed'
 import { TeacherStatsCharts } from './StatsCharts'
 import { useTranslation } from 'react-i18next'
 import useTeacherDashboardData from './hooks/useTeacherDashboardData'
+import { useAiUsageReport } from './hooks/useAiUsageReport'
 import StatCard from './components/StatCard'
+import AiUsageDashboard from './components/AiUsageDashboard'
 import TeacherCourseCard from './components/TeacherCourseCard'
 import './Dashboard.css'
 
@@ -29,6 +31,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
         publishedCount,
         draftCount,
     } = useTeacherDashboardData()
+    const aiUsage = useAiUsageReport({ mode: 'teacher' })
     const [showCreateModal, setShowCreateModal] = useState(false)
 
     const statsBlock = (
@@ -81,6 +84,12 @@ const TeacherDashboard = ({ view = 'home' }) => {
                     <>
                         {statsBlock}
                         <TeacherStatsCharts courses={courses} />
+                        <AiUsageDashboard
+                            report={aiUsage.report}
+                            loading={aiUsage.loading}
+                            error={aiUsage.error}
+                            showRecentRuns
+                        />
                     </>
                 )}
             </div>

@@ -6,6 +6,7 @@ import auth from '@/shared/config/auth'
 import { canUpload } from '@/shared/lib/roles'
 import { useCourseEdit } from './hooks/useCourseEdit'
 import { useLessonGeneration } from './hooks/useLessonGeneration'
+import { useAiModels } from './hooks/useAiModels'
 import { useLocalizationBackfill } from './hooks/useLocalizationBackfill'
 import { useAllowedEmails } from './hooks/useAllowedEmails'
 import CourseEditHeader from './components/CourseEditHeader'
@@ -15,17 +16,28 @@ import GenerationJobBanner from './components/GenerationJobBanner'
 import GenerationStepsTrack from './components/GenerationStepsTrack'
 import LessonOutlinePlanner from './components/LessonOutlinePlanner'
 import GenerationScenarios from './components/GenerationScenarios'
+import AiModelPicker from './components/AiModelPicker'
+import GenerationUsageSummary from './components/GenerationUsageSummary'
+import TeacherAiLimitBanner from './components/TeacherAiLimitBanner'
 import CourseContentOverview from './components/CourseContentOverview'
 import './CourseEdit.css'
 
 const CourseEdit = () => {
   const { t } = useTranslation()
   const { id } = useParams()
-  const edit = useCourseEdit(id)
+  const aiModels = useAiModels()
+  const edit = useCourseEdit(id, {
+    buildGenerationExtras: aiModels.buildGenerationExtras,
+    onUsageSummary: aiModels.setLastUsageSummary,
+    canGenerate: aiModels.canGenerate
+  })
   const generation = useLessonGeneration({
     courseId: id,
     onLessonsChanged: edit.loadData,
-    setError: edit.setError
+    setError: edit.setError,
+    buildGenerationExtras: aiModels.buildGenerationExtras,
+    onUsageSummary: aiModels.setLastUsageSummary,
+    canGenerate: aiModels.canGenerate
   })
   const backfill = useLocalizationBackfill({
     courseId: id,
@@ -143,6 +155,27 @@ const CourseEdit = () => {
             </dl>
           </header>
 
+          <TeacherAiLimitBanner
+            limit={aiModels.userLimit}
+            loading={aiModels.loading}
+          />
+
+          {aiModels.modelSelectionEnabled && (
+            <AiModelPicker
+              models={aiModels.models}
+              loading={aiModels.loading}
+              loadError={aiModels.loadError}
+              selectedModelId={aiModels.selectedModelId}
+              onSelect={aiModels.setSelectedModelId}
+              selectedModel={aiModels.selectedModel}
+            />
+          )}
+
+          <GenerationUsageSummary
+            summary={aiModels.lastUsageSummary}
+            models={aiModels.models}
+          />
+
           <GenerationStepsTrack
             activeStep={genActiveStep}
             hasFiles={generation.selectedFileIds.size > 0}
@@ -165,6 +198,7 @@ const CourseEdit = () => {
               generatingLessons={generation.generatingLessons}
               jobActive={generation.lessonsJobId}
               onApprove={generation.handleApproveLessonsJob}
+              canGenerate={aiModels.canGenerate}
             />
 
             <GenerationScenarios
@@ -180,6 +214,7 @@ const CourseEdit = () => {
               generatingTest={edit.generatingTest}
               selectedLessonsCount={edit.selectedLessonIds.size}
               onGenerateTest={edit.handleGenerateTest}
+              canGenerate={aiModels.canGenerate}
             />
           </div>
 

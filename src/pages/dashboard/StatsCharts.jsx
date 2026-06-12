@@ -45,7 +45,7 @@ function DonutChart({ segments, size = 160, label, sublabel }) {
     )
 }
 
-function HBarChart({ items }) {
+export function HBarChart({ items }) {
     const max = Math.max(...items.map((i) => i.value || 0), 1)
     return (
         <div className="hbar-chart">
