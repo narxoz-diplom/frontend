@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom'
-import auth from '../config/auth'
-import { getRoles } from '../utils/roles'
-import { AlertProvider } from '../context/AlertProvider'
+import auth from '@/shared/config/auth'
+import { getRoles } from '@/shared/lib/roles'
+import { AlertProvider } from '@/app/providers/AlertProvider'
 import AppRoutes from './routes'
 
 const App = () => {
@@ -10,7 +10,6 @@ const App = () => {
     const [loading, setLoading] = useState(true)
     const [userRoles, setUserRoles] = useState([])
 
-    // Состояние темной темы
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const savedTheme = localStorage.getItem('theme');
         return savedTheme === 'dark';
@@ -29,7 +28,6 @@ const App = () => {
         return () => (mounted = false)
     }, [])
 
-    // Управление классом на body
     useEffect(() => {
         if (isDarkMode) {
             document.body.classList.add('dark-mode');

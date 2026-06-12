@@ -1,9 +1,9 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import ProtectedRoute from '../auth/ProtectedRoute'
+import ProtectedRoute from '@/app/ProtectedRoute'
 import AppLayout from './AppLayout'
-import Login from '../auth/Login'
-import Register from '../auth/Register'
+import Login from '@/pages/auth/Login'
+import Register from '@/pages/auth/Register'
 
 const AppRoutes = ({ authenticated, userRoles, isDarkMode, setIsDarkMode }) => {
     if (!authenticated) {
@@ -22,7 +22,6 @@ const AppRoutes = ({ authenticated, userRoles, isDarkMode, setIsDarkMode }) => {
                 path="*"
                 element={
                     <ProtectedRoute authenticated={authenticated}>
-                        {/* ТЕПЕРЬ ПЕРЕДАЕМ ТЕМУ В LAYOUT */}
                         <AppLayout
                             userRoles={userRoles}
                             isDarkMode={isDarkMode}

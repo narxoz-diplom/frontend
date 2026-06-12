@@ -2303,9 +2303,7 @@ export function setLang(lang) {
   try {
     localStorage.setItem(STORAGE_KEY, next)
     localStorage.setItem('language', next)
-  } catch {
-    /* ignore */
-  }
+  } catch {}
 }
 
 i18n.use(initReactI18next).init({
