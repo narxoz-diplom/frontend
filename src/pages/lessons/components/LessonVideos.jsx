@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FiPlay, FiUpload, FiX, FiClock, FiCheckCircle, FiChevronRight, FiTrash2 } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { Icon } from '@/shared/ui/academis'
 import { useAlert } from '@/app/providers/AlertProvider'
 import { uploadVideo } from '@/shared/api/filesApi'
 import { addLessonVideo, deleteLessonVideo } from '@/shared/api/lessonsApi'
@@ -81,14 +82,13 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
   }
 
   return (
-    <div className="lesson-videos-section lesson-panel">
-      <div className="section-header">
-        <div className="section-header__text">
-          <span className="section-header__eyebrow">{t('lessonPage.media')}</span>
-          <h2>
-            <FiPlay aria-hidden /> {t('lessonPage.videos')} ({videos.length})
-          </h2>
+    <div className="card lesson-videos-section" style={{ overflow: 'hidden' }}>
+      <div className="sec-head">
+        <div className="row gap8" style={{ alignItems: 'center' }}>
+          <Icon name="video" size={17} style={{ color: 'var(--brand)' }} />
+          <h3 className="h3">{t('lessonPage.videos')}</h3>
         </div>
+        <span className="badge">{videos.length}</span>
         {canEdit && (
           <button
             type="button"
@@ -109,7 +109,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
       </div>
 
       {showVideoForm && canEdit && (
-        <div className="video-upload-form">
+        <div className="video-upload-form" style={{ padding: '0 18px 18px' }}>
           <form onSubmit={handleVideoUpload}>
             <div className="form-group">
               <label>{t('lessonPage.videoTitle')} *</label>
@@ -182,7 +182,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
       )}
 
       {videos.length === 0 ? (
-        <div className="empty-state">
+        <div className="empty-state" style={{ padding: '18px' }}>
           <FiPlay className="empty-icon" />
           <p>{t('lessonPage.noVideos')}</p>
           {canEdit && (
@@ -196,37 +196,35 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
           )}
         </div>
       ) : (
-        <div className="videos-list">
+        <div className="video-strip videos-list">
           {videos.map((video, index) => {
             const isCompleted = isVideoCompleted(buildProgressKey(courseId, lessonId, video.id))
 
             return (
-              <div key={video.id} className="video-card-wrapper">
+              <div key={video.id} className="video-card-wrapper video-thumb">
                 <Link
                   to={`/courses/${courseId}/lessons/${lessonId}/videos/${video.id}`}
                   className="video-card"
                 >
-                  <div className="video-card-number">{index + 1}</div>
-                  <div className="video-card-content">
-                    <div className="video-card-header">
-                      <h3>{video.title}</h3>
-                      {isCompleted && (
-                        <FiCheckCircle className="completed-icon" />
-                      )}
+                  <div className="vt-cover" style={{ background: 'linear-gradient(135deg, var(--brand), #7d0e0e)' }}>
+                    <span className="vt-play">
+                      <Icon name="play" size={18} />
+                    </span>
+                    {video.duration > 0 && (
+                      <span className="vt-dur">{formatDuration(video.duration)}</span>
+                    )}
+                  </div>
+                  <div style={{ padding: '9px 10px' }}>
+                    <div className="row gap6" style={{ alignItems: 'center' }}>
+                      <div style={{ fontWeight: 650, fontSize: 13, flex: 1 }}>{video.title}</div>
+                      {isCompleted && <Icon name="check" size={14} style={{ color: 'var(--green-500)' }} />}
                     </div>
                     {video.description && (
-                      <p className="video-card-description">{video.description}</p>
+                      <div className="dim clamp-1" style={{ fontSize: 11.5, marginTop: 2 }}>
+                        {video.description}
+                      </div>
                     )}
-                    <div className="video-card-meta">
-                      {video.duration > 0 && (
-                        <span>
-                          <FiClock /> {formatDuration(video.duration)}
-                        </span>
-                      )}
-                      <span>{formatFileSize(video.fileSize)}</span>
-                    </div>
                   </div>
-                  <FiChevronRight className="video-card-arrow" />
                 </Link>
                 {canEdit && (
                   <button

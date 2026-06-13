@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { FiBook, FiEdit3, FiSave, FiX, FiTrash2 } from 'react-icons/fi'
+import { FiEdit3, FiSave, FiX, FiTrash2 } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { Icon } from '@/shared/ui/academis'
 import { pickLocalized } from '@/i18n/localize'
 import { extractEmbeddedImages, removeFirstOccurrence } from '../lib/markdownImages'
 
@@ -32,13 +33,11 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
   }
 
   return (
-    <div className="lesson-notes-section lesson-panel">
-      <div className="section-header">
-        <div className="section-header__text">
-          <span className="section-header__eyebrow">{t('lessonPage.material')}</span>
-          <h2>
-            <FiBook aria-hidden /> {t('lessonPage.notes')}
-          </h2>
+    <div className="card lesson-notes-section lesson-content">
+      <div className="sec-head">
+        <div className="row gap8" style={{ alignItems: 'center' }}>
+          <Icon name="book" size={17} style={{ color: 'var(--brand)' }} />
+          <h3 className="h3">{t('lessonPage.notes')}</h3>
         </div>
         {canEdit && (
           <button
@@ -66,6 +65,7 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
         )}
       </div>
 
+      <div style={{ padding: '6px 18px 18px' }}>
       {isEditing ? (
         <div className="content-editor">
           <textarea
@@ -131,10 +131,8 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
       ) : (
         <div className="lesson-notes-content">
           {pickLocalized(lesson, 'content') ? (
-            <div className="markdown-content">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-              >
+            <div className="markdown markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {pickLocalized(lesson, 'content')}
               </ReactMarkdown>
             </div>
@@ -154,6 +152,7 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
           )}
         </div>
       )}
+      </div>
     </div>
   )
 }

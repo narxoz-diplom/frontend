@@ -25,13 +25,21 @@
   justify-content: center;
   background: linear-gradient(
     145deg,
-    var(--primary-color) 0%,
-    color-mix(in srgb, var(--primary-color) 82%, var(--primary-hover, #000)) 100%
+    var(--brand, var(--primary-color)) 0%,
+    color-mix(in srgb, var(--brand, var(--primary-color)) 82%, #000) 100%
   );
   color: #fff;
   cursor: pointer;
   box-shadow: var(--lc-shadow-fab);
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
+}
+
+.lesson-chat-fab.chat-fab {
+  width: auto;
+  height: 50px;
+  padding: 0 20px 0 17px;
+  border-radius: 100px;
+  gap: 9px;
 }
 
 .lesson-chat-fab:hover {

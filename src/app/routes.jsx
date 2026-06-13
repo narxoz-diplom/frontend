@@ -5,7 +5,7 @@ import AppLayout from './AppLayout'
 import Login from '@/pages/auth/Login'
 import Register from '@/pages/auth/Register'
 
-const AppRoutes = ({ authenticated, userRoles, isDarkMode, setIsDarkMode }) => {
+const AppRoutes = ({ authenticated, userRoles }) => {
     if (!authenticated) {
         return (
             <Routes>
@@ -22,11 +22,7 @@ const AppRoutes = ({ authenticated, userRoles, isDarkMode, setIsDarkMode }) => {
                 path="*"
                 element={
                     <ProtectedRoute authenticated={authenticated}>
-                        <AppLayout
-                            userRoles={userRoles}
-                            isDarkMode={isDarkMode}
-                            setIsDarkMode={setIsDarkMode}
-                        />
+                        <AppLayout userRoles={userRoles} />
                     </ProtectedRoute>
                 }
             />

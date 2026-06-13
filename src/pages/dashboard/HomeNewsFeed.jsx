@@ -1,140 +1,126 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { FiBell, FiArrowLeft, FiArrowRight, FiClock } from 'react-icons/fi'
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getNews } from '@/shared/api/newsApi'
-import './Dashboard.css'
+import { Icon, SectionCard } from '@/shared/ui/academis'
 
-const formatTime = (iso) => {
-    if (!iso) return ''
-    try {
-        const d = new Date(iso)
-        return d.toLocaleString('ru-RU', {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-        })
-    } catch {
-        return ''
-    }
+const NEWS_COLORS = ['red', 'blue', 'violet', 'amber', 'green']
+
+const tagColor = (color) => ({
+  red: 'var(--brand)',
+  blue: 'var(--blue-500)',
+  violet: 'var(--violet-500)',
+  amber: 'var(--amber-500)',
+  green: 'var(--green-500)',
+}[color] || 'var(--brand)')
+
+const formatDate = (iso) => {
+  if (!iso) return ''
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  } catch {
+    return ''
+  }
 }
 
 const HomeNewsFeed = () => {
-    const [items, setItems] = useState([])
-    const [loading, setLoading] = useState(true)
-    const scrollerRef = useRef(null)
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        let cancelled = false
-        ;(async () => {
-            try {
-                const res = await getNews()
-                const list = Array.isArray(res.data) ? res.data : []
-                if (!cancelled) {
-                    setItems(
-                        [...list]
-                            .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
-                            .slice(0, 8)
-                    )
-                }
-            } catch {
-                if (!cancelled) setItems([])
-            } finally {
-                if (!cancelled) setLoading(false)
-            }
-        })()
-        return () => {
-            cancelled = true
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await getNews()
+        const list = Array.isArray(res.data) ? res.data : []
+        if (!cancelled) {
+          setItems(
+            [...list]
+              .sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0))
+              .slice(0, 6),
+          )
         }
-    }, [])
-
-    const canScroll = useMemo(() => items.length > 0, [items.length])
-
-    const scrollByCards = (dir) => {
-        const el = scrollerRef.current
-        if (!el) return
-        const amount = Math.max(280, Math.floor(el.clientWidth * 0.85))
-        el.scrollBy({ left: dir * amount, behavior: 'smooth' })
+      } catch {
+        if (!cancelled) setItems([])
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => {
+      cancelled = true
     }
+  }, [])
 
+  if (loading) {
     return (
-        <div className="dashboard-section home-news-section">
-            <div className="section-header">
-                <h2 className="section-title">Новости и объявления</h2>
-                <p className="section-subtitle">Публикации от администрации платформы</p>
-            </div>
-
-            {loading ? (
-                <div className="home-news-loading">Загрузка ленты…</div>
-            ) : items.length === 0 ? (
-                <div className="home-news-empty">
-                    <FiBell className="home-news-empty-icon" aria-hidden />
-                    <p>Пока нет опубликованных новостей.</p>
-                    <Link to="/notifications" className="home-news-all-link">
-                        Личные уведомления <FiArrowRight />
-                    </Link>
-                </div>
-            ) : (
-                <div className="home-news-carousel">
-                    <button
-                        type="button"
-                        className="home-news-nav-btn home-news-nav-btn--left"
-                        onClick={() => scrollByCards(-1)}
-                        disabled={!canScroll}
-                        aria-label="Прокрутить новости влево"
-                    >
-                        <FiArrowLeft />
-                    </button>
-
-                    <ul className="home-news-list" ref={scrollerRef}>
-                        {items.map((n) => (
-                            <li key={n.id} className="home-news-card">
-                                <Link to={`/news/${n.id}`} className="home-news-card-link" aria-label={`Открыть новость: ${n.title || ''}`}>
-                                    {n.imageUrl ? (
-                                        <img
-                                            src={n.imageUrl}
-                                            alt=""
-                                            style={{ width: '100%', height: 160, objectFit: 'cover', borderRadius: 14, marginBottom: 12 }}
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                    ) : null}
-                                    <div className="home-news-card-top">
-                                        <span className="home-news-type">Новость</span>
-                                        <span className="home-news-time">
-                                            <FiClock />
-                                            {formatTime(n.publishedAt)}
-                                        </span>
-                                    </div>
-                                    <h3 className="home-news-title">{n.title}</h3>
-                                    {n.authorName ? <p className="home-news-author">{n.authorName}</p> : null}
-                                    <p className="home-news-message">{n.shortDescription}</p>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-
-                    <button
-                        type="button"
-                        className="home-news-nav-btn home-news-nav-btn--right"
-                        onClick={() => scrollByCards(1)}
-                        disabled={!canScroll}
-                        aria-label="Прокрутить новости вправо"
-                    >
-                        <FiArrowRight />
-                    </button>
-                </div>
-            )}
-
-            {!loading && items.length > 0 && (
-                <div className="home-news-footer">
-                    <Link to="/notifications" className="home-news-all-link">
-                        Личные уведомления <FiArrowRight />
-                    </Link>
-                </div>
-            )}
-        </div>
+      <SectionCard title={t('dashboard.home.newsFeed')} icon="news">
+        <div className="muted" style={{ padding: '12px 0' }}>{t('common.loading')}</div>
+      </SectionCard>
     )
+  }
+
+  if (items.length === 0) {
+    return (
+      <SectionCard title={t('dashboard.home.newsFeed')} icon="news">
+        <div className="muted" style={{ padding: '12px 0' }}>
+          {t('dashboard.home.noNews')}
+        </div>
+      </SectionCard>
+    )
+  }
+
+  return (
+    <SectionCard
+      title={t('dashboard.home.newsFeed')}
+      icon="news"
+      action={(
+        <Link to={`/news/${items[0].id}`} className="link-more">
+          {t('common.viewAll')}
+        </Link>
+      )}
+    >
+      <div className="col" style={{ gap: 2 }}>
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className="news-row"
+            onClick={() => navigate(`/news/${item.id}`)}
+            onKeyDown={(e) => e.key === 'Enter' && navigate(`/news/${item.id}`)}
+            role="link"
+            tabIndex={0}
+          >
+            <span
+              className="news-dot"
+              style={{ background: tagColor(NEWS_COLORS[index % NEWS_COLORS.length]) }}
+            />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div
+                style={{
+                  fontWeight: 650,
+                  fontSize: 13.5,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {item.title}
+              </div>
+              <div className="dim" style={{ fontSize: 12 }}>
+                {formatDate(item.publishedAt)}
+              </div>
+            </div>
+            <Icon name="chevRight" size={16} style={{ color: 'var(--text-3)' }} />
+          </div>
+        ))}
+      </div>
+    </SectionCard>
+  )
 }
 
 export default HomeNewsFeed

@@ -23,6 +23,7 @@ const countCompletedLessonsFromStorage = () => {
 
 const useStudentDashboardData = () => {
     const [stats, setStats] = useState(initialStats)
+    const [enrolledCourses, setEnrolledCourses] = useState([])
     const [upcomingDeadlines, setUpcomingDeadlines] = useState([])
     const [loading, setLoading] = useState(true)
 
@@ -36,9 +37,11 @@ const useStudentDashboardData = () => {
                     getMyTestAttempts().catch(() => ({ data: [] })),
                     getUpcomingTestDeadlines().catch(() => ({ data: [] })),
                 ])
+                const enrolled = Array.isArray(enrolledRes.data) ? enrolledRes.data : []
+                setEnrolledCourses(enrolled)
                 setStats({
                     catalogCourses: Array.isArray(publishedRes.data) ? publishedRes.data.length : 0,
-                    enrolledCourses: Array.isArray(enrolledRes.data) ? enrolledRes.data.length : 0,
+                    enrolledCourses: enrolled.length,
                     completedLessons: countCompletedLessonsFromStorage(),
                     testAttempts: Array.isArray(attemptsRes.data) ? attemptsRes.data.length : 0,
                 })
@@ -48,6 +51,7 @@ const useStudentDashboardData = () => {
                     ...s,
                     completedLessons: countCompletedLessonsFromStorage(),
                 }))
+                setEnrolledCourses([])
                 setUpcomingDeadlines([])
             } finally {
                 setLoading(false)
@@ -56,7 +60,7 @@ const useStudentDashboardData = () => {
         load()
     }, [])
 
-    return { stats, upcomingDeadlines, loading }
+    return { stats, enrolledCourses, upcomingDeadlines, loading }
 }
 
 export default useStudentDashboardData

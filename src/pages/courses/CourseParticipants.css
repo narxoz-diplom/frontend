@@ -1,239 +1,53 @@
-.course-participants-page {
-  padding: clamp(16px, 2.5vw, 28px);
-  max-width: 960px;
-  margin: 0 auto;
-  --cp-ink: #161312;
-  --cp-muted: rgba(22, 19, 18, 0.68);
-  --cp-line: rgba(22, 19, 18, 0.12);
-  --cp-surface: #ffffff;
-}
-
-.course-participants-page--loading,
-.course-participants-page--error {
+.course-participants-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   min-height: 280px;
-  gap: 16px;
-  text-align: center;
-  color: var(--text-secondary, #64748b);
-}
-
-.course-participants-page__spinner {
-  animation: cp-spin 0.9s linear infinite;
-}
-
-@keyframes cp-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.course-participants-page__back-link {
-  font-weight: 600;
-  color: var(--primary-color, #e41616);
-}
-
-.course-participants-page__header {
-  margin-bottom: 28px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--cp-line);
-}
-
-.course-participants-page__nav {
-  margin-bottom: 14px;
-}
-
-.course-participants-page__back {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary, #111);
-  text-decoration: none;
-  border-radius: 10px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(0, 0, 0, 0.03);
-  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-}
-
-.course-participants-page__back:hover,
-.course-participants-page__back:focus-visible {
-  background: rgba(0, 0, 0, 0.06);
-  border-color: rgba(0, 0, 0, 0.2);
-  color: var(--text-primary, #111);
-}
-
-.course-participants-page__title {
-  margin: 0 0 8px;
-  font-size: clamp(1.35rem, 2.2vw, 1.65rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text-primary, var(--cp-ink));
-}
-
-.course-participants-page__course-name {
-  margin: 0 0 10px;
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-secondary, #64748b);
-}
-
-.course-participants-page__desc {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--text-secondary, #64748b);
-  max-width: 640px;
-}
-
-.course-participants-page__registry {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.course-participants-page__sheet-title {
-  margin: 0 0 12px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text-primary, var(--cp-ink));
-}
-
-.course-participants-page__sheet-count {
-  margin-left: 8px;
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-  color: var(--text-secondary, #64748b);
 }
 
 .course-participants-page__table-wrap {
-  border: 1px solid var(--cp-line);
-  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.course-participants-teacher {
+  margin-bottom: 14px;
+}
+
+.course-participants-table-card {
   overflow: hidden;
-  background: var(--cp-surface);
 }
 
-.course-participants-page__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+.participants-progress-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
 }
 
-.course-participants-page__table thead {
-  background: rgba(22, 19, 18, 0.04);
+.participants-progress-bar {
+  flex: 1;
+  max-width: 100px;
 }
 
-.course-participants-page__table th {
-  text-align: left;
-  padding: 10px 14px;
-  font-size: 11px;
+.participants-progress-value {
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-secondary, #64748b);
-  border-bottom: 1px solid var(--cp-line);
+  font-size: 12.5px;
 }
 
-.course-participants-page__th-note {
-  width: 8rem;
-  text-align: right;
+.courses-flash {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
 }
 
-.course-participants-page__table td {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--cp-line);
-  vertical-align: top;
-}
-
-.course-participants-page__table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.course-participants-page__cell-id {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.82rem;
-  word-break: break-all;
-  color: var(--text-primary, var(--cp-ink));
-}
-
-.course-participants-page__cell-label {
-  color: var(--text-primary, var(--cp-ink));
-}
-
-.course-participants-page__cell-note {
-  text-align: right;
-}
-
-.course-participants-page__dash {
-  color: var(--text-secondary, #94a3b8);
-}
-
-.course-participants-page__badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(22, 19, 18, 0.12);
-  background: rgba(22, 19, 18, 0.04);
-  color: var(--text-primary, var(--cp-ink));
-}
-
-.course-participants-page__empty {
-  margin: 0;
-  padding: 16px 0;
-  font-size: 14px;
-  color: var(--text-secondary, #64748b);
-}
-
-body.dark-mode .course-participants-page {
-  --cp-line: rgba(255, 255, 255, 0.12);
-  --cp-surface: rgba(0, 0, 0, 0.25);
-}
-
-body.dark-mode .course-participants-page__table thead {
-  background: rgba(255, 255, 255, 0.06);
-}
-
-body.dark-mode .course-participants-page__back {
-  color: rgba(255, 255, 255, 0.92);
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-body.dark-mode .course-participants-page__back:hover,
-body.dark-mode .course-participants-page__back:focus-visible {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
-}
-
-body.dark-mode .course-participants-page__badge {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.92);
-}
-
-@media (max-width: 768px) {
-  .course-participants-page__table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .course-participants-page__table {
-    min-width: 480px;
-  }
-
-  .course-participants-page__header {
-    padding-bottom: 16px;
-    margin-bottom: 20px;
-  }
+.courses-flash--error {
+  background: rgba(228, 22, 22, 0.1);
+  color: #c40f0f;
 }

@@ -1,11 +1,11 @@
 import React from 'react'
-import { FiBook, FiCheckSquare, FiLayers, FiLoader } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { Icon, Spinner } from '@/shared/ui/academis'
+import StudioMiniField from './StudioMiniField'
+
+const TEST_COUNTS = [5, 8, 10, 15]
 
 const GenerationScenarios = ({
-  quickGenLoading,
-  selectedFilesCount,
-  onQuickGenerate,
   testTitle,
   onTestTitleChange,
   questionCount,
@@ -15,98 +15,80 @@ const GenerationScenarios = ({
   generatingTest,
   selectedLessonsCount,
   onGenerateTest,
-  canGenerate = true
+  canGenerate = true,
 }) => {
   const { t } = useTranslation()
 
   return (
-    <aside className="gen-side-rail" aria-label="Дополнительные сценарии">
-      <p className="gen-side-rail__title">{t('courseEdit.otherScenarios')}</p>
-      <p className="gen-side-rail__hint">
-        {t('courseEdit.otherScenariosHint')}
-      </p>
-    <div className="generate-card gen-alt-card">
-      <div className="gen-alt-card__icon">
-        <FiBook aria-hidden />
-      </div>
-      <h4>{t('courseEdit.quickAllLessonsTitle')}</h4>
-      <p>
-        {t('courseEdit.quickAllLessonsDesc')}
-      </p>
-      <button
-        type="button"
-        className="btn btn-outline btn-lg gen-cta gen-cta--wide"
-        onClick={onQuickGenerate}
-        disabled={quickGenLoading || selectedFilesCount === 0 || !canGenerate}
-      >
-        {quickGenLoading ? (
-          <>
-            <FiLoader className="spin" /> {t('courseEdit.generating')}
-          </>
-        ) : (
-          <>
-            <FiLayers /> {t('courseEdit.generateAllLessons')}
-          </>
-        )}
-      </button>
-    </div>
-
-    <div className="generate-card gen-test-card">
-      <div className="gen-alt-card__icon gen-alt-card__icon--quiz">
-        <FiCheckSquare aria-hidden />
-      </div>
-      <h4>{t('courseEdit.testByLessons')}</h4>
-      <p>{t('courseEdit.testByLessonsDesc')}</p>
-      <input
-        type="text"
-        placeholder={t('courseEdit.testTitlePlaceholder')}
-        value={testTitle}
-        onChange={(e) => onTestTitleChange(e.target.value)}
-        className="gen-input"
-      />
-      <div className="gen-test-row">
-        <label className="gen-field">
-          <span className="gen-label">{t('courseEdit.questionCount')}</span>
-          <input
-            type="number"
-            min={3}
-            max={25}
-            className="gen-input"
-            value={questionCount}
-            onChange={(e) => onQuestionCountChange(Number(e.target.value))}
-          />
-        </label>
-        <label className="gen-field">
-          <span className="gen-label">{t('courseEdit.difficulty')}</span>
-          <select
-            className="gen-select"
-            value={testDifficulty}
-            onChange={(e) => onTestDifficultyChange(e.target.value)}
+    <div className="card">
+      <div className="sec-head">
+        <div className="row gap10" style={{ alignItems: 'center' }}>
+          <span
+            className="gen-ic"
+            style={{ background: 'var(--violet-50)', color: 'var(--violet-500)' }}
           >
-            <option value="easy">{t('courseEdit.difficultyEasy')}</option>
-            <option value="medium">{t('courseEdit.difficultyMedium')}</option>
-            <option value="hard">{t('courseEdit.difficultyHard')}</option>
-          </select>
-        </label>
+            <Icon name="target" size={18} />
+          </span>
+          <h3 className="h3">{t('studio.testGen')}</h3>
+        </div>
       </div>
-      <button
-        type="button"
-        className="btn btn-primary btn-lg gen-cta gen-cta--wide"
-        onClick={onGenerateTest}
-        disabled={generatingTest || selectedLessonsCount === 0 || !canGenerate}
-      >
-        {generatingTest ? (
-          <>
-            <FiLoader className="spin" /> {t('courseEdit.generatingTest')}
-          </>
-        ) : (
-          <>
-            <FiCheckSquare /> {t('courseEdit.generateTest')}
-          </>
-        )}
-      </button>
+
+      <div style={{ padding: '4px 18px 18px' }}>
+        <div className="studio-test-gen-fields">
+          <StudioMiniField label={t('studio.testTitle')}>
+            <input
+              className="input"
+              style={{ height: 38 }}
+              placeholder={t('courseEdit.testTitlePlaceholder')}
+              value={testTitle}
+              onChange={(e) => onTestTitleChange(e.target.value)}
+            />
+          </StudioMiniField>
+
+          <StudioMiniField label={t('studio.testQuestions')}>
+            <select
+              className="select"
+              style={{ height: 38 }}
+              value={questionCount}
+              onChange={(e) => onQuestionCountChange(Number(e.target.value))}
+            >
+              {TEST_COUNTS.map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </StudioMiniField>
+
+          <StudioMiniField label={t('studio.difficulty')}>
+            <select
+              className="select"
+              style={{ height: 38 }}
+              value={testDifficulty}
+              onChange={(e) => onTestDifficultyChange(e.target.value)}
+            >
+              <option value="easy">{t('studio.testDifficultyEasy')}</option>
+              <option value="medium">{t('studio.testDifficultyMedium')}</option>
+              <option value="hard">{t('studio.testDifficultyHard')}</option>
+            </select>
+          </StudioMiniField>
+
+          <button
+            type="button"
+            className="btn btn-outline studio-test-gen-submit"
+            onClick={onGenerateTest}
+            disabled={generatingTest || selectedLessonsCount === 0 || !canGenerate}
+          >
+            {generatingTest ? (
+              <Spinner size={16} />
+            ) : (
+              <Icon name="sparkles" size={16} />
+            )}
+            {generatingTest ? t('courseEdit.generatingTest') : t('studio.generateTest')}
+          </button>
+        </div>
+      </div>
     </div>
-    </aside>
   )
 }
 

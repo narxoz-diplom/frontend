@@ -1,8 +1,10 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { FiEye, FiTrash2, FiUserPlus, FiCheckCircle, FiChevronRight } from 'react-icons/fi'
+import { useNavigate } from 'react-router-dom'
 import { pickLocalized } from '@/i18n/localize'
 import { useTranslation } from 'react-i18next'
+import auth from '@/shared/config/auth'
+import { canUpload } from '@/shared/lib/roles'
+import { Icon, CourseCover, StatusBadge, Spinner } from '@/shared/ui/academis'
 
 const CourseCard = ({
   course,
@@ -13,91 +15,134 @@ const CourseCard = ({
   canDelete,
   deleting,
   onEnroll,
-  onDelete
+  onDelete,
+  index = 0,
 }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const isTeacher = canUpload(auth)
+  const lessonsCount = course.lessonsCount ?? course.lessons?.length ?? 0
+  const enrolledCount = Array.isArray(course.enrolledStudents) ? course.enrolledStudents.length : 0
+  const isPublished = String(course.status || '').toUpperCase() === 'PUBLISHED'
+
+  const handleCardClick = () => {
+    navigate(`/courses/${course.id}`)
+  }
+
+  const handleEdit = (event) => {
+    event.stopPropagation()
+    navigate(`/courses/${course.id}/edit`)
+  }
+
+  const handleEnroll = (event) => {
+    event.stopPropagation()
+    onEnroll(course.id)
+  }
+
+  const handleDelete = (event) => {
+    event.stopPropagation()
+    onDelete(course)
+  }
 
   return (
-    <article className="course-card">
-      <div className={`course-card__media${course.imageUrl ? '' : ' course-card__media--placeholder'}`}>
-        {course.imageUrl ? (
-          <img src={course.imageUrl} alt="" decoding="async" />
-        ) : (
-          <span className="course-card__media-fallback" aria-hidden>
-            {String(pickLocalized(course, 'title') || course.title || '?').slice(0, 1)}
-          </span>
+    <div
+      className="card card-hover course-card fade-up"
+      style={{
+        cursor: 'pointer',
+        overflow: 'hidden',
+        animationDelay: `${index * 0.04}s`,
+      }}
+      onClick={handleCardClick}
+      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
+      role="link"
+      tabIndex={0}
+    >
+      <div style={{ position: 'relative' }}>
+        <CourseCover course={course} image={course.imageUrl} height={138} radius={0} />
+        <div style={{ position: 'absolute', top: 11, left: 11 }}>
+          <StatusBadge status={course.status} />
+        </div>
+        {isTeacher && (
+          <button
+            type="button"
+            className="cover-edit"
+            onClick={handleEdit}
+            title={t('common.edit')}
+            aria-label={t('common.edit')}
+          >
+            <Icon name="edit" size={15} />
+          </button>
         )}
       </div>
-      <div className="course-card__body">
-        <div className="course-card__head">
-          <span
-            className={`course-card__status course-card__status--${String(course.status || 'unknown').toLowerCase()}`}
-          >
-            {course.status || '—'}
-          </span>
-        </div>
-        <h3 className="course-card__title">{pickLocalized(course, 'title')}</h3>
-        <p className="course-card__description">
+
+      <div style={{ padding: 15 }}>
+        <h3 className="h3" style={{ fontSize: 16, lineHeight: 1.25, marginBottom: 6 }}>
+          {pickLocalized(course, 'title')}
+        </h3>
+        <p className="muted clamp-2" style={{ fontSize: 13, minHeight: 36 }}>
           {pickLocalized(course, 'description') || t('coursesPage.noDescription')}
         </p>
-        <div className="course-card__meta">
-          {course.lessons && (
-            <span className="course-card__stat">
-              {course.lessons.length} {t('coursesPage.lessonsSuffix')}
+
+        <div
+          className="row between"
+          style={{ marginTop: 13, paddingTop: 13, borderTop: '1px solid var(--border)' }}
+        >
+          <div className="row gap12 dim" style={{ fontSize: 12.5, fontWeight: 600 }}>
+            <span className="row gap4">
+              <Icon name="book" size={14} />
+              {lessonsCount}
             </span>
-          )}
-          {views !== undefined && (
-            <span className="course-card__stat course-card__stat--views">
-              <FiEye aria-hidden /> {views || 0}
+            <span className="row gap4">
+              <Icon name="eye" size={14} />
+              {views ?? 0}
             </span>
-          )}
-        </div>
-        <div className="course-card__footer">
-          <div className="course-card__actions">
-            <Link to={`/courses/${course.id}`} className="course-card__btn course-card__btn--outline">
-              <span>{t('coursesPage.viewCourse')}</span>
-              <FiChevronRight className="course-card__btn-icon" aria-hidden />
-            </Link>
-            {canEnroll && (
-              enrolled ? (
-                <span className="course-card__enrolled-pill" title={t('coursesPage.alreadyEnrolled')}>
-                  <FiCheckCircle aria-hidden />
-                  {t('coursesPage.enrolled')}
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  className="course-card__btn course-card__btn--enroll"
-                  onClick={() => onEnroll(course.id)}
-                  disabled={enrolling}
-                  title={t('coursesPage.enrollCourse')}
-                >
-                  {enrolling ? (
-                    t('coursesPage.enrolling')
-                  ) : (
-                    <>
-                      <FiUserPlus className="course-card__btn-icon course-card__btn-icon--left" aria-hidden />
-                      {t('coursesPage.enroll')}
-                    </>
-                  )}
-                </button>
-              )
+            {isTeacher && (
+              <span className="row gap4">
+                <Icon name="users" size={14} />
+                {enrolledCount}
+              </span>
             )}
           </div>
-          {canDelete && (
-            <button
-              type="button"
-              className="course-card__icon-btn"
-              onClick={() => onDelete(course)}
-              disabled={deleting}
-              title={t('coursesPage.deleteCourse')}
-            >
-              {deleting ? '…' : <FiTrash2 aria-hidden />}
-            </button>
-          )}
+
+          <div className="row gap8" style={{ alignItems: 'center' }}>
+            {canEnroll && (
+              enrolled ? (
+                <span className="badge badge-published">
+                  <Icon name="check" size={13} />
+                  {t('coursesPage.enrolled')}
+                </span>
+              ) : isPublished ? (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-primary"
+                  onClick={handleEnroll}
+                  disabled={enrolling}
+                >
+                  {enrolling ? (
+                    <Spinner size={13} color="#fff" />
+                  ) : (
+                    <Icon name="enroll" size={14} />
+                  )}
+                  {enrolling ? t('coursesPage.enrolling') : t('coursesPage.enroll')}
+                </button>
+              ) : null
+            )}
+            {canDelete && (
+              <button
+                type="button"
+                className="btn btn-icon btn-ghost btn-sm"
+                onClick={handleDelete}
+                disabled={deleting}
+                title={t('coursesPage.deleteCourse')}
+                aria-label={t('coursesPage.deleteCourse')}
+              >
+                {deleting ? <Spinner size={14} /> : <Icon name="trash" size={15} />}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-    </article>
+    </div>
   )
 }
 

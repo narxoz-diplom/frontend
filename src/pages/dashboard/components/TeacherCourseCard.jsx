@@ -1,67 +1,44 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { FiEdit, FiEye, FiFileText } from 'react-icons/fi'
-import { useTranslation } from 'react-i18next'
 import { pickLocalized } from '@/i18n/localize'
+import { Icon, CourseCover, StatusBadge } from '@/shared/ui/academis'
 
 const TeacherCourseCard = ({ course }) => {
-    const { t } = useTranslation()
+  const enrolledCount = Array.isArray(course.enrolledStudents) ? course.enrolledStudents.length : 0
 
-    const statusBadgeClasses = {
-        PUBLISHED: 'course-status-badge--published',
-        DRAFT: 'course-status-badge--draft',
-        ARCHIVED: 'course-status-badge--archived',
-    }
-
-    const statusLabels = {
-        PUBLISHED: t('dashboard.published'),
-        DRAFT: t('dashboard.statusDraft'),
-        ARCHIVED: t('dashboard.statusArchived'),
-    }
-
-    const badgeClass = statusBadgeClasses[course.status] || 'course-status-badge--muted'
-    const statusLabel = statusLabels[course.status] ?? course.status ?? '—'
-
-    return (
-        <div className="course-card course-card--lms">
-            <div className="course-card-body">
-                <span className={`course-status-badge ${badgeClass}`}>
-                    {statusLabel}
-                </span>
-
-                <h3 className="course-title">{pickLocalized(course, 'title')}</h3>
-
-                <p className="course-desc">
-                    {pickLocalized(course, 'description') || t('dashboard.noDescription')}
-                </p>
-            </div>
-
-            <div className="course-card-footer">
-                <div className="course-meta">
-                    <span className="course-meta-item">
-                        <FiFileText size={13} />
-                        {course.lessonsCount ?? '—'} {t('dashboard.lessonsCountSuffix')}
-                    </span>
-                </div>
-                <div className="course-card-actions">
-                    <Link
-                        to={`/courses/${course.id}`}
-                        className="course-action-btn"
-                        title={t('common.view')}
-                    >
-                        <FiEye size={15} />
-                    </Link>
-                    <Link
-                        to={`/courses/${course.id}/edit`}
-                        className="course-action-btn primary"
-                        title={t('common.edit')}
-                    >
-                        <FiEdit size={15} />
-                    </Link>
-                </div>
-            </div>
+  return (
+    <Link
+      to={`/courses/${course.id}`}
+      className="card card-hover course-card"
+      style={{ overflow: 'hidden', textDecoration: 'none', color: 'inherit' }}
+    >
+      <CourseCover course={course} height={96} radius={0} />
+      <div style={{ padding: 13 }}>
+        <div className="row between" style={{ marginBottom: 7 }}>
+          <StatusBadge status={course.status} />
         </div>
-    )
+        <div style={{ fontWeight: 700, fontSize: 14.5, lineHeight: 1.25 }}>
+          {pickLocalized(course, 'title')}
+        </div>
+        <div className="row gap12 dim" style={{ fontSize: 12, marginTop: 8 }}>
+          <span className="row gap4">
+            <Icon name="book" size={13} />
+            {course.lessonsCount ?? '—'}
+          </span>
+          {course.views != null && (
+            <span className="row gap4">
+              <Icon name="eye" size={13} />
+              {course.views}
+            </span>
+          )}
+          <span className="row gap4">
+            <Icon name="users" size={13} />
+            {enrolledCount}
+          </span>
+        </div>
+      </div>
+    </Link>
+  )
 }
 
 export default TeacherCourseCard

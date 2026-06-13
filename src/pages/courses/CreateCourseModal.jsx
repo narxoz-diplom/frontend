@@ -1,19 +1,26 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiX } from 'react-icons/fi'
-import { createCourse } from '@/shared/api/coursesApi'
 import { useTranslation } from 'react-i18next'
-import './CreateCourseModal.css'
+import { createCourse } from '@/shared/api/coursesApi'
+import { Modal, ModalHeader, Icon, Spinner } from '@/shared/ui/academis'
 
-const CreateCourseModal = ({ isOpen, onClose }) => {
+const CreateCourseModal = ({ isOpen, open, onClose }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const visible = open ?? isOpen
   const [form, setForm] = useState({ title: '', description: '', imageUrl: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (visible) {
+      setForm({ title: '', description: '', imageUrl: '' })
+      setError(null)
+    }
+  }, [visible])
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
     setError(null)
     setLoading(true)
     try {
@@ -21,7 +28,7 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
         title: form.title,
         description: form.description,
         imageUrl: form.imageUrl,
-        status: 'DRAFT'
+        status: 'DRAFT',
       })
       onClose()
       setForm({ title: '', description: '', imageUrl: '' })
@@ -33,57 +40,95 @@ const CreateCourseModal = ({ isOpen, onClose }) => {
     }
   }
 
-  if (!isOpen) return null
-
   return (
-    <div className="create-course-modal-overlay" onClick={onClose}>
-      <div className="create-course-modal" onClick={(e) => e.stopPropagation()}>
-        <div className="create-course-modal-header">
-          <h2>{t('courseModal.title')}</h2>
-          <button className="create-course-modal-close" onClick={onClose}>
-            <FiX />
-          </button>
-        </div>
-        <form onSubmit={handleSubmit} className="create-course-form">
-          <div className="form-group">
-            <label>{t('courseModal.courseTitle')}</label>
+    <Modal isOpen={visible} onClose={onClose}>
+      <ModalHeader
+        title={t('courseModal.title')}
+        subtitle={
+          t('courseModal.subtitle', {
+            defaultValue: 'Создайте курс и наполните его с помощью ИИ',
+          })
+        }
+        icon="plus"
+        iconBg="var(--brand)"
+        onClose={onClose}
+      />
+      <form onSubmit={handleSubmit}>
+        <div className="modal-body">
+          <div className="field">
+            <label className="label" htmlFor="course-title">
+              {t('courseModal.courseTitle')}
+              <span style={{ color: 'var(--brand)' }}> *</span>
+            </label>
             <input
+              id="course-title"
+              className="input"
               type="text"
               value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              onChange={(event) => setForm({ ...form, title: event.target.value })}
               required
               placeholder={t('courseModal.courseTitlePlaceholder')}
             />
           </div>
-          <div className="form-group">
-            <label>{t('courseModal.courseDescription')}</label>
+
+          <div className="field">
+            <label className="label" htmlFor="course-description">
+              {t('courseModal.courseDescription')}
+              <span style={{ color: 'var(--brand)' }}> *</span>
+            </label>
             <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows="5"
-                required
-                placeholder={t('courseModal.courseDescriptionPlaceholder')}
+              id="course-description"
+              className="input"
+              value={form.description}
+              onChange={(event) => setForm({ ...form, description: event.target.value })}
+              rows={5}
+              required
+              placeholder={t('courseModal.courseDescriptionPlaceholder')}
+              style={{ resize: 'vertical', minHeight: 110 }}
             />
           </div>
 
-          <div className="form-group">
-            <label>{t('courseModal.courseImageUrl') || 'Image URL'}</label>
+          <div className="field">
+            <label className="label" htmlFor="course-image">
+              {t('courseModal.courseImageUrl', { defaultValue: 'URL обложки' })}
+            </label>
             <input
-                type="url"
-                value={form.imageUrl}
-                onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
-                placeholder="https://example.com/image.jpg"
+              id="course-image"
+              className="input"
+              type="url"
+              value={form.imageUrl}
+              onChange={(event) => setForm({ ...form, imageUrl: event.target.value })}
+              placeholder="https://example.com/image.jpg"
             />
           </div>
-          {error && <div className="form-error">{error}</div>}
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? t('courseModal.createLoading') : t('courseModal.title')}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+          {error && (
+            <div className="courses-flash courses-flash--error" style={{ marginTop: 4 }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        <div className="modal-foot">
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={loading}>
+            {t('common.cancel')}
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? (
+              <>
+                <Spinner size={15} color="#fff" />
+                {t('courseModal.createLoading')}
+              </>
+            ) : (
+              <>
+                <Icon name="plus" size={16} />
+                {t('courseModal.title')}
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 

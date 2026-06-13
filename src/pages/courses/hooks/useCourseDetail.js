@@ -13,6 +13,7 @@ import {
 import { getLessons, createLesson } from '@/shared/api/lessonsApi'
 import { getCourseTests } from '@/shared/api/testsApi'
 import { getLessonFiles, uploadToLesson, downloadFile, deleteFile } from '@/shared/api/filesApi'
+import { enrichLessonsWithVideos } from '../lib/enrichLessonsWithVideos'
 
 export const MIN_LESSON_CONTENT_LENGTH = 50
 
@@ -175,19 +176,8 @@ export const useCourseDetail = (id) => {
   const loadLessons = async () => {
     try {
       const response = await getLessons(id)
-      const lessonsData = response.data
-      setLessons(lessonsData)
-
-      const filesMap = {}
-      for (const lesson of lessonsData) {
-        try {
-          const filesResponse = await getLessonFiles(lesson.id)
-          filesMap[lesson.id] = filesResponse.data
-        } catch {
-          filesMap[lesson.id] = []
-        }
-      }
-      setLessonFiles(filesMap)
+      const lessonsData = response.data || []
+      setLessons(await enrichLessonsWithVideos(lessonsData))
       loadProgress()
     } catch {
       setError(t('coursePage.loadLessonsError'))

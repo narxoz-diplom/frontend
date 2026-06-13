@@ -1,41 +1,52 @@
 import React from 'react'
-import { FiCpu } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { Icon, Spinner } from '@/shared/ui/academis'
 
 const GenerationJobBanner = ({ jobStatus, jobProgress }) => {
   const { t } = useTranslation()
+  const status = (jobStatus || 'PENDING').toLowerCase()
+  const isRunning = jobStatus === 'RUNNING' || jobStatus === 'PENDING'
+  const progressPct =
+    jobProgress?.total > 0
+      ? Math.round((jobProgress.completed / jobProgress.total) * 100)
+      : null
 
   return (
-    <div className={`gen-job-banner gen-job-banner--${(jobStatus || 'PENDING').toLowerCase()}`}>
-      <div className="gen-job-banner__icon">
-        <FiCpu className={jobStatus === 'COMPLETED' ? '' : 'spin'} aria-hidden />
-      </div>
-      <div className="gen-job-banner__body">
-        <strong>
+    <div className={`quota-banner gen-job-banner gen-job-banner--${status}`} role="status">
+      <span className="qb-ic">
+        {isRunning ? <Spinner size={18} color="#fff" /> : <Icon name="bolt" size={18} />}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 14 }}>
           {jobStatus === 'COMPLETED'
             ? t('courseEdit.generationDone')
             : jobStatus === 'FAILED'
               ? t('courseEdit.generationStopped')
               : t('courseEdit.generatingInBackground')}
-        </strong>
-        <span className="gen-job-banner__meta">
+        </div>
+        <div className="muted" style={{ fontSize: 12.5, marginTop: 3 }}>
           {t('courseEdit.statusLabel')}: <code>{jobStatus || 'PENDING'}</code>
-          {jobProgress != null &&
-          jobProgress.total != null &&
-          jobProgress.completed != null &&
-          jobProgress.total > 0 ? (
+          {progressPct != null && (
             <>
               {' '}
-              — уроки: {jobProgress.completed}/{jobProgress.total}
+              — {jobProgress.completed}/{jobProgress.total}
               {jobProgress.currentTitle
                 ? ` («${jobProgress.currentTitle.slice(0, 60)}${jobProgress.currentTitle.length > 60 ? '…' : ''}»)`
                 : ''}
             </>
-          ) : null}
-          {jobStatus === 'RUNNING' || jobStatus === 'PENDING'
-            ? ' — после обновления страницы прогресс восстановится; уже созданные уроки остаются в курсе.'
-            : null}
-        </span>
+          )}
+          {isRunning && (
+            <span>
+              {' '}
+              — {t('courseEdit.generationJobPersistHint')}
+            </span>
+          )}
+        </div>
+        {progressPct != null && isRunning && (
+          <div className="progress" style={{ marginTop: 8, maxWidth: 320 }}>
+            <i style={{ width: `${progressPct}%` }} />
+          </div>
+        )}
       </div>
     </div>
   )

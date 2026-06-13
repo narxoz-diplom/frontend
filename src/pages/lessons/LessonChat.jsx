@@ -7,6 +7,7 @@ import AGUIChat from './components/AGUIChat'
 import SimpleLessonChat from './components/SimpleLessonChat'
 import { useChatPanel } from './hooks/useChatPanel'
 import './LessonChat.css'
+import './learning-academis.css'
 
 export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitle, lessonContent }) {
   const { t } = useTranslation()
@@ -18,12 +19,13 @@ export default function LessonChat({ lessonId, courseId, lessonTitle, courseTitl
       {!panelOpen && (
         <button
           type="button"
-          className="lesson-chat-fab"
+          className="lesson-chat-fab chat-fab"
           onClick={openPanel}
           aria-label={t('lessonChat.openAssistant')}
           title={t('lessonChat.assistantChat')}
         >
           <FiMessageCircle className="lesson-chat-fab-icon" aria-hidden />
+          <span className="lesson-chat-fab-label">{t('lessonChat.assistantChat')}</span>
           {AG_UI_URL && <span className="lesson-chat-fab-badge" aria-hidden>AG</span>}
         </button>
       )}

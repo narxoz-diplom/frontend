@@ -1,65 +1,70 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { pickLocalized } from '@/i18n/localize'
-import LessonChat from '../LessonChat'
+import { Icon } from '@/shared/ui/academis'
 
-const LessonSidebar = ({ course, courseId, lesson, lessonId, lessons, prevLesson, nextLesson }) => {
+const LessonSidebar = ({ course, courseId, lessonId, lessons, lessonProgress }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const currentIndex = lessons.findIndex((l) => l.id === parseInt(lessonId, 10))
 
   return (
-    <aside className="lesson-sidebar lesson-rail">
-      <div className="sidebar-section lesson-rail__card">
-        <p className="lesson-rail__eyebrow">{t('lessonPage.course')}</p>
-        <h3 className="lesson-rail__title">{pickLocalized(course, 'title')}</h3>
-        <Link to={`/courses/${courseId}`} className="lesson-rail__link">
-          {t('lessonPage.openCoursePage')}
-        </Link>
-      </div>
-
-      <div className="sidebar-section lesson-rail__card">
-        <p className="lesson-rail__eyebrow">{t('lessonPage.navigation')}</p>
-        <h3 className="lesson-rail__title lesson-rail__title--sm">{t('lessonPage.allLessons')}</h3>
-        <div className="lessons-nav">
-          {lessons.map((l, index) => (
-            <Link
-              key={l.id}
-              to={`/courses/${courseId}/lessons/${l.id}`}
-              className={`lesson-nav-item ${l.id === parseInt(lessonId) ? 'active' : ''}`}
-            >
-              <span className="lesson-nav-number">{index + 1}</span>
-              <span className="lesson-nav-title">{pickLocalized(l, 'title')}</span>
-            </Link>
-          ))}
+    <aside className="lesson-aside">
+      <div className="card" style={{ position: 'sticky', top: 12 }}>
+        <div className="sec-head">
+          <h3 className="h3">{t('lessonPage.navigation')}</h3>
+          <span className="dim mono" style={{ fontSize: 12 }}>
+            {currentIndex + 1}/{lessons.length}
+          </span>
         </div>
-      </div>
-
-      <LessonChat
-        lessonId={lessonId}
-        courseId={courseId}
-        lessonTitle={pickLocalized(lesson, 'title')}
-        courseTitle={pickLocalized(course, 'title')}
-        lessonContent={pickLocalized(lesson, 'content') || ''}
-      />
-
-      <div className="lesson-navigation lesson-rail__nav">
-        {prevLesson && (
-          <Link
-            to={`/courses/${courseId}/lessons/${prevLesson.id}`}
-            className="nav-btn prev-btn"
-          >
-            <FiChevronLeft aria-hidden /> {t('lessonPage.previous')}
+        <div className="lesson-aside-scroll">
+          {lessons.map((lesson, index) => {
+            const isCurrent = lesson.id === parseInt(lessonId, 10)
+            const isDone = isCurrent && lessonProgress?.completed
+            return (
+              <div
+                key={lesson.id}
+                className={`lnav-item${isCurrent ? ' current' : ''}`}
+                onClick={() => navigate(`/courses/${courseId}/lessons/${lesson.id}`)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') navigate(`/courses/${courseId}/lessons/${lesson.id}`)
+                }}
+                role="link"
+                tabIndex={0}
+              >
+                <span
+                  className={`lesson-num${isDone ? ' done' : ''}${isCurrent ? ' cur' : ''}`}
+                  style={{ width: 26, height: 26, fontSize: 12 }}
+                >
+                  {isDone ? <Icon name="check" size={13} /> : index + 1}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: isCurrent ? 700 : 550,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {pickLocalized(lesson, 'title')}
+                  </div>
+                </div>
+                {lesson.videos?.length > 0 && (
+                  <Icon name="video" size={13} style={{ color: 'var(--text-3)' }} />
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <div style={{ padding: '10px 14px 14px', borderTop: '1px solid var(--border)' }}>
+          <Link to={`/courses/${courseId}`} className="btn btn-sm btn-ghost btn-block">
+            <Icon name="book" size={14} />
+            {t('lessonPage.openCoursePage')}
           </Link>
-        )}
-        {nextLesson && (
-          <Link
-            to={`/courses/${courseId}/lessons/${nextLesson.id}`}
-            className="nav-btn next-btn"
-          >
-            {t('lessonPage.next')} <FiChevronRight aria-hidden />
-          </Link>
-        )}
+        </div>
       </div>
     </aside>
   )

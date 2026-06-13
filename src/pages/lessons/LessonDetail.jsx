@@ -1,18 +1,20 @@
 import React from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { FiArrowLeft, FiCheckCircle } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import auth from '@/shared/config/auth'
 import { canUpload } from '@/shared/lib/roles'
 import { updateLesson } from '@/shared/api/lessonsApi'
 import { pickLocalized } from '@/i18n/localize'
+import { PageHeader, Icon, Spinner } from '@/shared/ui/academis'
 import { useLessonData } from './hooks/useLessonData'
 import { useLessonProgress } from './hooks/useLessonProgress'
 import LessonNotes from './components/LessonNotes'
 import LessonVideos from './components/LessonVideos'
 import LessonFiles from './components/LessonFiles'
 import LessonSidebar from './components/LessonSidebar'
+import LessonChat from './LessonChat'
 import './LessonDetail.css'
+import './learning-academis.css'
 
 const LessonDetail = () => {
   const { t } = useTranslation()
@@ -28,7 +30,7 @@ const LessonDetail = () => {
     error,
     setError,
     refreshVideos,
-    refreshFiles
+    refreshFiles,
   } = useLessonData(courseId, lessonId)
   const lessonProgress = useLessonProgress(courseId, lessonId, videos)
 
@@ -45,55 +47,76 @@ const LessonDetail = () => {
   }
 
   if (loading) {
-    return <div className="loading">{t('common.loading')}</div>
+    return (
+      <div className="page page-wide lesson-page lesson-page-loading">
+        <Spinner size={28} />
+        <span className="muted">{t('common.loading')}</span>
+      </div>
+    )
   }
 
   if (!lesson || !course) {
-    return <div className="error">{t('coursePage.loadLessonsError')}</div>
+    return (
+      <div className="page page-wide">
+        <div className="learning-flash learning-flash--error">{t('coursePage.loadLessonsError')}</div>
+      </div>
+    )
   }
 
-  const currentIndex = lessons.findIndex(l => l.id === parseInt(lessonId))
+  const currentIndex = lessons.findIndex((l) => l.id === parseInt(lessonId, 10))
   const prevLesson = currentIndex > 0 ? lessons[currentIndex - 1] : null
   const nextLesson = currentIndex < lessons.length - 1 ? lessons[currentIndex + 1] : null
   const canEdit = canUpload(auth)
+  const courseTitle = pickLocalized(course, 'title') || course.title || ''
+  const lessonTitle = pickLocalized(lesson, 'title') || lesson.title || ''
 
   return (
-    <div className="lesson-detail lesson-detail--v2">
-      <header className="lesson-page__intro">
-        <Link to={`/courses/${courseId}`} className="back-link">
-          <FiArrowLeft aria-hidden /> {t('lessonPage.backToCourse')}
-        </Link>
-        <p className="lesson-page__kicker">
-          {t('lessonPage.lessonOf', { current: currentIndex + 1, total: lessons.length })}
-          {pickLocalized(course, 'title') ? ` · ${pickLocalized(course, 'title')}` : ''}
-        </p>
-        <div className="lesson-page__title-row">
-          <h1 className="lesson-page__title">{pickLocalized(lesson, 'title')}</h1>
-          {lessonProgress.completed && (
-            <span className="lesson-page__badge lesson-page__badge--done">
-              <FiCheckCircle aria-hidden /> {t('lessonPage.completed')}
-            </span>
-          )}
-        </div>
-        {pickLocalized(lesson, 'description') && <p className="lesson-page__lead">{pickLocalized(lesson, 'description')}</p>}
-        {videos.length > 0 && (
-          <div className="lesson-page__progress" aria-label={t('coursePage.progress')}>
-            <div className="lesson-page__progress-track">
-              <div
-                className="lesson-page__progress-fill"
-                style={{ width: `${lessonProgress.progress}%` }}
-              />
+    <div className="page page-wide lesson-page">
+      <div className="lesson-grid">
+        <div className="col gap16" style={{ minWidth: 0 }}>
+          <PageHeader
+            title={lessonTitle}
+            subtitle={pickLocalized(lesson, 'description')}
+            breadcrumb={[
+              { label: t('coursesPage.title'), to: '/courses' },
+              { label: courseTitle, to: `/courses/${courseId}` },
+              { label: t('lessonPage.lessonOf', { current: currentIndex + 1, total: lessons.length }) },
+            ]}
+            actions={(
+              <div className="row gap8 wrap">
+                <span className="badge badge-red">
+                  {t('lessonPage.lessonOf', { current: currentIndex + 1, total: lessons.length })}
+                </span>
+                {lessonProgress.completed && (
+                  <span className="badge badge-published row gap4">
+                    <Icon name="check" size={12} />
+                    {t('lessonPage.completed')}
+                  </span>
+                )}
+              </div>
+            )}
+          />
+
+          {videos.length > 0 && (
+            <div style={{ marginTop: -4 }}>
+              <div className="row between" style={{ marginBottom: 6, fontSize: 12.5, fontWeight: 600 }}>
+                <span className="muted">{t('coursePage.progress')}</span>
+                <span style={{ color: 'var(--brand)', fontWeight: 800 }}>
+                  {Math.round(lessonProgress.progress)}%
+                </span>
+              </div>
+              <div className="progress">
+                <i style={{ width: `${lessonProgress.progress}%` }} />
+              </div>
             </div>
-            <span className="lesson-page__progress-label">{Math.round(lessonProgress.progress)}%</span>
-          </div>
-        )}
-      </header>
+          )}
 
-      {error && <div className="lesson-page__error">{error}</div>}
+          {error && (
+            <div className="learning-flash learning-flash--error" role="alert">
+              {error}
+            </div>
+          )}
 
-      <div className="lesson-content-wrapper">
-        <div className="lesson-main-content">
-          <LessonNotes lesson={lesson} canEdit={canEdit} onSave={handleSaveContent} />
           <LessonVideos
             videos={videos}
             canEdit={canEdit}
@@ -102,6 +125,9 @@ const LessonDetail = () => {
             onVideosChanged={refreshVideos}
             onError={setError}
           />
+
+          <LessonNotes lesson={lesson} canEdit={canEdit} onSave={handleSaveContent} />
+
           <LessonFiles
             files={files}
             canEdit={canEdit}
@@ -109,18 +135,51 @@ const LessonDetail = () => {
             onFilesChanged={refreshFiles}
             onError={setError}
           />
+
+          <div className="row between gap10 lesson-page-nav">
+            {prevLesson ? (
+              <Link
+                to={`/courses/${courseId}/lessons/${prevLesson.id}`}
+                className="btn btn-outline"
+              >
+                <Icon name="chevLeft" size={16} />
+                {t('lessonPage.previous')}
+              </Link>
+            ) : (
+              <span />
+            )}
+            {nextLesson ? (
+              <Link
+                to={`/courses/${courseId}/lessons/${nextLesson.id}`}
+                className="btn btn-primary"
+              >
+                {t('lessonPage.next')}
+                <Icon name="chevRight" size={16} />
+              </Link>
+            ) : (
+              <Link to={`/courses/${courseId}`} className="btn btn-primary">
+                {t('testPage.returnToCourse')}
+                <Icon name="award" size={16} />
+              </Link>
+            )}
+          </div>
         </div>
 
         <LessonSidebar
-          course={course}
           courseId={courseId}
-          lesson={lesson}
           lessonId={lessonId}
           lessons={lessons}
-          prevLesson={prevLesson}
-          nextLesson={nextLesson}
+          lessonProgress={lessonProgress}
         />
       </div>
+
+      <LessonChat
+        lessonId={lessonId}
+        courseId={courseId}
+        lessonTitle={lessonTitle}
+        courseTitle={courseTitle}
+        lessonContent={pickLocalized(lesson, 'content') || ''}
+      />
     </div>
   )
 }

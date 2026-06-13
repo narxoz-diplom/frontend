@@ -1,45 +1,60 @@
 import React from 'react'
-import { FiGlobe } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { setLang } from '@/i18n'
+import { Icon } from '@/shared/ui/academis'
+import Dropdown from '@/shared/ui/Dropdown'
 
 const LANG_OPTIONS = [
-    { code: 'ru', label: 'RU' },
-    { code: 'en', label: 'EN' },
-    { code: 'kz', label: 'KZ' },
+  { code: 'ru', label: 'Русский' },
+  { code: 'en', label: 'English' },
+  { code: 'kz', label: 'Қазақша' },
 ]
 
 const LangSwitcher = () => {
-    const { t, i18n } = useTranslation()
-    const currentLang = (i18n.language || 'ru').split('-')[0]
+  const { t, i18n } = useTranslation()
+  const currentLang = (i18n.language || 'ru').split('-')[0]
 
-    return (
-        <div
-            className="lang-switcher"
-            role="group"
-            aria-label={t('lang')}
-            title={t('lang')}
+  return (
+    <Dropdown
+      align="right"
+      trigger={(
+        <button
+          type="button"
+          className="btn btn-icon btn-ghost btn-sm topbar-icon-btn"
+          title={t('lang')}
+          aria-label={t('lang')}
         >
-            <span className="lang-switcher__globe" aria-hidden>
-                <FiGlobe />
+          <Icon name="globe" size={19} />
+        </button>
+      )}
+    >
+      <div className="menu-label">{t('lang')}</div>
+      {LANG_OPTIONS.map(({ code, label }) => (
+        <button
+          key={code}
+          type="button"
+          className="menu-item"
+          onClick={() => setLang(code)}
+        >
+          <span style={{
+            fontWeight: 800,
+            fontSize: 11,
+            width: 22,
+            color: currentLang === code ? 'var(--brand)' : 'var(--text-3)',
+          }}
+          >
+            {code.toUpperCase()}
+          </span>
+          {label}
+          {currentLang === code && (
+            <span style={{ marginLeft: 'auto', color: 'var(--brand)' }}>
+              <Icon name="check" size={16} />
             </span>
-            <div className="lang-switcher__track">
-                {LANG_OPTIONS.map(({ code, label }) => (
-                    <button
-                        key={code}
-                        type="button"
-                        className={`lang-switcher__btn ${currentLang === code ? 'is-active' : ''}`}
-                        onClick={() => setLang(code)}
-                        aria-pressed={currentLang === code}
-                        aria-label={t(code)}
-                        title={t(code)}
-                    >
-                        {label}
-                    </button>
-                ))}
-            </div>
-        </div>
-    )
+          )}
+        </button>
+      ))}
+    </Dropdown>
+  )
 }
 
 export default LangSwitcher

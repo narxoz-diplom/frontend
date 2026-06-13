@@ -17,7 +17,7 @@ const GenerationUsageSummary = ({ summary, models }) => {
   if (!totalTokens && !inputTokens && !cost) return null
 
   return (
-    <aside className="generation-usage-summary" aria-live="polite">
+    <aside className="card generation-usage-summary studio-stat" aria-live="polite" style={{ padding: '13px 15px' }}>
       <p className="generation-usage-summary__title">{t('courseEdit.generationUsageTitle')}</p>
       <dl className="generation-usage-summary__grid">
         {modelName && (

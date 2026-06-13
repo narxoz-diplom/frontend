@@ -1,111 +1,208 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { FiArrowLeft, FiEdit3, FiGlobe, FiArchive } from 'react-icons/fi'
+import { Link, useNavigate } from 'react-router-dom'
 import { pickLocalized } from '@/i18n/localize'
 import { useTranslation } from 'react-i18next'
+import {
+  Icon,
+  CourseCover,
+  StatusBadge,
+  Dropdown,
+  Spinner,
+} from '@/shared/ui/academis'
+import { avatarInitials, statusI18nKey } from '../lib/courseDetailUi'
 
-const COURSE_STATUS_OPTIONS = [
-  { value: 'DRAFT', labelKey: 'common.draft', Icon: FiEdit3 },
-  { value: 'PUBLISHED', labelKey: 'dashboard.published', Icon: FiGlobe },
-  { value: 'ARCHIVED', labelKey: 'common.archived', Icon: FiArchive }
-]
+const STATUS_OPTIONS = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
+
+const statusDotColor = (status) => {
+  const value = String(status || '').toUpperCase()
+  if (value === 'PUBLISHED') return 'var(--green-500)'
+  if (value === 'DRAFT') return 'var(--amber-500)'
+  return 'var(--text-3)'
+}
 
 const CourseHeader = ({
   course,
-  statusLabel,
+  courseId,
   canManageCourse,
   statusChanging,
   onStatusChange,
   previewMode,
   lessonsCount,
-  testsCount,
   courseProgress,
-  courseViews
+  courseViews,
+  lessons,
+  completedLessonsCount = 0,
+  enrolling,
+  onEnroll,
+  instructorLabel,
 }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
+  const enrolledCount = Array.isArray(course.enrolledStudents) ? course.enrolledStudents.length : 0
+  const isPublished = String(course.status || '').toUpperCase() === 'PUBLISHED'
+  const showProgress = (canManageCourse || !previewMode) && lessonsCount > 0
+  const description = pickLocalized(course, 'description')
+
+  const handleContinue = () => {
+    const firstLesson = lessons[0]
+    if (firstLesson) {
+      navigate(`/courses/${courseId}/lessons/${firstLesson.id}`)
+    }
+  }
 
   return (
-    <header className="course-page__intro">
-      <Link to="/courses" className="course-page__back">
-        <FiArrowLeft aria-hidden /> {t('coursePage.backToCatalog')}
-      </Link>
-      {course.imageUrl && (
-        <div className="course-page__cover-wrap">
-          <img src={course.imageUrl} alt="" className="course-page__cover" decoding="async" />
-        </div>
-      )}
-      <p className="course-page__kicker">{t('common.course')} · {statusLabel}</p>
-      <div className="course-page__title-row">
-        <h1 className="course-page__title">{pickLocalized(course, 'title')}</h1>
-        <div className="course-page__status-block">
-          {!canManageCourse && (
-            <span className={`course-status course-status--pill ${course.status}`}>{statusLabel}</span>
-          )}
-          {canManageCourse && (
-            <div
-              className={`course-status-switcher ${statusChanging ? 'is-busy' : ''}`}
-              role="group"
-              aria-label={t('coursePage.changeStatusTitle')}
-            >
-              {COURSE_STATUS_OPTIONS.map(({ value, labelKey, Icon }) => {
-                const active = course.status === value
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    className={`course-status-switcher__btn course-status-switcher__btn--${value.toLowerCase()} ${active ? 'is-active' : ''}`}
-                    onClick={() => onStatusChange(value)}
-                    disabled={statusChanging}
-                    aria-pressed={active}
-                    title={t(labelKey)}
-                  >
-                    <Icon className="course-status-switcher__icon" aria-hidden />
-                    <span className="course-status-switcher__label">{t(labelKey)}</span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
-        </div>
+    <div className="course-hero card" style={{ overflow: 'hidden', padding: 0 }}>
+      <div style={{ position: 'relative' }}>
+        <CourseCover course={course} image={course.imageUrl} height={168} radius={0} big />
+        <Link to="/courses" className="hero-back">
+          <Icon name="chevLeft" size={16} />
+          {t('nav.courses')}
+        </Link>
       </div>
-      {pickLocalized(course, 'description') && <p className="course-page__lead">{pickLocalized(course, 'description')}</p>}
-      {!previewMode ? (
-        <dl className="course-page__meta">
-          <div>
-            <dt>{t('coursePage.lessons')}</dt>
-            <dd>{lessonsCount}</dd>
-          </div>
-          <div>
-            <dt>{t('coursePage.tests')}</dt>
-            <dd>{testsCount}</dd>
-          </div>
-          {lessonsCount > 0 && (
-            <div>
-              <dt>{t('coursePage.progress')}</dt>
-              <dd>{Math.round(courseProgress)}%</dd>
+
+      <div style={{ padding: '18px 22px 22px' }}>
+        <div className="row between wrap gap12" style={{ alignItems: 'flex-start' }}>
+          <div style={{ minWidth: 0 }}>
+            <div className="row gap8 wrap" style={{ marginBottom: 9 }}>
+              <StatusBadge status={course.status} />
+              {course.level && <span className="badge">{course.level}</span>}
+              {course.language && <span className="badge">{course.language}</span>}
             </div>
-          )}
-          <div>
-            <dt>{t('coursePage.views')}</dt>
-            <dd>{courseViews}</dd>
+
+            <h1 className="h1" style={{ fontSize: 26 }}>
+              {pickLocalized(course, 'title')}
+            </h1>
+
+            <p className="muted" style={{ marginTop: 7, maxWidth: 640, fontSize: 14 }}>
+              {description || ''}
+            </p>
+
+            <div
+              className="row gap16 dim"
+              style={{ marginTop: 13, fontSize: 13, fontWeight: 600 }}
+            >
+              {instructorLabel && (
+                <span className="row gap5">
+                  <span className="avatar avatar-sm">{avatarInitials(instructorLabel)}</span>
+                  {instructorLabel}
+                </span>
+              )}
+              <span className="row gap4">
+                <Icon name="book" size={14} />
+                {lessonsCount} {t('common.lessonsCount')}
+              </span>
+              <span className="row gap4">
+                <Icon name="users" size={14} />
+                {enrolledCount}
+              </span>
+              <span className="row gap4">
+                <Icon name="eye" size={14} />
+                {courseViews ?? 0}
+              </span>
+            </div>
           </div>
-        </dl>
-      ) : (
-        <dl className="course-page__meta course-page__meta--preview">
-          <div>
-            <dt>{t('coursePage.views')}</dt>
-            <dd>{courseViews}</dd>
-          </div>
-        </dl>
-      )}
-      {!previewMode && lessonsCount > 0 && (
-        <div className="course-page__progress" aria-label={t('coursePage.progress')}>
-          <div className="course-page__progress-track">
-            <div className="course-page__progress-fill" style={{ width: `${courseProgress}%` }} />
+
+          <div className="row gap10 wrap">
+            {canManageCourse && (
+              <>
+                <Dropdown
+                  trigger={(
+                    <button type="button" className="btn btn-outline" disabled={statusChanging}>
+                      <span
+                        className="dot-status"
+                        style={{ background: statusDotColor(course.status) }}
+                      />
+                      {t(statusI18nKey(course.status))}
+                      <Icon name="chevDown" size={15} />
+                    </button>
+                  )}
+                >
+                  <div className="menu-label">{t('coursePage.changeStatusTitle')}</div>
+                  {STATUS_OPTIONS.map((status) => (
+                    <div
+                      key={status}
+                      role="button"
+                      tabIndex={0}
+                      className="menu-item"
+                      onClick={() => !statusChanging && onStatusChange(status)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          if (!statusChanging) onStatusChange(status)
+                        }
+                      }}
+                    >
+                      <span
+                        className="dot-status"
+                        style={{ background: statusDotColor(status) }}
+                      />
+                      {t(statusI18nKey(status))}
+                      {course.status === status && (
+                        <span style={{ marginLeft: 'auto', color: 'var(--brand)' }}>
+                          <Icon name="check" size={15} />
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </Dropdown>
+
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => navigate(`/courses/${courseId}/edit`)}
+                >
+                  <Icon name="sparkles" size={16} />
+                  {t('coursePage.generationStudio')}
+                </button>
+              </>
+            )}
+
+            {!canManageCourse && !previewMode && (
+              <button type="button" className="btn btn-primary" onClick={handleContinue}>
+                <Icon name="play" size={15} />
+                {t('common.continue')}
+              </button>
+            )}
+
+            {previewMode && !canManageCourse && isPublished && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={onEnroll}
+                disabled={enrolling}
+              >
+                {enrolling ? (
+                  <Spinner size={15} color="#fff" />
+                ) : (
+                  <Icon name="enroll" size={16} />
+                )}
+                {enrolling ? t('coursesPage.enrolling') : t('coursesPage.enrollCourse')}
+              </button>
+            )}
           </div>
         </div>
-      )}
-    </header>
+
+        {showProgress && (
+          <div style={{ marginTop: 16 }}>
+            <div
+              className="row between"
+              style={{ marginBottom: 6, fontSize: 12.5, fontWeight: 600 }}
+            >
+              <span className="muted">
+                {t('coursesPage.progress')} · {completedLessonsCount}/{lessonsCount}{' '}
+                {t('common.lessonsCount')}
+              </span>
+              <span style={{ color: 'var(--brand)', fontWeight: 800 }}>
+                {Math.round(courseProgress)}%
+              </span>
+            </div>
+            <div className="progress">
+              <i style={{ width: `${courseProgress}%` }} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 

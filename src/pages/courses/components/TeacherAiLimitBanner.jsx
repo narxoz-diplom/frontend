@@ -1,17 +1,19 @@
 import React from 'react'
-import { FiAlertCircle, FiCheckCircle, FiLoader, FiZap } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { formatTokenCount } from '@/shared/lib/aiUsageFormat'
+import { Icon, Spinner } from '@/shared/ui/academis'
 
 const TeacherAiLimitBanner = ({ limit, loading }) => {
   const { t } = useTranslation()
 
   if (loading) {
     return (
-      <aside className="teacher-ai-limit-banner teacher-ai-limit-banner--loading" aria-busy="true">
-        <FiLoader className="spin" aria-hidden />
+      <div className="quota-banner" aria-busy="true">
+        <span className="qb-ic">
+          <Spinner size={18} color="#fff" />
+        </span>
         <span>{t('courseEdit.userLimitLoading')}</span>
-      </aside>
+      </div>
     )
   }
 
@@ -19,83 +21,50 @@ const TeacherAiLimitBanner = ({ limit, loading }) => {
 
   if (limit.unlimited) {
     return (
-      <aside className="teacher-ai-limit-banner teacher-ai-limit-banner--unlimited">
-        <FiZap aria-hidden />
-        <div>
-          <p className="teacher-ai-limit-banner__title">{t('courseEdit.userLimitUnlimitedTitle')}</p>
-          <p className="teacher-ai-limit-banner__hint">{t('courseEdit.userLimitUnlimitedHint')}</p>
+      <div className="quota-banner">
+        <span className="qb-ic">
+          <Icon name="bolt" size={18} />
+        </span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 700, fontSize: 13 }}>{t('courseEdit.userLimitUnlimitedTitle')}</div>
+          <div className="dim" style={{ fontSize: 12 }}>{t('courseEdit.userLimitUnlimitedHint')}</div>
         </div>
-      </aside>
+      </div>
     )
   }
-
-  const monthlyUsed = formatTokenCount(limit.monthlyUsed)
-  const monthlyRemaining = formatTokenCount(limit.monthlyRemaining)
-  const monthlyLimit = formatTokenCount(limit.monthlyLimit)
-  const dailyUsed = formatTokenCount(limit.dailyUsed)
-  const dailyRemaining = formatTokenCount(limit.dailyRemaining)
-  const dailyLimit = formatTokenCount(limit.dailyLimit)
 
   const monthlyPct =
     limit.monthlyLimit > 0
       ? Math.min(100, Math.round((limit.monthlyUsed / limit.monthlyLimit) * 100))
       : 0
-  const dailyPct =
-    limit.dailyLimit > 0
-      ? Math.min(100, Math.round((limit.dailyUsed / limit.dailyLimit) * 100))
-      : 0
+  const monthlyUsed = formatTokenCount(limit.monthlyUsed)
+  const monthlyLimit = formatTokenCount(limit.monthlyLimit)
 
   return (
-    <aside
-      className={`teacher-ai-limit-banner${limit.blocked ? ' teacher-ai-limit-banner--blocked' : ''}`}
+    <div
+      className={`quota-banner${limit.blocked ? ' quota-banner--blocked' : ''}`}
       role={limit.blocked ? 'alert' : 'status'}
     >
-      <div className="teacher-ai-limit-banner__head">
-        {limit.blocked ? <FiAlertCircle aria-hidden /> : <FiCheckCircle aria-hidden />}
-        <p className="teacher-ai-limit-banner__title">
-          {limit.blocked
-            ? t('courseEdit.userLimitBlockedTitle')
-            : t('courseEdit.userLimitTitle')}
-        </p>
+      <span className="qb-ic">
+        <Icon name="bolt" size={18} />
+      </span>
+      <div style={{ flex: 1 }}>
+        <div className="row between" style={{ marginBottom: 5 }}>
+          <span style={{ fontWeight: 700, fontSize: 13 }}>
+            {monthlyPct}% {t('studio.quota')}
+          </span>
+          <span className="dim mono" style={{ fontSize: 12 }}>
+            {monthlyUsed} / {monthlyLimit} {t('studio.runs')}
+          </span>
+        </div>
+        <div className="progress" style={{ background: 'rgba(228,22,22,.15)' }}>
+          <i style={{ width: `${monthlyPct}%` }} />
+        </div>
+        {limit.blocked && limit.blockReason && (
+          <div className="dim" style={{ fontSize: 11.5, marginTop: 6 }}>{limit.blockReason}</div>
+        )}
       </div>
-
-      {limit.blocked && limit.blockReason && (
-        <p className="teacher-ai-limit-banner__reason">{limit.blockReason}</p>
-      )}
-
-      <dl className="teacher-ai-limit-banner__grid">
-        <div>
-          <dt>{t('courseEdit.userLimitMonthly')}</dt>
-          <dd>
-            {t('courseEdit.userLimitUsedOf', {
-              used: monthlyUsed,
-              limit: monthlyLimit,
-              remaining: monthlyRemaining
-            })}
-          </dd>
-          <div className="teacher-ai-limit-banner__bar" aria-hidden>
-            <span style={{ width: `${monthlyPct}%` }} />
-          </div>
-        </div>
-        <div>
-          <dt>{t('courseEdit.userLimitDaily')}</dt>
-          <dd>
-            {t('courseEdit.userLimitUsedOf', {
-              used: dailyUsed,
-              limit: dailyLimit,
-              remaining: dailyRemaining
-            })}
-          </dd>
-          <div className="teacher-ai-limit-banner__bar" aria-hidden>
-            <span style={{ width: `${dailyPct}%` }} />
-          </div>
-        </div>
-      </dl>
-
-      {limit.customOverride && (
-        <p className="teacher-ai-limit-banner__hint">{t('courseEdit.userLimitCustomOverride')}</p>
-      )}
-    </aside>
+    </div>
   )
 }
 

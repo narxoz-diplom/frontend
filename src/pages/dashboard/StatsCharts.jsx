@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import './StatsCharts.css'
 
 function DonutChart({ segments, size = 160, label, sublabel }) {
@@ -84,46 +85,47 @@ function Legend({ segments }) {
 
 function ChartCard({ title, children }) {
     return (
-        <div className="stats-chart-card">
-            <p className="stats-chart-card__title">{title}</p>
+        <div className="card card-pad">
+            <h3 className="h3" style={{ marginBottom: 14 }}>{title}</h3>
             {children}
         </div>
     )
 }
 
 export function StudentStatsCharts({ stats }) {
+    const { t } = useTranslation()
     const { enrolledCourses = 0, catalogCourses = 0, completedLessons = 0, testAttempts = 0 } = stats
 
     const notEnrolled = Math.max(0, catalogCourses - enrolledCourses)
     const donutSegments = [
-        { label: 'Записан', value: enrolledCourses, color: 'var(--primary-color)' },
-        { label: 'Не записан', value: notEnrolled, color: 'var(--bg-tertiary)' },
+        { label: t('dashboard.charts.enrolled'), value: enrolledCourses, color: 'var(--primary-color)' },
+        { label: t('dashboard.charts.notEnrolled'), value: notEnrolled, color: 'var(--bg-tertiary)' },
     ]
 
     const barItems = [
-        { label: 'Мои курсы', value: enrolledCourses, color: 'var(--primary-color)' },
-        { label: 'Пройдено уроков', value: completedLessons, color: '#22c55e' },
-        { label: 'Попыток тестов', value: testAttempts, color: '#f59e0b' },
-        { label: 'Курсов в каталоге', value: catalogCourses, color: '#6366f1' },
+        { label: t('dashboard.myCourses'), value: enrolledCourses, color: 'var(--primary-color)' },
+        { label: t('dashboard.completedLessons'), value: completedLessons, color: '#22c55e' },
+        { label: t('dashboard.testAttempts'), value: testAttempts, color: '#f59e0b' },
+        { label: t('dashboard.catalogCourses'), value: catalogCourses, color: '#6366f1' },
     ]
 
     const pct = catalogCourses > 0 ? Math.round((enrolledCourses / catalogCourses) * 100) : 0
 
     return (
         <div className="stats-charts-grid">
-            <ChartCard title="Охват каталога">
+            <ChartCard title={t('dashboard.charts.catalogCoverage')}>
                 <div className="stats-chart-donut-row">
                     <DonutChart
                         segments={donutSegments}
                         size={152}
                         label={`${pct}%`}
-                        sublabel="записей"
+                        sublabel={t('dashboard.charts.enrollmentsSublabel')}
                     />
                     <Legend segments={donutSegments} />
                 </div>
             </ChartCard>
 
-            <ChartCard title="Сравнение показателей">
+            <ChartCard title={t('dashboard.charts.metricsComparison')}>
                 <HBarChart items={barItems} />
             </ChartCard>
         </div>
@@ -131,6 +133,7 @@ export function StudentStatsCharts({ stats }) {
 }
 
 export function TeacherStatsCharts({ courses }) {
+    const { t } = useTranslation()
     const total = courses.length
     const published = courses.filter((c) => c.status === 'PUBLISHED').length
     const draft = courses.filter((c) => c.status === 'DRAFT').length
@@ -139,34 +142,34 @@ export function TeacherStatsCharts({ courses }) {
     const totalStudents = courses.reduce((s, c) => s + (Array.isArray(c.enrolledStudents) ? c.enrolledStudents.length : 0), 0)
 
     const donutSegments = [
-        { label: 'Опубликовано', value: published, color: '#22c55e' },
-        { label: 'Черновик', value: draft, color: '#f59e0b' },
-        { label: 'Архив', value: archived, color: '#94a3b8' },
+        { label: t('dashboard.published'), value: published, color: '#22c55e' },
+        { label: t('dashboard.charts.draft'), value: draft, color: '#f59e0b' },
+        { label: t('dashboard.charts.archive'), value: archived, color: '#94a3b8' },
     ]
 
     const barItems = [
-        { label: 'Всего курсов', value: total, color: 'var(--primary-color)' },
-        { label: 'Опубликовано', value: published, color: '#22c55e' },
-        { label: 'Черновики', value: draft, color: '#f59e0b' },
-        { label: 'Уроков', value: totalLessons, color: '#6366f1' },
-        { label: 'Студентов', value: totalStudents, color: '#06b6d4' },
+        { label: t('dashboard.charts.totalCourses'), value: total, color: 'var(--primary-color)' },
+        { label: t('dashboard.published'), value: published, color: '#22c55e' },
+        { label: t('dashboard.drafts'), value: draft, color: '#f59e0b' },
+        { label: t('dashboard.charts.lessons'), value: totalLessons, color: '#6366f1' },
+        { label: t('dashboard.charts.students'), value: totalStudents, color: '#06b6d4' },
     ]
 
     return (
         <div className="stats-charts-grid">
-            <ChartCard title="Статусы курсов">
+            <ChartCard title={t('dashboard.charts.courseStatuses')}>
                 <div className="stats-chart-donut-row">
                     <DonutChart
                         segments={donutSegments}
                         size={152}
                         label={total}
-                        sublabel="курсов"
+                        sublabel={t('dashboard.charts.coursesSublabel')}
                     />
                     <Legend segments={donutSegments} />
                 </div>
             </ChartCard>
 
-            <ChartCard title="Сравнение показателей">
+            <ChartCard title={t('dashboard.charts.metricsComparison')}>
                 <HBarChart items={barItems} />
             </ChartCard>
         </div>
@@ -174,42 +177,43 @@ export function TeacherStatsCharts({ courses }) {
 }
 
 export function AdminStatsCharts({ platform, filesCount, newsCount }) {
+    const { t } = useTranslation()
     const p = platform || {}
     const published = p.publishedCourses || 0
     const draft = p.draftCourses || 0
     const archived = p.archivedCourses || 0
 
     const donutSegments = [
-        { label: 'Опубликовано', value: published, color: '#22c55e' },
-        { label: 'Черновики', value: draft, color: '#f59e0b' },
-        { label: 'Архив', value: archived, color: '#94a3b8' },
+        { label: t('dashboard.published'), value: published, color: '#22c55e' },
+        { label: t('dashboard.drafts'), value: draft, color: '#f59e0b' },
+        { label: t('dashboard.charts.archive'), value: archived, color: '#94a3b8' },
     ]
 
     const barItems = [
-        { label: 'Курсов', value: p.totalCourses || 0, color: 'var(--primary-color)' },
-        { label: 'Уроков', value: p.totalLessons || 0, color: '#6366f1' },
-        { label: 'Тестов', value: p.totalTests || 0, color: '#f59e0b' },
-        { label: 'Записей', value: p.totalEnrollmentSlots || 0, color: '#22c55e' },
-        { label: 'Преподавателей', value: p.uniqueInstructors || 0, color: '#06b6d4' },
-        { label: 'Файлов', value: filesCount || 0, color: '#a78bfa' },
-        { label: 'Новостей', value: newsCount || 0, color: '#fb923c' },
+        { label: t('dashboard.charts.totalCourses'), value: p.totalCourses || 0, color: 'var(--primary-color)' },
+        { label: t('dashboard.charts.lessons'), value: p.totalLessons || 0, color: '#6366f1' },
+        { label: t('dashboard.charts.tests'), value: p.totalTests || 0, color: '#f59e0b' },
+        { label: t('dashboard.charts.enrollments'), value: p.totalEnrollmentSlots || 0, color: '#22c55e' },
+        { label: t('dashboard.charts.instructors'), value: p.uniqueInstructors || 0, color: '#06b6d4' },
+        { label: t('dashboard.charts.files'), value: filesCount || 0, color: '#a78bfa' },
+        { label: t('dashboard.charts.news'), value: newsCount || 0, color: '#fb923c' },
     ]
 
     return (
         <div className="stats-charts-grid">
-            <ChartCard title="Распределение курсов">
+            <ChartCard title={t('dashboard.charts.courseDistribution')}>
                 <div className="stats-chart-donut-row">
                     <DonutChart
                         segments={donutSegments}
                         size={152}
                         label={p.totalCourses || 0}
-                        sublabel="курсов"
+                        sublabel={t('dashboard.charts.coursesSublabel')}
                     />
                     <Legend segments={donutSegments} />
                 </div>
             </ChartCard>
 
-            <ChartCard title="Контент платформы">
+            <ChartCard title={t('dashboard.charts.platformContent')}>
                 <HBarChart items={barItems} />
             </ChartCard>
         </div>

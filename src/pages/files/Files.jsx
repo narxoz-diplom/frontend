@@ -1,22 +1,61 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { FiEdit3, FiTrash2, FiSave, FiX, FiDownload, FiFileText } from 'react-icons/fi'
-import auth from '@/shared/config/auth'
 import { getFiles, renameFile, deleteFile, downloadFile } from '@/shared/api/filesApi'
+import auth from '@/shared/config/auth'
 import { useAlert } from '@/app/providers/AlertProvider'
-import { isAdmin, canUpload } from '@/shared/lib/roles'
+import { canUpload, isAdmin } from '@/shared/lib/roles'
 import { useTranslation } from 'react-i18next'
-import './Files.css'
+import {
+  PageHeader,
+  Icon,
+  Spinner,
+  EmptyState,
+  Dropdown,
+  Modal,
+  ModalHeader,
+} from '@/shared/ui/academis'
+import '../secondary-academis.css'
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return `${Math.round((bytes / k ** i) * 100) / 100} ${sizes[i]}`
+}
+
+const formatDate = (dateString, locale) => {
+  if (!dateString) return '—'
+  return new Date(dateString).toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+const getFileMeta = (contentType = '', name = '') => {
+  const ext = name.split('.').pop()?.toLowerCase() || ''
+  if (contentType.includes('pdf') || ext === 'pdf') return { icon: 'doc', color: '#e41616' }
+  if (contentType.includes('video') || ['mp4', 'webm', 'mov'].includes(ext)) {
+    return { icon: 'video', color: '#2563eb' }
+  }
+  if (['csv', 'xls', 'xlsx'].includes(ext)) return { icon: 'grade', color: '#11a957' }
+  if (['sql', 'db'].includes(ext)) return { icon: 'layers', color: '#7c3aed' }
+  return { icon: 'file', color: '#828c9e' }
+}
 
 const Files = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { confirm, toast } = useAlert()
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
-  const [editingFile, setEditingFile] = useState(null)
-  const [editFileName, setEditFileName] = useState('')
+  const [renamingFile, setRenamingFile] = useState(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [search, setSearch] = useState('')
+
+  const locale = i18n.language === 'kz' ? 'kk-KZ' : i18n.language === 'en' ? 'en-US' : 'ru-RU'
 
   useEffect(() => {
     loadFiles()
@@ -28,49 +67,56 @@ const Files = () => {
       const response = await getFiles()
       setFiles(response.data)
       setError(null)
-    } catch (err) {
+    } catch {
       setError(t('filesPage.loadError'))
     } finally {
       setLoading(false)
     }
   }
 
-  const handleEdit = (file) => {
-    setEditingFile(file.id)
-    setEditFileName(file.originalFileName)
+  const filteredFiles = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return files
+    return files.filter((f) => (f.originalFileName || '').toLowerCase().includes(q))
+  }, [files, search])
+
+  const totalSize = useMemo(
+    () => files.reduce((sum, f) => sum + (f.fileSize || 0), 0),
+    [files],
+  )
+
+  const handleRename = (file) => {
+    setRenamingFile(file)
+    setRenameValue(file.originalFileName)
   }
 
-  const handleSaveEdit = async (id) => {
+  const handleSaveRename = async () => {
+    if (!renamingFile) return
     try {
-      await renameFile(id, editFileName)
+      await renameFile(renamingFile.id, renameValue.trim())
       setSuccess(t('filesPage.updateSuccess'))
-      setEditingFile(null)
-      setEditFileName('')
+      setRenamingFile(null)
+      setRenameValue('')
       loadFiles()
-    } catch (err) {
+    } catch {
       setError(t('filesPage.updateError'))
     }
   }
 
-  const handleCancelEdit = () => {
-    setEditingFile(null)
-    setEditFileName('')
-  }
-
-  const handleDelete = async (id) => {
+  const handleDelete = async (file) => {
     const ok = await confirm({
       title: t('filesPage.deleteTitle'),
       message: t('filesPage.deleteMessage'),
       confirmText: t('common.delete'),
       cancelText: t('common.cancel'),
-      variant: 'danger'
+      variant: 'danger',
     })
     if (!ok) return
     try {
-      await deleteFile(id)
+      await deleteFile(file.id)
       toast(t('filesPage.deleted'), 'success')
       loadFiles()
-    } catch (err) {
+    } catch {
       setError(t('filesPage.deleteError'))
     }
   }
@@ -85,126 +131,181 @@ const Files = () => {
       document.body.appendChild(link)
       link.click()
       link.remove()
-    } catch (err) {
+    } catch {
       setError(t('filesPage.downloadError'))
     }
   }
 
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-  }
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString()
-  }
-
   if (loading) {
-    return <div className="loading">{t('filesPage.loading')}</div>
+    return (
+      <div className="page page-wide secondary-page-loading">
+        <Spinner size={28} />
+        <span className="muted">{t('filesPage.loading')}</span>
+      </div>
+    )
   }
 
-    return (
-        <div className="files-section">
-            <div className="files-header">
-                <h2>{t('filesPage.title')}</h2>
-                <p className="files-subtitle">
-                    {t('filesPage.subtitle')}
-                </p>
-            </div>
+  return (
+    <div className="page page-wide">
+      <PageHeader
+        title={t('filesPage.title')}
+        subtitle={`${filteredFiles.length} · ${formatFileSize(totalSize)}`}
+        actions={(
+          <Link to="/courses" className="btn btn-primary">
+            <Icon name="upload" size={16} />
+            {t('filesPage.goToCourses')}
+          </Link>
+        )}
+      />
 
-            {error && <div className="error-banner">{error}</div>}
-            {success && <div className="success-banner">{success}</div>}
-
-            <div className="info-banner">
-                <div className="info-content">
-                    <strong>{t('common.info')}:</strong> {t('filesPage.infoText')}
-                </div>
-                <Link to="/courses" className="btn-primary">
-                    {t('filesPage.goToCourses')}
-                </Link>
-            </div>
-
-            <div className="files-container-card">
-                <div className="card-header-flex">
-                    <h3>{isAdmin(auth) ? t('filesPage.allFiles') : t('filesPage.myFiles')}</h3>
-                    <span className="file-count-badge">{files.length}</span>
-                </div>
-
-                {files.length === 0 ? (
-                    <div className="empty-files">
-                        <p>{t('filesPage.empty')}</p>
-                    </div>
-                ) : (
-                    <ul className="file-list">
-                        {files.map((file) => (
-                            <li key={file.id} className="file-item">
-                                <div className="file-icon-wrapper">
-                                    <FiFileText />
-                                </div>
-
-                                <div className="file-content">
-                                    {editingFile === file.id ? (
-                                        <div className="file-edit-form">
-                                            <input
-                                                type="text"
-                                                value={editFileName}
-                                                onChange={(e) => setEditFileName(e.target.value)}
-                                                className="file-edit-input"
-                                                autoFocus
-                                            />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="file-name" title={file.originalFileName}>
-                                                {file.originalFileName}
-                                            </div>
-                                            <div className="file-meta">
-                                                <span>{formatFileSize(file.fileSize)}</span>
-                                                <span>{file.contentType.split('/')[1]?.toUpperCase() || 'FILE'}</span>
-                                                <span>{formatDate(file.uploadedAt)}</span>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-
-                                <div className="file-actions">
-                                    {editingFile === file.id ? (
-                                        <>
-                                            <button className="btn-icon" onClick={() => handleSaveEdit(file.id)} title={t('common.save')}>
-                                                <FiSave style={{ color: 'var(--primary-color)' }} />
-                                            </button>
-                                            <button className="btn-icon" onClick={handleCancelEdit} title={t('common.cancel')}>
-                                                <FiX />
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <button className="btn-icon" onClick={() => handleDownload(file.id, file.originalFileName)} title={t('common.file')}>
-                                                <FiDownload />
-                                            </button>
-                                            {canUpload(auth) && (
-                                                <button className="btn-icon" onClick={() => handleEdit(file)} title={t('common.edit')}>
-                                                    <FiEdit3 />
-                                                </button>
-                                            )}
-                                            {canUpload(auth) && (
-                                                <button className="btn-icon danger" onClick={() => handleDelete(file.id)} title={t('common.delete')}>
-                                                    <FiTrash2 />
-                                                </button>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                )}
-            </div>
+      {error && (
+        <div className="secondary-flash secondary-flash--error" role="alert">
+          {error}
         </div>
-    );
+      )}
+      {success && (
+        <div className="secondary-flash secondary-flash--success" role="status">
+          {success}
+        </div>
+      )}
+
+      <div className="card card-pad secondary-flash secondary-flash--info files-info-card">
+        <span style={{ fontSize: 13.5, lineHeight: 1.5 }}>
+          <strong>{t('common.info')}:</strong> {t('filesPage.infoText')}
+        </span>
+      </div>
+
+      <div className="input-icon" style={{ maxWidth: 320, marginBottom: 14 }}>
+        <span className="ic">
+          <Icon name="search" size={16} />
+        </span>
+        <input
+          className="input"
+          placeholder={t('filesPage.title')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {filteredFiles.length === 0 ? (
+        <div className="card">
+          <EmptyState
+            icon="files"
+            title={t('filesPage.empty')}
+            desc={t('filesPage.subtitle')}
+          />
+        </div>
+      ) : (
+        <div className="card" style={{ overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>{isAdmin(auth) ? t('filesPage.allFiles') : t('filesPage.myFiles')}</th>
+                  <th>{t('notificationsPage.type')}</th>
+                  <th>{t('videoPage.size')}</th>
+                  <th>{t('adminNewsPage.published')}</th>
+                  <th style={{ width: 48 }} />
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFiles.map((file) => {
+                  const meta = getFileMeta(file.contentType, file.originalFileName)
+                  return (
+                    <tr key={file.id}>
+                      <td>
+                        <div className="row gap10" style={{ alignItems: 'center' }}>
+                          <span
+                            className="file-tic"
+                            style={{
+                              color: meta.color,
+                              background: `color-mix(in srgb, ${meta.color} 12%, transparent)`,
+                            }}
+                          >
+                            <Icon name={meta.icon} size={16} />
+                          </span>
+                          <span style={{ fontWeight: 600 }}>{file.originalFileName}</span>
+                        </div>
+                      </td>
+                      <td className="muted">
+                        {file.contentType?.split('/')[1]?.toUpperCase() || 'FILE'}
+                      </td>
+                      <td className="mono muted">{formatFileSize(file.fileSize)}</td>
+                      <td className="muted">{formatDate(file.uploadedAt, locale)}</td>
+                      <td>
+                        <Dropdown
+                          trigger={(
+                            <button type="button" className="btn btn-icon btn-ghost btn-sm">
+                              <Icon name="dots" size={16} />
+                            </button>
+                          )}
+                        >
+                          <div
+                            className="menu-item"
+                            role="menuitem"
+                            onClick={() => handleDownload(file.id, file.originalFileName)}
+                          >
+                            <Icon name="download" size={16} />
+                            {t('coursePage.testResultsExport').replace(' CSV', '')}
+                          </div>
+                          {canUpload(auth) && (
+                            <>
+                              <div
+                                className="menu-item"
+                                role="menuitem"
+                                onClick={() => handleRename(file)}
+                              >
+                                <Icon name="edit" size={16} />
+                                {t('common.edit')}
+                              </div>
+                              <div className="menu-sep" />
+                              <div
+                                className="menu-item danger"
+                                role="menuitem"
+                                onClick={() => handleDelete(file)}
+                              >
+                                <Icon name="trash" size={16} />
+                                {t('common.delete')}
+                              </div>
+                            </>
+                          )}
+                        </Dropdown>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <Modal open={!!renamingFile} onClose={() => setRenamingFile(null)}>
+        <ModalHeader
+          title={t('common.edit')}
+          icon="edit"
+          onClose={() => setRenamingFile(null)}
+        />
+        <div className="modal-body">
+          <input
+            className="input"
+            value={renameValue}
+            autoFocus
+            onChange={(e) => setRenameValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSaveRename()}
+          />
+        </div>
+        <div className="modal-foot">
+          <button type="button" className="btn btn-ghost" onClick={() => setRenamingFile(null)}>
+            {t('common.cancel')}
+          </button>
+          <button type="button" className="btn btn-primary" onClick={handleSaveRename}>
+            {t('common.save')}
+          </button>
+        </div>
+      </Modal>
+    </div>
+  )
 }
 
 export default Files

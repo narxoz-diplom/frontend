@@ -1,5 +1,4 @@
 import React from 'react'
-import { FiCpu, FiAlertCircle, FiLoader } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import {
   ResponsiveContainer,
@@ -11,9 +10,9 @@ import {
   CartesianGrid
 } from 'recharts'
 import { formatMicrosToCurrency, formatTokenCount } from '@/shared/lib/aiUsageFormat'
+import { Icon, Spinner } from '@/shared/ui/academis'
 import StatCard from './StatCard'
 import { HBarChart } from '../StatsCharts'
-import '../AiUsageDashboard.css'
 
 const dashValue = (value) => (value == null ? '—' : value)
 
@@ -28,8 +27,8 @@ const AiUsageDashboard = ({
 
   if (loading) {
     return (
-      <div className="ai-usage-dashboard ai-usage-dashboard--loading">
-        <FiLoader className="spin" aria-hidden />
+      <div className="ai-usage-dashboard ai-usage-dashboard__loading" aria-busy="true">
+        <Spinner size={20} />
         <span>{t('dashboard.aiUsage.loading')}</span>
       </div>
     )
@@ -37,8 +36,8 @@ const AiUsageDashboard = ({
 
   if (error) {
     return (
-      <div className="ai-usage-dashboard ai-usage-dashboard--error" role="alert">
-        <FiAlertCircle aria-hidden />
+      <div className="ai-usage-dashboard ai-usage-dashboard__error" role="alert">
+        <Icon name="warn" size={18} />
         <span>{t('dashboard.aiUsage.loadError')}</span>
       </div>
     )
@@ -46,7 +45,7 @@ const AiUsageDashboard = ({
 
   if (!report) {
     return (
-      <div className="ai-usage-dashboard ai-usage-dashboard--empty">
+      <div className="ai-usage-dashboard ai-usage-dashboard__empty">
         <p>{t('dashboard.aiUsage.empty')}</p>
       </div>
     )
@@ -65,63 +64,64 @@ const AiUsageDashboard = ({
   const modelBars = (report.byModel || []).map((item, index) => ({
     label: item.displayName || item.modelId,
     value: item.totalTokens ?? 0,
-    color: ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#0ea5e9'][index % 5]
+    color: ['#e41616', '#11a957', '#e8920c', '#2563eb', '#7c3aed'][index % 5]
   }))
 
   return (
     <section className="ai-usage-dashboard" aria-labelledby="ai-usage-title">
-      <div className="ai-usage-dashboard__head">
-        <h3 id="ai-usage-title" className="ai-usage-dashboard__title">
-          <FiCpu aria-hidden /> {t('dashboard.aiUsage.title')}
+      <div className="sec-head" style={{ padding: '0 0 14px' }}>
+        <h3 id="ai-usage-title" className="h3 row gap8">
+          <Icon name="sparkles" size={17} />
+          {t('dashboard.aiUsage.title')}
         </h3>
         {report.period && (
-          <p className="ai-usage-dashboard__period">
+          <p className="muted" style={{ fontSize: 13, margin: '4px 0 0' }}>
             {report.period.from} — {report.period.to}
           </p>
         )}
       </div>
 
-      <div className="dashboard-stats ai-usage-dashboard__stats">
+      <div className="stat-grid s5" style={{ marginBottom: 14 }}>
         <StatCard
-          icon={<FiCpu />}
-          tone="primary"
+          icon="sparkles"
+          color="linear-gradient(135deg,#e41616,#a00d0d)"
           value={dashValue(formatTokenCount(summary.totalTokens))}
           label={t('dashboard.aiUsage.totalTokens')}
         />
         <StatCard
-          icon={<FiCpu />}
-          tone="success"
+          icon="doc"
+          color="linear-gradient(135deg,#2563eb,#1e3a8a)"
           value={dashValue(formatTokenCount(summary.inputTokens))}
           label={t('dashboard.aiUsage.inputTokens')}
         />
         <StatCard
-          icon={<FiCpu />}
-          tone="warning"
+          icon="message"
+          color="linear-gradient(135deg,#e8920c,#b45309)"
           value={dashValue(formatTokenCount(summary.outputTokens))}
           label={t('dashboard.aiUsage.outputTokens')}
         />
         <StatCard
-          icon={<FiCpu />}
-          tone="info"
+          icon="chart"
+          color="linear-gradient(135deg,#7c3aed,#5b21b6)"
           value={costLabel ?? '—'}
           label={t('dashboard.aiUsage.estimatedCost')}
         />
         <StatCard
-          icon={<FiCpu />}
-          tone="primary"
+          icon="bolt"
+          color="linear-gradient(135deg,#0891b2,#155e63)"
           value={summary.generationCount ?? 0}
           label={t('dashboard.aiUsage.generationCount')}
         />
         <StatCard
-          icon={<FiCpu />}
-          tone="warning"
+          icon="warn"
+          color="linear-gradient(135deg,#db2777,#9d174d)"
           value={summary.failedCount ?? 0}
           label={t('dashboard.aiUsage.failedCount')}
         />
         {showAdminExtras && summary.uniqueTeachers != null && (
           <StatCard
-            icon={<FiCpu />}
-            tone="info"
+            icon="users"
+            color="linear-gradient(135deg,#11a957,#0e8f49)"
             value={summary.uniqueTeachers}
             label={t('dashboard.aiUsage.uniqueTeachers')}
           />
@@ -129,49 +129,49 @@ const AiUsageDashboard = ({
       </div>
 
       {chartData.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.timeSeries')}</p>
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.timeSeries')}</p>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={chartData} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="date" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="tokens" stroke="#6366f1" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="tokens" stroke="var(--brand, #e41616)" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
 
       {modelBars.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.byModel')}</p>
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.byModel')}</p>
           <HBarChart items={modelBars} />
         </div>
       )}
 
       {showAdminExtras && report.byProvider?.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.byProvider')}</p>
-          <ul className="ai-usage-list">
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.byProvider')}</p>
+          <div>
             {report.byProvider.map((row) => (
-              <li key={row.provider}>
+              <div key={row.provider} className="ai-usage-list-row">
                 <span>{row.provider}</span>
                 <span>
                   {formatTokenCount(row.totalTokens) ?? '—'} ·{' '}
                   {formatMicrosToCurrency(row.costMicros, currency, i18n.language) ?? '—'}
                 </span>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
       {report.quotaUtilization?.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.quotaUtilization')}</p>
-          <div className="ai-usage-table-wrap">
-            <table className="ai-usage-table">
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.quotaUtilization')}</p>
+          <div className="overflow-x-auto">
+            <table className="tbl">
               <thead>
                 <tr>
                   <th>{t('dashboard.aiUsage.model')}</th>
@@ -204,27 +204,27 @@ const AiUsageDashboard = ({
       )}
 
       {showAdminExtras && report.topUsers?.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.topUsers')}</p>
-          <ul className="ai-usage-list">
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.topUsers')}</p>
+          <div>
             {report.topUsers.map((row) => (
-              <li key={row.userId}>
-                <span className="ai-usage-list__mono">{row.userId}</span>
+              <div key={row.userId} className="ai-usage-list-row">
+                <span className="ai-usage-mono">{row.userId}</span>
                 <span>
                   {formatTokenCount(row.totalTokens) ?? '—'} · {row.generationCount ?? 0}{' '}
                   {t('dashboard.aiUsage.runs')}
                 </span>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
       {showRecentRuns && report.recentRuns?.length > 0 && (
-        <div className="stats-chart-card ai-usage-dashboard__chart">
-          <p className="stats-chart-card__title">{t('dashboard.aiUsage.recentRuns')}</p>
-          <div className="ai-usage-table-wrap">
-            <table className="ai-usage-table">
+        <div className="card card-pad ai-usage-chart-card">
+          <p className="ai-usage-chart-title">{t('dashboard.aiUsage.recentRuns')}</p>
+          <div className="overflow-x-auto">
+            <table className="tbl">
               <thead>
                 <tr>
                   <th>{t('dashboard.aiUsage.runId')}</th>
@@ -239,7 +239,7 @@ const AiUsageDashboard = ({
               <tbody>
                 {report.recentRuns.map((run) => (
                   <tr key={run.generationRunId}>
-                    <td className="ai-usage-list__mono">{run.generationRunId}</td>
+                    <td className="ai-usage-mono">{run.generationRunId}</td>
                     <td>{run.courseId ?? '—'}</td>
                     <td>{run.generationType}</td>
                     <td>{run.modelId}</td>

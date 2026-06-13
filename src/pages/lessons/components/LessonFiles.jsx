@@ -1,6 +1,7 @@
 import React from 'react'
 import { FiFile, FiUpload, FiTrash2 } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
+import { Icon } from '@/shared/ui/academis'
 import { useAlert } from '@/app/providers/AlertProvider'
 import { uploadToLesson, deleteFile, downloadFile } from '@/shared/api/filesApi'
 import { formatFileSize } from '../lib/formatters'
@@ -72,13 +73,11 @@ const LessonFiles = ({ files, canEdit, lessonId, onFilesChanged, onError }) => {
   }
 
   return (
-    <div className="lesson-files-section lesson-panel">
-      <div className="section-header">
-        <div className="section-header__text">
-          <span className="section-header__eyebrow">{t('lessonPage.attachments')}</span>
-          <h2>
-            <FiFile aria-hidden /> {t('common.files')} ({files.length})
-          </h2>
+    <div className="card card-pad lesson-files-section">
+      <div className="sec-head" style={{ padding: '0 0 12px', margin: 0 }}>
+        <div className="row gap8" style={{ alignItems: 'center' }}>
+          <Icon name="files" size={17} style={{ color: 'var(--brand)' }} />
+          <h3 className="h3">{t('lessonPage.attachments')}</h3>
         </div>
         {canEdit && (
           <label className="btn-edit btn-edit--accent section-header__btn lesson-file-upload">
@@ -98,30 +97,37 @@ const LessonFiles = ({ files, canEdit, lessonId, onFilesChanged, onError }) => {
           <p>{t('lessonPage.noFiles')}</p>
         </div>
       ) : (
-        <div className="files-list">
+        <div className="col gap8 files-list">
           {files.map((file) => (
-            <div key={file.id} className="file-card file-card--row">
+            <div key={file.id} className="file-pill file-card file-card--row">
+              <span className="fp-ic">
+                <Icon name="file" size={16} />
+              </span>
               <div
                 className="file-card__main"
+                style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                 onClick={() => handleFileDownload(file.id, file.originalFileName)}
-                role="button"
-                tabIndex={0}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
                     handleFileDownload(file.id, file.originalFileName)
                   }
                 }}
+                role="button"
+                tabIndex={0}
               >
-                <FiFile className="file-icon" />
-                <div className="file-card-content">
-                  <h3>{file.originalFileName}</h3>
-                  <div className="file-card-meta">
-                    <span>{formatFileSize(file.fileSize)}</span>
-                    <span>{file.contentType}</span>
-                  </div>
+                <div style={{ fontWeight: 650, fontSize: 13 }}>{file.originalFileName}</div>
+                <div className="dim" style={{ fontSize: 11.5 }}>
+                  {formatFileSize(file.fileSize)}
                 </div>
               </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-ghost"
+                onClick={() => handleFileDownload(file.id, file.originalFileName)}
+              >
+                <Icon name="download" size={15} />
+              </button>
               {canEdit && (
                 <button
                   type="button"

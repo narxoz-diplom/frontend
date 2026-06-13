@@ -1,9 +1,8 @@
 import React from 'react'
-import { FiLoader, FiSave, FiRotateCcw, FiSearch } from 'react-icons/fi'
 import { useTranslation } from 'react-i18next'
 import { formatTokenCount } from '@/shared/lib/aiUsageFormat'
+import { Icon, Spinner } from '@/shared/ui/academis'
 import { useAdminTeacherLimit } from '../hooks/useAdminTeacherLimit'
-import '../AdminTeacherLimitPanel.css'
 
 const AdminTeacherLimitPanel = () => {
   const { t } = useTranslation()
@@ -19,36 +18,42 @@ const AdminTeacherLimitPanel = () => {
           : null
 
   return (
-    <section className="admin-teacher-limit" aria-labelledby="admin-teacher-limit-title">
-      <div className="admin-teacher-limit__head">
-        <h3 id="admin-teacher-limit-title">{t('dashboard.aiUsage.teacherLimit.title')}</h3>
-        <p>{t('dashboard.aiUsage.teacherLimit.desc')}</p>
+    <section className="card card-pad admin-teacher-limit-card" aria-labelledby="admin-teacher-limit-title">
+      <div className="sec-head" style={{ padding: '0 0 12px' }}>
+        <h3 id="admin-teacher-limit-title" className="h3 row gap8">
+          <Icon name="settings" size={17} />
+          {t('dashboard.aiUsage.teacherLimit.title')}
+        </h3>
+        <p className="muted" style={{ fontSize: 13, margin: '4px 0 0' }}>
+          {t('dashboard.aiUsage.teacherLimit.desc')}
+        </p>
       </div>
 
-      <div className="admin-teacher-limit__lookup">
-        <label className="admin-teacher-limit__field">
-          <span>{t('dashboard.aiUsage.userId')}</span>
+      <div className="row gap12 wrap" style={{ alignItems: 'flex-end' }}>
+        <div className="field" style={{ flex: 1, minWidth: 220 }}>
+          <label className="label">{t('dashboard.aiUsage.userId')}</label>
           <input
+            className="input"
             type="text"
             value={limit.userId}
             onChange={(e) => limit.setUserId(e.target.value)}
             placeholder={t('dashboard.aiUsage.userIdPlaceholder')}
             autoComplete="off"
           />
-        </label>
+        </div>
         <button
           type="button"
-          className="admin-teacher-limit__btn admin-teacher-limit__btn--secondary"
+          className="btn btn-outline"
           onClick={limit.load}
           disabled={limit.loading || limit.saving}
         >
-          {limit.loading ? <FiLoader className="spin" /> : <FiSearch />}
+          {limit.loading ? <Spinner size={16} /> : <Icon name="search" size={16} />}
           {t('dashboard.aiUsage.teacherLimit.load')}
         </button>
       </div>
 
       {errorKey && (
-        <p className="admin-teacher-limit__error" role="alert">
+        <p className="rag-out-academis error" style={{ marginTop: 12 }} role="alert">
           {limit.error && limit.error !== 'user_id_required' && limit.error !== 'invalid_limits'
             ? limit.error
             : t(errorKey)}
@@ -56,19 +61,19 @@ const AdminTeacherLimitPanel = () => {
       )}
 
       {limit.message === 'saved' && (
-        <p className="admin-teacher-limit__success" role="status">
+        <p className="muted" style={{ marginTop: 12, color: 'var(--green-500)', fontWeight: 600 }} role="status">
           {t('dashboard.aiUsage.teacherLimit.saved')}
         </p>
       )}
       {limit.message === 'reset' && (
-        <p className="admin-teacher-limit__success" role="status">
+        <p className="muted" style={{ marginTop: 12, color: 'var(--green-500)', fontWeight: 600 }} role="status">
           {t('dashboard.aiUsage.teacherLimit.resetDone')}
         </p>
       )}
 
       {limit.status && (
-        <div className="admin-teacher-limit__form">
-          <label className="admin-teacher-limit__checkbox">
+        <div className="col gap14" style={{ marginTop: 16 }}>
+          <label className="row gap10" style={{ fontWeight: 650, cursor: 'pointer' }}>
             <input
               type="checkbox"
               checked={limit.form.unlimitedAccess}
@@ -78,65 +83,68 @@ const AdminTeacherLimitPanel = () => {
           </label>
 
           {!limit.form.unlimitedAccess && (
-            <div className="admin-teacher-limit__limits">
-              <label className="admin-teacher-limit__field">
-                <span>{t('dashboard.aiUsage.teacherLimit.monthlyTokens')}</span>
+            <div className="row gap12 wrap">
+              <div className="field" style={{ flex: 1, minWidth: 180 }}>
+                <label className="label">{t('dashboard.aiUsage.teacherLimit.monthlyTokens')}</label>
                 <input
+                  className="input"
                   type="number"
                   min="0"
                   step="1000"
                   value={limit.form.monthlyTokenLimit}
                   onChange={(e) => limit.updateField('monthlyTokenLimit', e.target.value)}
                 />
-              </label>
-              <label className="admin-teacher-limit__field">
-                <span>{t('dashboard.aiUsage.teacherLimit.dailyTokens')}</span>
+              </div>
+              <div className="field" style={{ flex: 1, minWidth: 180 }}>
+                <label className="label">{t('dashboard.aiUsage.teacherLimit.dailyTokens')}</label>
                 <input
+                  className="input"
                   type="number"
                   min="0"
                   step="1000"
                   value={limit.form.dailyTokenLimit}
                   onChange={(e) => limit.updateField('dailyTokenLimit', e.target.value)}
                 />
-              </label>
+              </div>
             </div>
           )}
 
-          <label className="admin-teacher-limit__field admin-teacher-limit__field--full">
-            <span>{t('dashboard.aiUsage.teacherLimit.note')}</span>
+          <div className="field">
+            <label className="label">{t('dashboard.aiUsage.teacherLimit.note')}</label>
             <input
+              className="input"
               type="text"
               value={limit.form.note}
               onChange={(e) => limit.updateField('note', e.target.value)}
               placeholder={t('dashboard.aiUsage.teacherLimit.notePlaceholder')}
             />
-          </label>
+          </div>
 
-          <div className="admin-teacher-limit__actions">
+          <div className="row gap10 wrap">
             <button
               type="button"
-              className="admin-teacher-limit__btn admin-teacher-limit__btn--primary"
+              className="btn btn-primary"
               onClick={limit.save}
               disabled={limit.saving}
             >
-              {limit.saving ? <FiLoader className="spin" /> : <FiSave />}
+              {limit.saving ? <Spinner size={16} /> : <Icon name="check" size={16} />}
               {t('dashboard.aiUsage.teacherLimit.save')}
             </button>
             <button
               type="button"
-              className="admin-teacher-limit__btn admin-teacher-limit__btn--ghost"
+              className="btn btn-outline"
               onClick={limit.resetToDefault}
               disabled={limit.saving}
             >
-              <FiRotateCcw />
+              <Icon name="refresh" size={16} />
               {t('dashboard.aiUsage.teacherLimit.resetDefault')}
             </button>
           </div>
 
-          <dl className="admin-teacher-limit__usage">
+          <dl className="col gap8" style={{ padding: '12px 14px', background: 'var(--surface-2)', borderRadius: 'var(--r-sm)' }}>
             <div>
-              <dt>{t('dashboard.aiUsage.teacherLimit.currentUsage')}</dt>
-              <dd>
+              <dt className="eyebrow">{t('dashboard.aiUsage.teacherLimit.currentUsage')}</dt>
+              <dd style={{ margin: '4px 0 0', fontWeight: 650, fontSize: 14 }}>
                 {limit.status.unlimited
                   ? t('dashboard.aiUsage.teacherLimit.unlimitedActive')
                   : t('dashboard.aiUsage.teacherLimit.usageSummary', {
@@ -149,14 +157,16 @@ const AdminTeacherLimitPanel = () => {
             </div>
             {limit.status.blocked && (
               <div>
-                <dt>{t('dashboard.aiUsage.quotaBlocked')}</dt>
-                <dd>{limit.status.blockReason}</dd>
+                <dt className="eyebrow">{t('dashboard.aiUsage.quotaBlocked')}</dt>
+                <dd style={{ margin: '4px 0 0', fontWeight: 650, fontSize: 14 }}>{limit.status.blockReason}</dd>
               </div>
             )}
             {limit.status.customOverride && (
               <div>
-                <dt>{t('dashboard.aiUsage.teacherLimit.override')}</dt>
-                <dd>{t('dashboard.aiUsage.teacherLimit.overrideYes')}</dd>
+                <dt className="eyebrow">{t('dashboard.aiUsage.teacherLimit.override')}</dt>
+                <dd style={{ margin: '4px 0 0', fontWeight: 650, fontSize: 14 }}>
+                  {t('dashboard.aiUsage.teacherLimit.overrideYes')}
+                </dd>
               </div>
             )}
           </dl>

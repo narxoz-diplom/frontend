@@ -1,0 +1,57 @@
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Donut, Spinner } from '@/shared/ui/academis'
+import { formatMicrosToCurrency, formatTokenCount } from '@/shared/lib/aiUsageFormat'
+
+const TeacherAiUsagePanel = ({ report, loading }) => {
+  const { t, i18n } = useTranslation()
+
+  const { quotaPct, runs, tokens, cost } = useMemo(() => {
+    const summary = report?.summary || {}
+    const quota = report?.quotaUtilization?.[0]
+    const monthlyUsed = quota?.monthlyUsedTokens ?? 0
+    const monthlyLimit = quota?.monthlyLimitTokens ?? 0
+    const pct = monthlyLimit > 0 ? Math.min(100, Math.round((monthlyUsed / monthlyLimit) * 100)) : 0
+
+    return {
+      quotaPct: pct,
+      runs: summary.generationCount ?? 0,
+      tokens: formatTokenCount(summary.totalTokens) ?? '—',
+      cost: formatMicrosToCurrency(summary.costMicros, summary.currency, i18n.language) ?? '—',
+    }
+  }, [report, i18n.language])
+
+  if (loading) {
+    return (
+      <div className="col center gap12" style={{ padding: '24px 0' }}>
+        <Spinner size={24} />
+      </div>
+    )
+  }
+
+  return (
+    <div className="col center gap12" style={{ padding: '6px 0' }}>
+      <Donut
+        value={quotaPct}
+        size={128}
+        color="var(--brand)"
+        sub={t('dashboard.home.quota')}
+        label={`${quotaPct}%`}
+      />
+      <div className="row gap16" style={{ width: '100%', justifyContent: 'space-around' }}>
+        {[
+          [runs, t('dashboard.home.runs')],
+          [tokens, t('dashboard.home.tokens')],
+          [cost, t('dashboard.home.cost')],
+        ].map(([value, label]) => (
+          <div key={label} style={{ textAlign: 'center' }}>
+            <div className="mono" style={{ fontWeight: 800, fontSize: 18 }}>{value}</div>
+            <div className="dim" style={{ fontSize: 11.5 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default TeacherAiUsagePanel

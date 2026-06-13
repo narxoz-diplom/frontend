@@ -7,6 +7,8 @@ import { getCourse, getCourseParticipants, deleteCourse } from '@/shared/api/cou
 import { getLessons, deleteLesson } from '@/shared/api/lessonsApi'
 import { getCourseTests, updateTestSettings, generateTests } from '@/shared/api/testsApi'
 import { getCourseFiles, uploadToCourse, ingestUrlToCourse, deleteFile } from '@/shared/api/filesApi'
+import { formatTestDueDateInput } from '../lib/courseDetailUi'
+import { enrichLessonsWithVideos } from '../lib/enrichLessonsWithVideos'
 
 export const useCourseEdit = (id, { buildGenerationExtras, onUsageSummary, canGenerate = true } = {}) => {
   const { t } = useTranslation()
@@ -48,7 +50,8 @@ export const useCourseEdit = (id, { buildGenerationExtras, onUsageSummary, canGe
       const coursePayload = normalizeCourseViewerResponse(courseRes.data)
       setCourse(coursePayload.course)
       setCourseFiles(filesRes.data || [])
-      setLessons(lessonsRes.data || [])
+      const lessonsArr = lessonsRes.data || []
+      setLessons(await enrichLessonsWithVideos(lessonsArr))
       const testsArr = Array.isArray(testsRes.data) ? testsRes.data : []
       setTests(testsArr)
       setTestMaxAttemptsDraft((prev) => {
@@ -68,8 +71,7 @@ export const useCourseEdit = (id, { buildGenerationExtras, onUsageSummary, canGe
           const tid = tst?.id
           if (tid == null) continue
           if (next[tid] === undefined) {
-            const raw = tst?.dueAt
-            next[tid] = raw ? String(raw).slice(0, 16) : ''
+            next[tid] = formatTestDueDateInput(tst?.dueAt)
           }
         }
         return next

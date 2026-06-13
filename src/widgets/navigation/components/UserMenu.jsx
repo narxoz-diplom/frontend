@@ -1,115 +1,60 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { FiUser, FiSettings, FiLogOut } from 'react-icons/fi'
+import React, { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import auth from '@/shared/config/auth'
+import { Icon } from '@/shared/ui/academis'
+import Dropdown from '@/shared/ui/Dropdown'
+import { getPrimaryRoleLabel, getUserProfile } from '@/shared/lib/userProfile'
 
 const UserMenu = ({ userRoles = [], onLogout }) => {
-    const location = useLocation()
-    const { t } = useTranslation()
-    const profileRef = useRef(null)
-    const [profileOpen, setProfileOpen] = useState(false)
-    const [userName, setUserName] = useState('User')
+  const { t } = useTranslation()
+  const profile = useMemo(() => getUserProfile(), [])
+  const roleLabel = getPrimaryRoleLabel(t)
 
-    useEffect(() => {
-        if (auth?.tokenParsed) {
-            setUserName(auth.tokenParsed.preferred_username || auth.tokenParsed.name || 'User')
-        }
-    }, [])
-
-    useEffect(() => {
-        setProfileOpen(false)
-    }, [location.pathname])
-
-    useEffect(() => {
-        if (!profileOpen) return
-        const onKey = (e) => {
-            if (e.key === 'Escape') setProfileOpen(false)
-        }
-        document.addEventListener('keydown', onKey)
-        return () => document.removeEventListener('keydown', onKey)
-    }, [profileOpen])
-
-    useEffect(() => {
-        if (!profileOpen) return
-        const close = (e) => {
-            if (profileRef.current && !profileRef.current.contains(e.target)) {
-                setProfileOpen(false)
-            }
-        }
-        const id = window.setTimeout(() => {
-            document.addEventListener('click', close, true)
-        }, 0)
-        return () => {
-            window.clearTimeout(id)
-            document.removeEventListener('click', close, true)
-        }
-    }, [profileOpen])
-
-    const toggleProfileMenu = useCallback((e) => {
-        e.stopPropagation()
-        setProfileOpen((v) => !v)
-    }, [])
-
-    return (
-        <div className="top-profile-section" ref={profileRef}>
-            <div
-                className={`top-avatar-container ${profileOpen ? 'dropdown-open' : ''}`}
-            >
-                <button
-                    type="button"
-                    className="top-profile-trigger"
-                    onClick={toggleProfileMenu}
-                    aria-expanded={profileOpen}
-                    aria-haspopup="menu"
-                    aria-controls="top-profile-menu"
-                >
-                    <span className="top-user-info">
-                        <span className="top-user-name">{userName}</span>
-                        <span className="top-user-role">
-                            {[...new Set(userRoles)].join(', ')}
-                        </span>
-                    </span>
-                    <span className="top-avatar" aria-hidden>
-                        {userName.charAt(0).toUpperCase()}
-                    </span>
-                </button>
-                <div
-                    id="top-profile-menu"
-                    className="top-dropdown"
-                    role="menu"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Link
-                        to="/profile"
-                        role="menuitem"
-                        onClick={() => setProfileOpen(false)}
-                    >
-                        <FiUser aria-hidden /> {t('nav.profile')}
-                    </Link>
-                    <Link
-                        to="/settings"
-                        role="menuitem"
-                        onClick={() => setProfileOpen(false)}
-                    >
-                        <FiSettings aria-hidden /> {t('nav.settings')}
-                    </Link>
-                    <hr className="top-dropdown-divider" />
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setProfileOpen(false)
-                            onLogout()
-                        }}
-                        className="logout-btn-dropdown"
-                        role="menuitem"
-                    >
-                        <FiLogOut aria-hidden /> {t('nav.logout')}
-                    </button>
-                </div>
-            </div>
+  return (
+    <Dropdown
+      align="right"
+      width={240}
+      trigger={(
+        <div className="tb-user" role="button" tabIndex={0} aria-haspopup="menu">
+          <span className="avatar">{profile.initials}</span>
+          <span className="desktop-only" style={{ color: 'var(--text-3)' }}>
+            <Icon name="chevDown" size={15} />
+          </span>
         </div>
-    )
+      )}
+    >
+      <div style={{ padding: '8px 12px 6px' }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5 }}>{profile.fullName}</div>
+        <div className="dim" style={{ fontSize: 12 }}>{profile.email}</div>
+      </div>
+      <span className="badge badge-red" style={{ margin: '2px 12px 6px' }}>
+        {roleLabel || [...new Set(userRoles)].join(', ')}
+      </span>
+      <div className="menu-sep" />
+      <Link to="/profile" className="menu-item" role="menuitem">
+        <Icon name="user" size={17} />
+        {t('nav.profile')}
+      </Link>
+      <Link to="/settings" className="menu-item" role="menuitem">
+        <Icon name="settings" size={17} />
+        {t('nav.settings')}
+      </Link>
+      <Link to="/notifications" className="menu-item" role="menuitem">
+        <Icon name="bell" size={17} />
+        {t('nav.notifications')}
+      </Link>
+      <div className="menu-sep" />
+      <button
+        type="button"
+        className="menu-item danger"
+        onClick={onLogout}
+        role="menuitem"
+      >
+        <Icon name="logout" size={17} />
+        {t('nav.logout')}
+      </button>
+    </Dropdown>
+  )
 }
 
 export default UserMenu

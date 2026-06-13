@@ -16,6 +16,7 @@ const models = [
     enabled: true,
     isDefault: true,
     tier: 'fast',
+    description: 'Fast model',
     quota: { limitTokens: 500000, remainingTokens: 400000, period: 'monthly' }
   },
   {
@@ -29,27 +30,28 @@ const models = [
 describe('AiModelPicker', () => {
   it('shows loading state', () => {
     render(
-      <AiModelPicker loading models={[]} selectedModelId={null} onSelect={() => {}} />
+      <AiModelPicker loading models={[]} selectedModelId={null} onSelect={() => {}} compact />
     )
     expect(screen.getByText('courseEdit.aiModelLoading')).toBeInTheDocument()
   })
 
-  it('renders enabled and disabled models', () => {
+  it('renders compact trigger with selected model', () => {
     render(
       <AiModelPicker
+        compact
         models={models}
         selectedModelId="gemini-2.5-flash"
         onSelect={() => {}}
         selectedModel={models[0]}
       />
     )
-    expect(screen.getByText('courseEdit.aiModelLabel')).toBeInTheDocument()
-    expect(screen.getByText('courseEdit.aiModelQuotaMonthly')).toBeInTheDocument()
+    expect(screen.getByText('studio.aiModel')).toBeInTheDocument()
+    expect(screen.getByText('Gemini 2.5 Flash')).toBeInTheDocument()
   })
 
   it('shows empty state when no models', () => {
     render(
-      <AiModelPicker models={[]} selectedModelId={null} onSelect={() => {}} />
+      <AiModelPicker models={[]} selectedModelId={null} onSelect={() => {}} compact />
     )
     expect(screen.getByText('courseEdit.aiModelEmpty')).toBeInTheDocument()
   })

@@ -1,52 +1,45 @@
 import React from 'react'
-import {
-  FiCheck,
-  FiTrash2,
-  FiAlertCircle,
-  FiInfo,
-  FiFileText,
-  FiBook,
-  FiVideo,
-  FiClock
-} from 'react-icons/fi'
+import { Icon } from '@/shared/ui/Icon'
 import { useTranslation } from 'react-i18next'
 
 export const getNotificationColor = (type) => {
   switch (type) {
     case 'COURSE':
-      return 'var(--primary-color)'
+      return 'var(--brand)'
     case 'LESSON':
-      return '#9b59b6'
+      return 'var(--violet-500, #7c3aed)'
     case 'FILE_OPERATION':
-      return 'var(--success-color)'
+      return 'var(--green-500)'
     case 'VIDEO':
-      return '#e74c3c'
+      return 'var(--blue-500, #2563eb)'
     case 'ALERT':
-      return 'var(--warning-color)'
+      return 'var(--amber-500, #f59e0b)'
     default:
-      return 'var(--text-secondary)'
+      return 'var(--text-3)'
   }
 }
 
 const getNotificationIcon = (type) => {
   switch (type) {
     case 'COURSE':
-      return <FiBook className="notification-icon" />
+      return 'book'
     case 'LESSON':
-      return <FiBook className="notification-icon" />
+      return 'book'
     case 'FILE_OPERATION':
-      return <FiFileText className="notification-icon" />
+      return 'file'
     case 'VIDEO':
-      return <FiVideo className="notification-icon" />
+      return 'video'
     case 'ALERT':
-      return <FiAlertCircle className="notification-icon" />
+      return 'bell'
     default:
-      return <FiInfo className="notification-icon" />
+      return 'bell'
   }
 }
 
-const NotificationCard = ({ notification, locale, onMarkRead, onDelete }) => {
+const NotificationCard = ({ notification, locale, onMarkRead }) => {
   const { t } = useTranslation()
+  const color = getNotificationColor(notification.type)
+  const iconName = getNotificationIcon(notification.type)
 
   const formatRelativeTime = (dateString) => {
     const date = new Date(dateString)
@@ -56,75 +49,65 @@ const NotificationCard = ({ notification, locale, onMarkRead, onDelete }) => {
 
     if (diffInSeconds < 60) {
       return t('notificationsPage.justNow')
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60)
-      return rtf.format(-minutes, 'minute')
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600)
-      return rtf.format(-hours, 'hour')
-    } else if (diffInSeconds < 604800) {
-      const days = Math.floor(diffInSeconds / 86400)
-      return rtf.format(-days, 'day')
-    } else {
-      return date.toLocaleDateString(locale, {
-        day: 'numeric',
-        month: 'short',
-        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-      })
     }
-  }
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString(locale, {
+    if (diffInSeconds < 3600) {
+      return rtf.format(-Math.floor(diffInSeconds / 60), 'minute')
+    }
+    if (diffInSeconds < 86400) {
+      return rtf.format(-Math.floor(diffInSeconds / 3600), 'hour')
+    }
+    if (diffInSeconds < 604800) {
+      return rtf.format(-Math.floor(diffInSeconds / 86400), 'day')
+    }
+    return date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     })
   }
 
+  const title = notification.title || notification.message?.split('\n')[0] || notification.type
+  const text = notification.message || notification.body || ''
+
   return (
     <div
-      className={`notification-card ${!notification.read ? 'unread' : ''}`}
+      className={`card notif-card${!notification.read ? ' unread' : ''}`}
       onClick={() => !notification.read && onMarkRead(notification.id)}
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && !notification.read) {
+          e.preventDefault()
+          onMarkRead(notification.id)
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
-      <div
-        className="notification-indicator"
-        style={{ backgroundColor: getNotificationColor(notification.type) }}
-      />
-      <div className="notification-icon-wrapper">
-        {getNotificationIcon(notification.type)}
-      </div>
-      <div className="notification-content">
-        <div className="notification-message">
-          {notification.message}
-        </div>
-        <div className="notification-meta">
-          <span className="notification-type">{notification.type}</span>
-          <span className="notification-time" title={formatDate(notification.createdAt)}>
-            <FiClock /> {formatRelativeTime(notification.createdAt)}
+      <span
+        className="notif-ic"
+        style={{
+          color,
+          background: `color-mix(in srgb, ${color} 13%, transparent)`,
+        }}
+      >
+        <Icon name={iconName} size={19} />
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="row between gap10">
+          <span style={{ fontWeight: 700, fontSize: 14 }}>{title}</span>
+          <span className="dim" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+            {formatRelativeTime(notification.createdAt)}
           </span>
         </div>
-      </div>
-      <div className="notification-actions">
-        {!notification.read && (
-          <button
-            className="btn-icon btn-mark-read"
-            onClick={(e) => onMarkRead(notification.id, e)}
-            title={t('notificationsPage.markRead')}
-          >
-            <FiCheck />
-          </button>
+        <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>
+          {text}
+        </div>
+        {notification.type && (
+          <span className="badge" style={{ marginTop: 8, fontSize: 11 }}>
+            {notification.type}
+          </span>
         )}
-        <button
-          className="btn-icon btn-delete"
-          onClick={(e) => onDelete(notification.id, e)}
-          title={t('common.delete')}
-        >
-          <FiTrash2 />
-        </button>
       </div>
+      {!notification.read && <span className="unread-dot" aria-hidden />}
     </div>
   )
 }

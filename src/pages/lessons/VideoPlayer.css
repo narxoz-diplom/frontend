@@ -1,16 +1,14 @@
 .video-player-page {
   padding: 0;
-  background: var(--bg-secondary);
-  min-height: 100vh;
+  background: transparent;
+  min-height: 0;
 }
 
 .video-player-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
+  max-width: none;
+  margin: 0;
+  display: block;
+  padding: 0;
 }
 
 /* Video Main */
