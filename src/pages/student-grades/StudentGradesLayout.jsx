@@ -1,33 +1,32 @@
 import React from 'react'
-import { Link, Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { FiLock } from 'react-icons/fi'
 import auth from '@/shared/config/auth'
 import { isTeacher, isAdmin } from '@/shared/lib/roles'
 import { PageHeader } from '@/shared/ui/academis'
-import '@/pages/courses/Courses.css'
+import GradesAccessDenied from '@/pages/grades/GradesAccessDenied'
+import '@/pages/grades/Grades.css'
 import '../secondary-academis.css'
 
 export default function StudentGradesLayout() {
   const { t } = useTranslation()
+  const location = useLocation()
+  const isIndex = location.pathname === '/my/grades' || location.pathname === '/my/grades/'
 
   if (isTeacher(auth) || isAdmin(auth)) {
     return (
-      <div className="page page-wide">
-        <div className="card card-pad" style={{ textAlign: 'center', maxWidth: 420, margin: '40px auto' }}>
-          <FiLock aria-hidden style={{ fontSize: '2rem', marginBottom: 12, color: 'var(--brand)' }} />
-          <p className="muted" role="alert">{t('studentGrades.accessDeniedBody')}</p>
-          <Link to="/" className="btn btn-outline" style={{ marginTop: 16 }}>
-            {t('studentGrades.backHome')}
-          </Link>
-        </div>
-      </div>
+      <GradesAccessDenied
+        body={t('studentGrades.accessDeniedBody')}
+        backLabel={t('studentGrades.backHome')}
+      />
     )
   }
 
   return (
-    <div className="page page-wide">
-      <PageHeader title={t('nav.myGrades')} subtitle={t('studentGrades.subtitle')} />
+    <div className="page page-wide grades-page">
+      {isIndex && (
+        <PageHeader title={t('nav.myGrades')} subtitle={t('studentGrades.subtitle')} />
+      )}
       <Outlet />
     </div>
   )

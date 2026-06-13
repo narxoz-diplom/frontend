@@ -11,13 +11,21 @@ export default function GradeSheetRow({ row, invalid, onChange }) {
     return translated === key ? code : translated
   }
 
+  const status = row.studyStatus || 'active'
+  const statusClass =
+    status === 'completed'
+      ? 'grades-study-pill grades-study-pill--completed'
+      : 'grades-study-pill'
+
   return (
     <tr>
       <td>
-        <span style={{ fontWeight: 600 }}>{row.fullName || row.studentId || `#${row.enrollmentId}`}</span>
+        <span className="grades-student-name">
+          {row.fullName || row.studentId || `#${row.enrollmentId}`}
+        </span>
       </td>
       <td>
-        <span className="badge">{studyStatusLabel(row.studyStatus || 'active')}</span>
+        <span className={statusClass}>{studyStatusLabel(status)}</span>
       </td>
       <td>
         <input
@@ -25,7 +33,7 @@ export default function GradeSheetRow({ row, invalid, onChange }) {
           min={GRADE_MIN}
           max={GRADE_MAX}
           step={1}
-          className={`input grade-input${invalid ? ' tg-input--invalid' : ''}`}
+          className={`input grades-grade-input${invalid ? ' grades-grade-input--invalid' : ''}`}
           value={row.gradeInput}
           onChange={(e) => onChange('gradeInput', e.target.value)}
           aria-invalid={invalid}
@@ -35,7 +43,7 @@ export default function GradeSheetRow({ row, invalid, onChange }) {
       <td>
         <input
           type="text"
-          className="input feedback-input"
+          className="input grades-feedback-input"
           value={row.feedbackInput}
           onChange={(e) => onChange('feedbackInput', e.target.value)}
           placeholder={t('teacherGrades.feedbackPlaceholder')}

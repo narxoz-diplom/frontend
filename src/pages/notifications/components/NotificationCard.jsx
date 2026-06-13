@@ -14,6 +14,8 @@ export const getNotificationColor = (type) => {
       return 'var(--blue-500, #2563eb)'
     case 'ALERT':
       return 'var(--amber-500, #f59e0b)'
+    case 'GRADE':
+      return 'var(--brand)'
     default:
       return 'var(--text-3)'
   }
@@ -31,6 +33,8 @@ const getNotificationIcon = (type) => {
       return 'video'
     case 'ALERT':
       return 'bell'
+    case 'GRADE':
+      return 'grade'
     default:
       return 'bell'
   }

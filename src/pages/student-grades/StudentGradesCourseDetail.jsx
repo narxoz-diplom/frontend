@@ -7,8 +7,7 @@ import {
   courseGradeStats,
   gradeLevel,
 } from '@/shared/api/studentGradesApi'
-import { PageHeader, Icon, Spinner, Donut } from '@/shared/ui/academis'
-import '../secondary-academis.css'
+import { PageHeader, Icon, Spinner, Donut, EmptyState } from '@/shared/ui/academis'
 
 function formatDate(iso, lang) {
   if (!iso) return '—'
@@ -57,7 +56,7 @@ export default function StudentGradesCourseDetail() {
 
   if (loading) {
     return (
-      <div className="secondary-page-loading">
+      <div className="grades-loading">
         <Spinner size={28} />
         <span className="muted">{t('coursesPage.loading')}</span>
       </div>
@@ -84,7 +83,7 @@ export default function StudentGradesCourseDetail() {
       {error && <div className="secondary-flash secondary-flash--error">{error}</div>}
 
       {stats.avgGrade != null && (
-        <div className="card card-pad grade-stat-pill" style={{ marginBottom: 14, maxWidth: 280 }}>
+        <div className="card grades-stat-card">
           <Donut
             value={stats.avgGrade}
             size={56}
@@ -94,7 +93,7 @@ export default function StudentGradesCourseDetail() {
           />
           <div>
             <div className="dim" style={{ fontSize: 12 }}>{t('studentGrades.avgGrade')}</div>
-            <div style={{ fontWeight: 800, fontSize: 18, color: gradeLevel(stats.avgGrade).color }}>
+            <div className="grades-stat-value" style={{ color: gradeLevel(stats.avgGrade).color }}>
               {stats.avgGrade}
             </div>
           </div>
@@ -102,9 +101,7 @@ export default function StudentGradesCourseDetail() {
       )}
 
       {grades.length === 0 ? (
-        <div className="card card-pad">
-          <p className="muted">{t('studentGrades.emptyCourse')}</p>
-        </div>
+        <EmptyState icon="grade" title={t('studentGrades.emptyCourse')} />
       ) : (
         modules.map((mod) => {
           const modTitle =
@@ -112,14 +109,14 @@ export default function StudentGradesCourseDetail() {
             || (mod.moduleId === 'default' ? t('studentGrades.defaultModule') : mod.moduleId)
 
           return (
-            <div key={mod.moduleId} className="card" style={{ overflow: 'hidden', marginBottom: 14 }}>
+            <div key={mod.moduleId} className="card grades-module-card">
               <div className="sec-head">
                 <h3 className="h3 row gap8">
                   <Icon name="book" size={16} />
                   {modTitle}
                 </h3>
               </div>
-              <div style={{ overflowX: 'auto' }}>
+              <div className="grades-table-wrap">
                 <table className="tbl">
                   <thead>
                     <tr>
@@ -134,12 +131,12 @@ export default function StudentGradesCourseDetail() {
                       const { color, bg, label } = gradeLevel(g.grade)
                       return (
                         <tr key={`${g.lessonId}-${idx}`}>
-                          <td style={{ fontWeight: 600 }}>
+                          <td className="grades-student-name">
                             {g.lessonTitle || `${t('common.lesson')} ${idx + 1}`}
                           </td>
                           <td>
                             <span
-                              className="grade-badge"
+                              className="grades-score-badge"
                               style={{ color, background: bg, border: `1px solid ${color}33` }}
                             >
                               {label}

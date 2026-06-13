@@ -176,76 +176,7 @@
   margin-top: 14px;
 }
 
-/* Grades */
-.grade-input {
-  width: 88px;
-  height: 36px;
-  text-align: center;
-  font-weight: 700;
-}
-
-.grade-input.tg-input--invalid,
-.grade-input:invalid {
-  border-color: var(--brand);
-  background: color-mix(in srgb, var(--brand) 6%, var(--surface));
-}
-
-.feedback-input {
-  width: 100%;
-  min-width: 160px;
-  height: 36px;
-  font-size: 13px;
-}
-
-.lesson-row-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 13px 16px;
-  border-bottom: 1px solid var(--border);
-  text-decoration: none;
-  color: inherit;
-  transition: background 0.14s;
-}
-
-.lesson-row-link:last-child {
-  border-bottom: none;
-}
-
-.lesson-row-link:hover {
-  background: var(--surface-2);
-}
-
-.lesson-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: var(--brand-tint);
-  color: var(--brand);
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.grade-stat-pill {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-}
-
-.grade-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 52px;
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-weight: 800;
-  font-size: 13px;
-}
+/* Grades inputs & rows moved to pages/grades/Grades.css */
 
 .clamp-1 {
   display: -webkit-box;

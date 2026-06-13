@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader, Icon, Spinner, Donut } from '@/shared/ui/academis'
 import useGradeSheet, { gradeFieldInvalid } from './hooks/useGradeSheet'
 import GradeSheetRow from './components/GradeSheetRow'
-import '../secondary-academis.css'
 
 export default function TeacherGradesTable() {
   const { courseId, lessonId } = useParams()
@@ -38,17 +37,17 @@ export default function TeacherGradesTable() {
 
   if (loading) {
     return (
-      <section className="tg-section secondary-page-loading">
+      <div className="grades-loading">
         <Spinner size={28} />
         <span className="muted">{t('common.loading')}</span>
-      </section>
+      </div>
     )
   }
 
   const displayTitle = lessonTitle || t('teacherGrades.colGrade')
 
   return (
-    <section className="tg-section">
+    <>
       <PageHeader
         title={displayTitle}
         subtitle={
@@ -80,35 +79,32 @@ export default function TeacherGradesTable() {
         </div>
       )}
 
-      {avgGrade != null && (
-        <div className="card card-pad grade-stat-pill" style={{ marginBottom: 14, maxWidth: 280 }}>
-          <Donut value={avgGrade} size={56} stroke={7} label={String(avgGrade)} />
-          <div>
-            <div className="dim" style={{ fontSize: 12 }}>
-              {t('studentGrades.avgGrade')}
-            </div>
-            <div style={{ fontWeight: 800, fontSize: 18 }}>
-              {avgGrade} / 100
+      <div className="grades-toolbar">
+        {avgGrade != null && (
+          <div className="card grades-stat-card">
+            <Donut value={avgGrade} size={56} stroke={7} label={String(avgGrade)} />
+            <div>
+              <div className="dim" style={{ fontSize: 12 }}>{t('studentGrades.avgGrade')}</div>
+              <div className="grades-stat-value">{avgGrade} / 100</div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="input-icon" style={{ maxWidth: 320, marginBottom: 14 }}>
-        <span className="ic">
+        <div className="input-icon grades-search">
           <Icon name="search" size={16} />
-        </span>
-        <input
-          className="input"
-          type="search"
-          placeholder={t('teacherGrades.filterPlaceholder')}
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-        />
+          <input
+            className="input"
+            type="search"
+            placeholder={t('teacherGrades.filterPlaceholder')}
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label={t('teacherGrades.filterLabel')}
+          />
+        </div>
       </div>
 
-      <div className="card" style={{ overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
+      <div className="card grades-table-card">
+        <div className="grades-table-wrap">
           <table className="tbl">
             <thead>
               <tr>
@@ -121,7 +117,7 @@ export default function TeacherGradesTable() {
             <tbody>
               {filteredRows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="muted" style={{ textAlign: 'center', padding: 24 }}>
+                  <td colSpan={4} className="muted grades-table-empty">
                     {t('teacherGrades.tableEmpty')}
                   </td>
                 </tr>
@@ -140,12 +136,12 @@ export default function TeacherGradesTable() {
         </div>
       </div>
 
-      <div className="row" style={{ justifyContent: 'flex-end', marginTop: 14 }}>
+      <div className="grades-footer-actions">
         <Link to={`/teacher/grades/${courseId}`} state={location.state} className="btn btn-outline">
           <Icon name="chevLeft" size={16} />
           {t('teacherGrades.backToLessons')}
         </Link>
       </div>
-    </section>
+    </>
   )
 }
