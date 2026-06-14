@@ -33,7 +33,7 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
   }
 
   return (
-    <div className="card lesson-notes-section lesson-content">
+    <div className="card">
       <div className="sec-head">
         <div className="row gap8" style={{ alignItems: 'center' }}>
           <Icon name="book" size={17} style={{ color: 'var(--brand)' }} />
@@ -42,7 +42,8 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
         {canEdit && (
           <button
             type="button"
-            className="btn-edit section-header__btn"
+            className="btn btn-sm btn-outline"
+            style={{ marginLeft: 'auto' }}
             onClick={() => {
               if (isEditing) {
                 setIsEditing(false)
@@ -101,7 +102,7 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
                     </div>
                     <button
                       type="button"
-                      className="btn-edit section-header__btn markdown-embedded-images__remove"
+                      className="btn btn-sm btn-outline markdown-embedded-images__remove"
                       onClick={() => handleRemoveEmbeddedImage(img.fullMatch)}
                       title={t('common.delete')}
                     >
@@ -113,12 +114,12 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
             </div>
           )}
           <div className="editor-actions">
-            <button type="button" className="btn-edit btn-edit--accent" onClick={handleSave}>
+            <button type="button" className="btn btn-primary" onClick={handleSave}>
               <FiSave /> {t('lessonPage.saveNotes')}
             </button>
             <button
               type="button"
-              className="btn-edit"
+              className="btn btn-outline"
               onClick={() => {
                 setIsEditing(false)
                 setEditedContent(lesson.content || '')
@@ -142,7 +143,7 @@ const LessonNotes = ({ lesson, canEdit, onSave }) => {
               {canEdit && (
                 <button
                   type="button"
-                  className="btn-edit btn-edit--accent"
+                  className="btn btn-primary"
                   onClick={() => setIsEditing(true)}
                 >
                   <FiEdit3 /> {t('lessonPage.addNotes')}

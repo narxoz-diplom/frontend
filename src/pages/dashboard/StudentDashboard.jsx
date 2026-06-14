@@ -59,7 +59,7 @@ const StudentDashboard = ({ view = 'home' }) => {
 
   if (view === 'stats') {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <PageHeader
           title={t('dashboard.statsTitle')}
           subtitle={t('dashboard.studentStatsDesc')}
@@ -78,7 +78,7 @@ const StudentDashboard = ({ view = 'home' }) => {
 
   if (loading) {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <div className="dashboard-loading">
           <Spinner />
           <div style={{ marginTop: 10 }}>{t('common.loading')}</div>
@@ -88,7 +88,7 @@ const StudentDashboard = ({ view = 'home' }) => {
   }
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <div className="hero-student fade-up">
         <div className="hero-bg" aria-hidden />
         <div style={{ position: 'relative', zIndex: 2 }}>
@@ -137,7 +137,9 @@ const StudentDashboard = ({ view = 'home' }) => {
         </div>
       </div>
 
-      {statsBlock}
+      <div style={{ marginTop: 18 }}>
+        <HomeNewsFeed />
+      </div>
 
       <div className="grid-2-1" style={{ marginTop: 18 }}>
         <div className="col gap16">
@@ -155,7 +157,7 @@ const StudentDashboard = ({ view = 'home' }) => {
                   const progress = Math.min(100, Number(course.progress) || 0)
                   return (
                     <Link key={course.id} to={`/courses/${course.id}`} className="mini-course">
-                      <CourseCover course={course} height={56} radius={10} />
+                      <CourseCover course={course} height={56} width={56} radius={12} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 700, fontSize: 14.5 }}>{title}</div>
                         <div className="dim" style={{ fontSize: 12, margin: '3px 0 7px' }}>
@@ -178,7 +180,6 @@ const StudentDashboard = ({ view = 'home' }) => {
               </div>
             )}
           </SectionCard>
-          <HomeNewsFeed />
         </div>
 
         <div className="col gap16">

@@ -83,7 +83,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
   }
 
   return (
-    <div className="card lesson-videos-section" style={{ overflow: 'hidden' }}>
+    <div className="card" style={{ overflow: 'hidden' }}>
       <div className="sec-head">
         <div className="row gap8" style={{ alignItems: 'center' }}>
           <Icon name="video" size={17} style={{ color: 'var(--brand)' }} />
@@ -93,7 +93,8 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
         {canEdit && (
           <button
             type="button"
-            className="btn-edit btn-edit--accent section-header__btn"
+            className="btn btn-sm btn-primary"
+            style={{ marginLeft: 'auto' }}
             onClick={() => setShowVideoForm(!showVideoForm)}
           >
             {showVideoForm ? (
@@ -154,7 +155,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
             <div className="form-actions">
               <button
                 type="submit"
-                className="btn-edit btn-edit--accent"
+                className="btn btn-primary"
                 disabled={uploadingVideo}
               >
                 {uploadingVideo ? (
@@ -169,7 +170,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
               </button>
               <button
                 type="button"
-                className="btn-edit"
+                className="btn btn-outline"
                 onClick={() => {
                   setShowVideoForm(false)
                   setNewVideo(emptyVideoForm(videos.length + 1))
@@ -189,7 +190,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
           {canEdit && (
             <button
               type="button"
-              className="btn-edit btn-edit--accent"
+              className="btn btn-primary"
               onClick={() => setShowVideoForm(true)}
             >
               <FiUpload /> {t('lessonPage.addFirstVideo')}
@@ -197,12 +198,12 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
           )}
         </div>
       ) : (
-        <div className="video-strip videos-list">
+        <div className="video-strip">
           {videos.map((video, index) => {
             const isCompleted = isVideoCompleted(buildProgressKey(courseId, lessonId, video.id))
 
             return (
-              <div key={video.id} className="video-card-wrapper video-thumb">
+              <div key={video.id} className="video-thumb">
                 <Link
                   to={`/courses/${courseId}/lessons/${lessonId}/videos/${video.id}`}
                   className="video-card"
@@ -230,7 +231,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
                 {canEdit && (
                   <button
                     type="button"
-                    className="btn-icon-danger video-delete-btn"
+                    className="btn btn-sm btn-icon btn-danger video-delete-btn"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()

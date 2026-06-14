@@ -293,6 +293,12 @@
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
+  transition: border-color 0.16s, background 0.16s;
+}
+
+.file-pill:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-3);
 }
 
 .fp-ic {
@@ -304,6 +310,56 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
+}
+
+.fp-main {
+  border-radius: 8px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  transition: background 0.16s;
+}
+
+.fp-main:hover,
+.fp-main:focus-visible {
+  background: var(--surface);
+  outline: none;
+}
+
+/* File upload trigger styled as a button (hidden native input) */
+.lesson-file-upload {
+  position: relative;
+  cursor: pointer;
+  margin: 0;
+}
+
+.lesson-file-upload__input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Sidebar lesson number badge (CourseDetail.css not loaded on this page) */
+.lnav-item .lesson-num {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.lnav-item.current .lesson-num,
+.lnav-item .lesson-num.cur {
+  background: var(--brand);
+  color: #fff;
+}
+
+.lnav-item .lesson-num.done {
+  background: var(--green-500);
+  color: #fff;
 }
 
 /* Quiz / test */

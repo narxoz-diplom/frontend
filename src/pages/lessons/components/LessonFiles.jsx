@@ -73,14 +73,14 @@ const LessonFiles = ({ files, canEdit, lessonId, onFilesChanged, onError }) => {
   }
 
   return (
-    <div className="card card-pad lesson-files-section">
+    <div className="card card-pad">
       <div className="sec-head" style={{ padding: '0 0 12px', margin: 0 }}>
         <div className="row gap8" style={{ alignItems: 'center' }}>
           <Icon name="files" size={17} style={{ color: 'var(--brand)' }} />
           <h3 className="h3">{t('lessonPage.attachments')}</h3>
         </div>
         {canEdit && (
-          <label className="btn-edit btn-edit--accent section-header__btn lesson-file-upload">
+          <label className="btn btn-sm btn-primary lesson-file-upload">
             <FiUpload /> {t('lessonPage.addFile')}
             <input
               type="file"
@@ -97,14 +97,14 @@ const LessonFiles = ({ files, canEdit, lessonId, onFilesChanged, onError }) => {
           <p>{t('lessonPage.noFiles')}</p>
         </div>
       ) : (
-        <div className="col gap8 files-list">
+        <div className="col gap8">
           {files.map((file) => (
-            <div key={file.id} className="file-pill file-card file-card--row">
+            <div key={file.id} className="file-pill">
               <span className="fp-ic">
                 <Icon name="file" size={16} />
               </span>
               <div
-                className="file-card__main"
+                className="fp-main"
                 style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                 onClick={() => handleFileDownload(file.id, file.originalFileName)}
                 onKeyDown={(e) => {
@@ -131,7 +131,7 @@ const LessonFiles = ({ files, canEdit, lessonId, onFilesChanged, onError }) => {
               {canEdit && (
                 <button
                   type="button"
-                  className="btn-icon-danger"
+                  className="btn btn-sm btn-icon btn-danger"
                   onClick={(e) => {
                     e.stopPropagation()
                     handleDeleteFile(file.id)

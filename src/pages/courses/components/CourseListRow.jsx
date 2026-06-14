@@ -19,7 +19,7 @@ const CourseListRow = ({ course, views, last }) => {
       role="link"
       tabIndex={0}
     >
-      <CourseCover course={course} image={course.imageUrl} height={52} radius={10} />
+      <CourseCover course={course} image={course.imageUrl} height={52} width={52} radius={12} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="row gap8" style={{ alignItems: 'center', marginBottom: 3 }}>
           <span style={{ fontWeight: 700, fontSize: 14.5 }}>

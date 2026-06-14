@@ -1,12 +1,50 @@
 import { useEffect, useState } from 'react'
 import { getPublishedCourses, getEnrolledCourses } from '@/shared/api/coursesApi'
-import { getMyTestAttempts, getUpcomingTestDeadlines } from '@/shared/api/testsApi'
+import { getMyTestAttempts, getUpcomingTestDeadlines, getCourseTests } from '@/shared/api/testsApi'
+import { pickLocalized } from '@/i18n/localize'
 
 const initialStats = {
     catalogCourses: 0,
     enrolledCourses: 0,
     completedLessons: 0,
     testAttempts: 0,
+}
+
+const normalizeDueAt = (test) => test?.dueAt || test?.deadline || test?.dueDate || null
+
+const countQuestions = (test) => {
+    if (Array.isArray(test?.questions)) return test.questions.length
+    return test?.questionsCount ?? test?.questionCount ?? null
+}
+
+// Fallback: derive upcoming deadlines from each enrolled course's tests
+// when the dedicated endpoint returns nothing.
+const buildDeadlinesFromCourses = async (courses) => {
+    const now = Date.now()
+    const perCourse = await Promise.all(
+        courses.map(async (course) => {
+            try {
+                const res = await getCourseTests(course.id)
+                const tests = Array.isArray(res.data) ? res.data : []
+                return tests
+                    .map((test) => ({ test, dueAt: normalizeDueAt(test) }))
+                    .filter(({ dueAt }) => dueAt && new Date(dueAt).getTime() >= now)
+                    .map(({ test, dueAt }) => ({
+                        courseId: course.id,
+                        testId: test.id,
+                        testTitle: pickLocalized(test, 'title') || test.title,
+                        courseTitle: pickLocalized(course, 'title') || course.title,
+                        dueAt,
+                        questionsCount: countQuestions(test),
+                    }))
+            } catch {
+                return []
+            }
+        }),
+    )
+    return perCourse
+        .flat()
+        .sort((a, b) => new Date(a.dueAt) - new Date(b.dueAt))
 }
 
 const countCompletedLessonsFromStorage = () => {
@@ -45,7 +83,12 @@ const useStudentDashboardData = () => {
                     completedLessons: countCompletedLessonsFromStorage(),
                     testAttempts: Array.isArray(attemptsRes.data) ? attemptsRes.data.length : 0,
                 })
-                setUpcomingDeadlines(Array.isArray(deadlinesRes.data) ? deadlinesRes.data : [])
+
+                let deadlines = Array.isArray(deadlinesRes.data) ? deadlinesRes.data : []
+                if (deadlines.length === 0 && enrolled.length > 0) {
+                    deadlines = await buildDeadlinesFromCourses(enrolled)
+                }
+                setUpcomingDeadlines(deadlines)
             } catch {
                 setStats((s) => ({
                     ...s,

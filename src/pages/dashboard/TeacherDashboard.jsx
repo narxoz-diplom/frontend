@@ -91,7 +91,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
 
   if (view === 'stats') {
     return (
-      <div className="page">
+      <div className="page page-wide">
         <PageHeader
           title={t('dashboard.statsTitle')}
           subtitle={t('dashboard.teacherStatsDesc')}
@@ -115,7 +115,7 @@ const TeacherDashboard = ({ view = 'home' }) => {
   }
 
   return (
-    <div className="page">
+    <div className="page page-wide">
       <div className="hero-teacher fade-up">
         <div>
           <span className="badge badge-solid">
@@ -143,9 +143,11 @@ const TeacherDashboard = ({ view = 'home' }) => {
         </button>
       </div>
 
-      {statsBlock}
+      <div style={{ marginTop: 18 }}>
+        <HomeNewsFeed />
+      </div>
 
-      <div className="grid-2-1" style={{ marginTop: 18 }}>
+      <div className="dashboard-main-row" style={{ marginTop: 18 }}>
         <div className="col gap16">
           <SectionCard
             title={t('dashboard.myCourses')}
@@ -168,29 +170,57 @@ const TeacherDashboard = ({ view = 'home' }) => {
                 <p>{t('dashboard.addFirstCourse')}</p>
               </div>
             ) : (
-              <div className="course-mini-grid">
-                {courses.slice(0, 3).map((course) => (
-                  <TeacherCourseCard key={course.id} course={course} />
-                ))}
+              <div className="courses-card-inner">
+                <div className="course-mini-grid">
+                  {courses.slice(0, 3).map((course) => (
+                    <TeacherCourseCard key={course.id} course={course} />
+                  ))}
+                </div>
+
+                <div className="courses-card-footer">
+                  <div className="courses-footer-stat">
+                    <Icon name="books" size={15} />
+                    <span className="courses-footer-value">{courses.length}</span>
+                    <span className="dim">{t('dashboard.home.myCoursesShort')}</span>
+                  </div>
+                  <div className="courses-footer-stat">
+                    <Icon name="doc" size={15} />
+                    <span className="courses-footer-value">{totalLessons}</span>
+                    <span className="dim">{t('dashboard.totalLessons')}</span>
+                  </div>
+                  <div className="courses-footer-stat">
+                    <Icon name="users" size={15} />
+                    <span className="courses-footer-value">{totalStudentEnrollments}</span>
+                    <span className="dim">{t('dashboard.home.students')}</span>
+                  </div>
+                </div>
               </div>
             )}
           </SectionCard>
-          <HomeNewsFeed />
         </div>
 
         <div className="col gap16">
-          <SectionCard title={t('dashboard.aiUsage.title')} icon="sparkles">
-            <TeacherAiUsagePanel report={aiUsage.report} loading={aiUsage.loading} />
-          </SectionCard>
-
-          <SectionCard title={t('dashboard.home.weeklyActivity')} icon="chart">
-            {weeklyActivity.length > 0 ? (
-              <BarChart data={weeklyActivity} height={150} />
-            ) : (
-              <div className="muted" style={{ padding: '20px 0', textAlign: 'center', fontSize: 13 }}>
-                {t('dashboard.aiUsage.empty')}
+          <SectionCard title={t('dashboard.aiUsage.title')} icon="sparkles" pad={false}>
+            <div style={{ padding: '6px 20px 0' }}>
+              <TeacherAiUsagePanel
+                report={aiUsage.report}
+                loading={aiUsage.loading}
+                horizontal
+              />
+            </div>
+            <div className="dashboard-card-divider" style={{ margin: '16px 20px 0' }} />
+            <div style={{ padding: '14px 20px 18px' }}>
+              <div className="eyebrow" style={{ marginBottom: 12 }}>
+                {t('dashboard.home.weeklyActivity')}
               </div>
-            )}
+              {weeklyActivity.length > 0 ? (
+                <BarChart data={weeklyActivity} height={140} />
+              ) : (
+                <div className="muted" style={{ padding: '12px 0', textAlign: 'center', fontSize: 13 }}>
+                  {t('dashboard.aiUsage.empty')}
+                </div>
+              )}
+            </div>
           </SectionCard>
         </div>
       </div>
