@@ -28,6 +28,9 @@ export const uploadNewsImage = (formData, config = {}) =>
     ...config
   })
 
+export const uploadAvatar = (formData, config = {}) =>
+  api.post('/files/upload-avatar', formData, config)
+
 export const ingestUrlToCourse = (courseId, url) =>
   api.post(`/files/course/${courseId}/ingest-url`, { url })
 

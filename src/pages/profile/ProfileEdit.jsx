@@ -3,14 +3,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import auth from '@/shared/config/auth'
 import { updateUser } from '@/shared/api/authApi'
-import { uploadNewsImage } from '@/shared/api/filesApi'
+import { uploadAvatar } from '@/shared/api/filesApi'
 import { resolveApiError } from '@/shared/lib/apiError'
 import { useAlert } from '@/app/providers/AlertProvider'
 import {
-  buildFileContentUrl,
   buildProfileInitials,
-  setStoredAvatarUrl,
+  notifyAvatarUpdated,
 } from '@/shared/lib/profileHelpers'
+import { prepareAvatarFile } from '@/shared/lib/avatarImage'
 import { PageHeader, Icon, Spinner } from '@/shared/ui/academis'
 import SectionCard from '@/shared/ui/SectionCard'
 import ProfileAvatar from './components/ProfileAvatar'
@@ -41,6 +41,13 @@ const ProfileEdit = () => {
   const [avatarFile, setAvatarFile] = useState(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [preparingAvatar, setPreparingAvatar] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview)
+    }
+  }, [avatarPreview])
 
   useEffect(() => {
     if (!userInfo) return
@@ -55,25 +62,42 @@ const ProfileEdit = () => {
   }, [userInfo])
 
   const initials = useMemo(
-    () => (userInfo ? buildProfileInitials(form.firstName, form.lastName, userInfo.username) : ''),
-    [userInfo, form.firstName, form.lastName],
+    () => (userInfo ? buildProfileInitials(form.firstName, form.lastName, userInfo.username, form.email) : ''),
+    [userInfo, form.firstName, form.lastName, form.email],
   )
 
   const setField = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
   const handlePickAvatar = () => fileRef.current?.click()
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0]
-    if (!file) return
-    if (!file.type.startsWith('image/')) { toast(t('profilePage.avatarInvalidType'), 'error'); return }
-    if (file.size > 5 * 1024 * 1024) { toast(t('profilePage.avatarTooLarge'), 'error'); return }
-    setAvatarFile(file)
-    setRemoveAvatar(false)
-    setAvatarPreview(URL.createObjectURL(file))
     e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      toast(t('profilePage.avatarInvalidType'), 'error')
+      return
+    }
+
+    setPreparingAvatar(true)
+    try {
+      const prepared = await prepareAvatarFile(file)
+      if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview)
+      setAvatarFile(prepared)
+      setRemoveAvatar(false)
+      setAvatarPreview(URL.createObjectURL(prepared))
+    } catch (err) {
+      if (err?.message === 'AVATAR_TOO_LARGE') {
+        toast(t('profilePage.avatarTooLarge'), 'error')
+      } else {
+        toast(t('profilePage.avatarInvalidType'), 'error')
+      }
+    } finally {
+      setPreparingAvatar(false)
+    }
   }
 
   const handleRemoveAvatar = () => {
+    if (avatarPreview?.startsWith('blob:')) URL.revokeObjectURL(avatarPreview)
     setAvatarFile(null)
     setAvatarPreview(null)
     setRemoveAvatar(true)
@@ -91,23 +115,33 @@ const ProfileEdit = () => {
 
     setSaving(true)
     try {
-      let nextAvatarUrl = userInfo.avatarUrl || null
-      if (avatarFile) {
-        const up = new FormData()
-        up.append('file', avatarFile)
-        const uploadRes = await uploadNewsImage(up)
-        const fileId = uploadRes.data?.id
-        if (!fileId) { toast(t('profilePage.avatarUploadError'), 'error'); setSaving(false); return }
-        nextAvatarUrl = buildFileContentUrl(fileId)
-      } else if (removeAvatar) {
-        nextAvatarUrl = null
-      }
-      await updateUser(userId, {
+      const payload = {
         firstName: form.firstName.trim() || null,
         lastName: form.lastName.trim() || null,
         email,
-      })
-      setStoredAvatarUrl(userId, nextAvatarUrl)
+      }
+      if (avatarFile) {
+        const up = new FormData()
+        up.append('file', avatarFile)
+        const uploadRes = await uploadAvatar(up)
+        const fileId = uploadRes.data?.id
+        if (!fileId) {
+          toast(t('profilePage.avatarUploadError'), 'error')
+          setSaving(false)
+          return
+        }
+        payload.avatarFileId = Number(fileId)
+      } else if (removeAvatar) {
+        payload.clearAvatar = true
+      }
+      const updateRes = await updateUser(userId, payload)
+      const savedAvatarUrl = updateRes.data?.avatarUrl || null
+      if (avatarFile && !savedAvatarUrl) {
+        toast(t('profilePage.avatarUploadError'), 'error')
+        setSaving(false)
+        return
+      }
+      notifyAvatarUpdated(userId, savedAvatarUrl)
       await loadProfile()
       toast(t('profilePage.saveSuccess'), 'success')
       navigate('/profile')
@@ -156,11 +190,16 @@ const ProfileEdit = () => {
             <div className="pe-avatar-block">
               <div className="pe-avatar-left">
                 <ProfileAvatar
-                  avatarUrl={avatarPreview}
+                  avatarUrl={preparingAvatar ? null : avatarPreview}
                   initials={initials}
                   size="profile-lg"
                   alt={userInfo.fullName}
                 />
+                {preparingAvatar && (
+                  <span className="pe-avatar-preparing muted">
+                    <Spinner size={14} />
+                  </span>
+                )}
               </div>
               <div className="pe-avatar-right col gap10">
                 <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatarChange} />
@@ -168,7 +207,7 @@ const ProfileEdit = () => {
                   type="button"
                   className="pe-upload-zone"
                   onClick={handlePickAvatar}
-                  disabled={saving || !canEdit}
+                  disabled={saving || preparingAvatar || !canEdit}
                 >
                   <span className="pe-upload-ic" aria-hidden><Icon name="upload" size={18} /></span>
                   <span className="pe-upload-text">

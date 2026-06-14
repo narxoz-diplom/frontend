@@ -9,6 +9,7 @@ import {
   Dropdown,
   Spinner,
 } from '@/shared/ui/academis'
+import UserAvatar from '@/shared/ui/UserAvatar'
 import { avatarInitials, statusI18nKey } from '../lib/courseDetailUi'
 
 const STATUS_OPTIONS = ['DRAFT', 'PUBLISHED', 'ARCHIVED']
@@ -35,6 +36,7 @@ const CourseHeader = ({
   enrolling,
   onEnroll,
   instructorLabel,
+  instructorAvatarUrl,
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -83,7 +85,11 @@ const CourseHeader = ({
             >
               {instructorLabel && (
                 <span className="row gap5">
-                  <span className="avatar avatar-sm">{avatarInitials(instructorLabel)}</span>
+                  <UserAvatar
+                    avatarUrl={instructorAvatarUrl}
+                    initials={avatarInitials(instructorLabel)}
+                    small
+                  />
                   {instructorLabel}
                 </span>
               )}

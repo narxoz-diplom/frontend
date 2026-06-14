@@ -5,7 +5,6 @@ import { getCurrentUser } from '@/shared/api/authApi'
 import {
   formatProfileField,
   buildProfileFullName,
-  getStoredAvatarUrl,
 } from '@/shared/lib/profileHelpers'
 
 const fromToken = () => {
@@ -25,7 +24,7 @@ const fromToken = () => {
     emailVerified: Boolean(token.email_verified),
     accountEnabled: true,
     userId,
-    avatarUrl: getStoredAvatarUrl(userId),
+    avatarUrl: null,
   }
 }
 
@@ -46,7 +45,7 @@ const applyUserPayload = (data, fallbackRoles) => {
       emailVerified: Boolean(data.emailVerified),
       accountEnabled: data.enabled !== false,
       userId,
-      avatarUrl: data.avatarUrl || getStoredAvatarUrl(userId),
+      avatarUrl: data.avatarUrl || null,
     },
     roles: (Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : fallbackRoles).length
       ? (Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : fallbackRoles)

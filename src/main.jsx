@@ -5,6 +5,7 @@ import './i18n'
 import './styles/academis-tokens.css'
 import './index.css'
 import './styles/academis-primitives.css'
+import './shared/ui/Avatar.css'
 import './pages/ai-academis.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(

@@ -379,23 +379,40 @@
   font-weight: 700;
   color: #fff;
   flex-shrink: 0;
+  overflow: hidden;
   background: linear-gradient(135deg, var(--brand), var(--red-700));
   font-size: 13px;
   width: 34px;
   height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   letter-spacing: 0;
 }
 
 .avatar-sm {
   width: 26px;
   height: 26px;
+  min-width: 26px;
+  min-height: 26px;
   font-size: 11px;
 }
 
 .avatar-lg {
   width: 56px;
   height: 56px;
+  min-width: 56px;
+  min-height: 56px;
   font-size: 20px;
+}
+
+/* Image avatars use .avatar-shell in shared/ui/Avatar.css */
+img.avatar,
+img.avatar-sm,
+img.avatar-lg {
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  padding: 0;
 }
 
 /* Tabs */

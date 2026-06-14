@@ -49,7 +49,7 @@ const Profile = () => {
   }, [roles.length, t, userInfo?.emailVerified])
 
   const initials = userInfo
-    ? buildProfileInitials(userInfo.firstName, userInfo.lastName, userInfo.username)
+    ? buildProfileInitials(userInfo.firstName, userInfo.lastName, userInfo.username, userInfo.email)
     : ''
 
   if (loading) {

@@ -12,6 +12,7 @@ import { useCourseHighlight } from './hooks/useCourseHighlight'
 import CourseHeader from './components/CourseHeader'
 import LessonsSection from './components/LessonsSection'
 import TestsSection from './components/TestsSection'
+import UserAvatar from '@/shared/ui/UserAvatar'
 import { avatarInitials, formatAboutDate, participantDisplayName, participantProgressPercent } from './lib/courseDetailUi'
 import './CourseDetail.css'
 
@@ -110,6 +111,7 @@ const CourseDetail = () => {
   const enrolledCount = participants?.studentCount
     ?? (Array.isArray(course.enrolledStudents) ? course.enrolledStudents.length : 0)
   const instructorLabel = participantDisplayName(participants?.instructor) || null
+  const instructorAvatarUrl = participants?.instructor?.avatarUrl || null
   const showParticipants = !previewMode
 
   return (
@@ -129,6 +131,7 @@ const CourseDetail = () => {
         enrolling={enrolling}
         onEnroll={handleEnrollFromPreview}
         instructorLabel={instructorLabel}
+        instructorAvatarUrl={instructorAvatarUrl}
       />
 
       {error && (
@@ -201,7 +204,11 @@ const CourseDetail = () => {
                     const progress = participantProgressPercent(student)
                     return (
                       <div key={student.userId} className="row gap10" style={{ alignItems: 'center' }}>
-                        <span className="avatar avatar-sm">{avatarInitials(name)}</span>
+                        <UserAvatar
+                          avatarUrl={student.avatarUrl}
+                          initials={avatarInitials(name)}
+                          small
+                        />
                         <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>{name}</span>
                         {progress != null && (
                           <span className="mono dim" style={{ fontSize: 12, fontWeight: 700 }}>

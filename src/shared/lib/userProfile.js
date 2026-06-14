@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import auth from '@/shared/config/auth'
 import { isAdmin, isTeacher } from '@/shared/lib/roles'
-import { getStoredAvatarUrl } from '@/shared/lib/profileHelpers'
+import { getCurrentUser } from '@/shared/api/authApi'
 
 export const getUserProfile = () => {
   const parsed = auth?.tokenParsed
@@ -34,7 +34,7 @@ export const getUserProfile = () => {
     firstName,
     lastName,
     email: parsed.email || '',
-    avatarUrl: getStoredAvatarUrl(userId),
+    avatarUrl: null,
     userId,
   }
 }
@@ -45,14 +45,50 @@ export const getPrimaryRoleLabel = (t) => {
   return t('auth.student')
 }
 
+const mergeProfileFromApi = (base, data) => {
+  if (!data) return base
+  const firstName = data.firstName || base.firstName
+  const lastName = data.lastName || base.lastName
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || base.fullName
+  const initials = `${(firstName || '').charAt(0)}${(lastName || '').charAt(0)}`.toUpperCase() || base.initials
+  return {
+    ...base,
+    firstName,
+    lastName,
+    fullName,
+    initials,
+    email: data.email || base.email,
+    avatarUrl: data.avatarUrl || null,
+    userId: data.id || base.userId,
+  }
+}
+
 export const useLiveUserProfile = () => {
   const [profile, setProfile] = useState(() => getUserProfile())
 
-  useEffect(() => {
-    const refresh = () => setProfile(getUserProfile())
-    window.addEventListener('academis:avatar-updated', refresh)
-    return () => window.removeEventListener('academis:avatar-updated', refresh)
+  const refresh = useCallback(async () => {
+    const base = getUserProfile()
+    if (!auth.token) {
+      setProfile(base)
+      return
+    }
+    try {
+      const { data } = await getCurrentUser()
+      setProfile(mergeProfileFromApi(base, data))
+    } catch {
+      setProfile(base)
+    }
   }, [])
+
+  useEffect(() => {
+    refresh()
+    const onAvatarUpdated = (e) => {
+      const { userId, url } = e.detail || {}
+      setProfile((prev) => (prev.userId === userId ? { ...prev, avatarUrl: url } : prev))
+    }
+    window.addEventListener('academis:avatar-updated', onAvatarUpdated)
+    return () => window.removeEventListener('academis:avatar-updated', onAvatarUpdated)
+  }, [refresh])
 
   return profile
 }

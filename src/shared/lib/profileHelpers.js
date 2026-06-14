@@ -11,14 +11,20 @@ export const buildProfileFullName = (firstName, lastName, username) => {
   return username || '—'
 }
 
-export const buildProfileInitials = (firstName, lastName, username) => {
+export const buildProfileInitials = (firstName, lastName, username, email) => {
   const f = firstName && String(firstName).trim() && firstName !== '—' ? firstName.trim().charAt(0) : ''
   const l = lastName && String(lastName).trim() && lastName !== '—' ? lastName.trim().charAt(0) : ''
   if (f && l) return `${f}${l}`.toUpperCase()
+  if (f) return `${f}${f}`.toUpperCase()
+  if (l) return `${l}${l}`.toUpperCase()
   const u = (username || '').trim()
-  if (u.length >= 2) return u.slice(0, 2).toUpperCase()
-  if (u.length === 1) return `${u}${u}`.toUpperCase()
-  return '?'
+  if (u && u !== '—') {
+    if (u.length >= 2) return u.slice(0, 2).toUpperCase()
+    return `${u}${u}`.toUpperCase()
+  }
+  const e = (email || '').trim()
+  if (e) return e.charAt(0).toUpperCase()
+  return 'U'
 }
 
 export const resolveAvatarUrl = (avatarUrl) => {
@@ -40,16 +46,20 @@ export const getStoredAvatarUrl = (userId) => {
   }
 }
 
-export const setStoredAvatarUrl = (userId, url) => {
+/** Notify shell/navigation that the current user's avatar changed. */
+export const notifyAvatarUpdated = (userId, url) => {
   if (!userId || typeof window === 'undefined') return
   try {
     const key = `${AVATAR_KEY_PREFIX}${userId}`
     if (!url) localStorage.removeItem(key)
     else localStorage.setItem(key, url)
-    window.dispatchEvent(new CustomEvent('academis:avatar-updated', { detail: { userId, url } }))
   } catch {
     /* ignore quota errors */
   }
+  window.dispatchEvent(new CustomEvent('academis:avatar-updated', { detail: { userId, url } }))
 }
+
+/** @deprecated use notifyAvatarUpdated */
+export const setStoredAvatarUrl = notifyAvatarUpdated
 
 export const buildFileContentUrl = (fileId) => (fileId ? `/api/files/${fileId}/content` : null)

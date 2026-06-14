@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { PageHeader, Spinner, Icon, EmptyState } from '@/shared/ui/academis'
 import { useAllowedEmails } from './hooks/useAllowedEmails'
 import AllowedEmailsModal from './components/AllowedEmailsModal'
+import UserAvatar from '@/shared/ui/UserAvatar'
 import {
   avatarInitials,
   participantDisplayName,
@@ -190,7 +191,10 @@ const CourseParticipants = () => {
         <div className="card card-pad course-participants-teacher">
           <div className="eyebrow">{t('coursePage.participantsTeacherEyebrow')}</div>
           <div className="row gap12" style={{ alignItems: 'center' }}>
-            <span className="avatar">{avatarInitials(instructorName)}</span>
+            <UserAvatar
+              avatarUrl={instructor.avatarUrl}
+              initials={avatarInitials(instructorName)}
+            />
             <div>
               <div style={{ fontWeight: 700, fontSize: 15 }}>{instructorName}</div>
               <div className="muted" style={{ fontSize: 13 }}>{instructorEmail}</div>
@@ -231,7 +235,11 @@ const CourseParticipants = () => {
                     <tr key={student.userId}>
                       <td>
                         <div className="row gap10" style={{ alignItems: 'center' }}>
-                          <span className="avatar avatar-sm">{avatarInitials(name)}</span>
+                          <UserAvatar
+                            avatarUrl={student.avatarUrl}
+                            initials={avatarInitials(name)}
+                            small
+                          />
                           <span style={{ fontWeight: 600 }}>{name}</span>
                           {mySub && student.userId === mySub && (
                             <span className="badge badge-published">{t('coursePage.participantsYou')}</span>
