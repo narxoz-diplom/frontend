@@ -30,6 +30,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
 
       const uploadFormData = new FormData()
       uploadFormData.append('file', newVideo.file)
+      uploadFormData.append('lessonId', String(lessonId))
       const uploadResponse = await uploadVideo(uploadFormData)
 
       const videoMetadata = {

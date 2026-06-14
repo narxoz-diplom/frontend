@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import auth from '@/shared/config/auth'
 import { getLessons, getLessonVideos } from '@/shared/api/lessonsApi'
 import { getCourse } from '@/shared/api/coursesApi'
 import { normalizeCourseViewerResponse } from '@/shared/lib/courseResponse'
 
 const resolveVideoUrl = (videoUrl) => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+  let resolved = videoUrl
   if (videoUrl.startsWith('/api')) {
-    return apiUrl.startsWith('http') ? `${apiUrl}${videoUrl}` : videoUrl
+    resolved = apiUrl.startsWith('http') ? `${apiUrl}${videoUrl}` : videoUrl
+  } else if (!videoUrl.startsWith('http')) {
+    resolved = `/api${videoUrl}`
   }
-  if (!videoUrl.startsWith('http')) {
-    return `/api${videoUrl}`
+  if (auth.token) {
+    const separator = resolved.includes('?') ? '&' : '?'
+    resolved = `${resolved}${separator}access_token=${encodeURIComponent(auth.token)}`
   }
-  return videoUrl
+  return resolved
 }
 
 export function useVideoData(courseId, lessonId, videoId) {

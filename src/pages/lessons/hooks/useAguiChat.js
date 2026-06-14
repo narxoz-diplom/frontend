@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { HttpAgent, randomUUID } from '@ag-ui/client'
 import { useTranslation } from 'react-i18next'
+import auth from '@/shared/config/auth'
 import { AG_UI_URL } from '@/shared/api/ragApi'
 import { cloneMessages, getMessageText } from '../lib/chatMessages'
 
@@ -26,8 +27,12 @@ export function useAguiChat({ lessonId, courseId, lessonTitle, courseTitle, less
   const threadId = `lesson-${String(lessonId ?? '')}-${String(courseId ?? '')}`
 
   const agent = useMemo(
-    () => (AG_UI_URL ? new HttpAgent({ url: AG_UI_URL, threadId }) : null),
-    [threadId]
+    () => (AG_UI_URL ? new HttpAgent({
+      url: AG_UI_URL,
+      threadId,
+      headers: auth.token ? { Authorization: `Bearer ${auth.token}` } : {},
+    }) : null),
+    [threadId, auth.token]
   )
 
   const lessonState = useMemo(() => {
