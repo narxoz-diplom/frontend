@@ -1,5 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import auth from '@/shared/config/auth'
+import { canEditCourseContent } from '@/shared/lib/roles'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@/shared/ui/academis'
 import {
@@ -11,6 +13,7 @@ import {
 
 const CourseContentOverview = ({
   courseId,
+  course,
   lessons,
   selectedLessonIds,
   onToggleLesson,
@@ -23,6 +26,12 @@ const CourseContentOverview = ({
   onSaveTestSettings,
 }) => {
   const { t } = useTranslation()
+  const canEditTests = canEditCourseContent(auth, course)
+  const testPath = (testItemId) => (
+    canEditTests
+      ? `/courses/${courseId}/tests/${testItemId}/edit`
+      : `/courses/${courseId}/tests/${testItemId}`
+  )
 
   return (
     <div className="card" style={{ marginBottom: 8 }}>
@@ -106,7 +115,7 @@ const CourseContentOverview = ({
                       </span>
                       <div className="ov-test-info">
                         <Link
-                          to={`/courses/${courseId}/tests/${testItem.id}`}
+                          to={testPath(testItem.id)}
                           className="ov-test-title"
                         >
                           {testItem.title}
@@ -118,10 +127,10 @@ const CourseContentOverview = ({
                         </div>
                       </div>
                       <Link
-                        to={`/courses/${courseId}/tests/${testItem.id}`}
+                        to={testPath(testItem.id)}
                         className="btn btn-sm btn-ghost ov-test-open"
                       >
-                        {t('studio.openTest', { defaultValue: 'Открыть' })}
+                        {canEditTests ? t('testEditPage.editTest', { defaultValue: 'Редактировать' }) : t('studio.openTest', { defaultValue: 'Открыть' })}
                       </Link>
                     </div>
 

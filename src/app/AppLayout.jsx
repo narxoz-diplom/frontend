@@ -10,6 +10,7 @@ import CourseTestResults from '@/pages/courses/CourseTestResults'
 import CourseParticipants from '@/pages/courses/CourseParticipants'
 import LessonDetail from '@/pages/lessons/LessonDetail'
 import TestDetail from '@/pages/lessons/TestDetail'
+import TestEdit from '@/pages/lessons/TestEdit'
 import VideoPlayer from '@/pages/lessons/VideoPlayer'
 import Files from '@/pages/files/Files'
 import Notifications from '@/pages/notifications/Notifications'
@@ -39,6 +40,7 @@ const AppLayout = ({ userRoles }) => {
         <Route path="/courses/:courseId/participants" element={<CourseParticipants />} />
         <Route path="/courses/:courseId/test-results" element={<CourseTestResults />} />
         <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonDetail />} />
+        <Route path="/courses/:courseId/tests/:testId/edit" element={<TestEdit />} />
         <Route path="/courses/:courseId/tests/:testId" element={<TestDetail />} />
         <Route path="/courses/:courseId/lessons/:lessonId/videos/:videoId" element={<VideoPlayer />} />
         <Route path="/files" element={<Files />} />

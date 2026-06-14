@@ -20,6 +20,7 @@ const TestsSection = ({
   courseId,
   previewMode,
   canViewContent = !previewMode,
+  canEditTests = false,
   tests,
   highlightedTestId,
   testRefs,
@@ -32,6 +33,10 @@ const TestsSection = ({
   }
 
   const openTest = (testId) => {
+    if (canEditTests) {
+      navigate(`/courses/${courseId}/tests/${testId}/edit`)
+      return
+    }
     if (canViewContent) {
       navigate(`/courses/${courseId}/tests/${testId}`)
     }
@@ -61,8 +66,8 @@ const TestsSection = ({
                 }
               }}
               role="button"
-              tabIndex={canViewContent ? 0 : -1}
-              style={canViewContent ? undefined : { cursor: 'default', opacity: 0.75 }}
+              tabIndex={canEditTests || canViewContent ? 0 : -1}
+              style={canEditTests || canViewContent ? undefined : { cursor: 'default', opacity: 0.75 }}
             >
               <span className="test-ic">
                 <Icon name="target" size={18} />
@@ -94,7 +99,7 @@ const TestsSection = ({
                 <span className="badge badge-published">{bestScore}%</span>
               )}
               <Icon
-                name={canViewContent ? 'chevRight' : 'lock'}
+                name={canEditTests ? 'edit' : canViewContent ? 'chevRight' : 'lock'}
                 size={16}
                 style={{ color: 'var(--text-3)' }}
               />

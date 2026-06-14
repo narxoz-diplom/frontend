@@ -211,6 +211,7 @@ const CourseEdit = () => {
 
           <CourseContentOverview
             courseId={id}
+            course={edit.course}
             lessons={edit.lessons}
             selectedLessonIds={edit.selectedLessonIds}
             onToggleLesson={edit.toggleLessonSelection}

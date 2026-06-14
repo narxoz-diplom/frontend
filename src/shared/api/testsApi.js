@@ -2,6 +2,7 @@ import api from './client'
 
 export const getCourseTests = (courseId) => api.get(`/courses/${courseId}/tests`)
 export const getTest = (testId) => api.get(`/courses/tests/${testId}`)
+export const updateTest = (testId, payload) => api.put(`/courses/tests/${testId}`, payload)
 export const submitTest = (testId, payload) => api.post(`/courses/tests/${testId}/submit`, payload)
 export const updateTestSettings = (testId, payload) =>
   api.patch(`/courses/tests/${testId}/settings`, payload)

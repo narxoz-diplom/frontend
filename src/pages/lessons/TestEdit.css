@@ -1,0 +1,124 @@
+.test-edit-page {
+  max-width: 920px;
+}
+
+.test-edit-page-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 240px;
+}
+
+.test-edit-settings {
+  margin-bottom: 18px;
+}
+
+.test-edit-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.test-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.test-edit-label {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--text-2);
+}
+
+.test-edit-input,
+.test-edit-textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  padding: 10px 12px;
+  font: inherit;
+}
+
+.test-edit-textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.test-edit-questions-head {
+  margin: 8px 0 14px;
+}
+
+.test-edit-hint {
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.test-edit-question {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.test-edit-question-head {
+  align-items: center;
+}
+
+.test-edit-remove {
+  color: var(--red-500, #ef4444);
+}
+
+.test-edit-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.test-edit-option-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.test-edit-correct {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.test-edit-option-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--brand) 10%, var(--surface));
+  color: var(--brand);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.test-edit-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.test-edit-footer {
+  margin-top: 18px;
+  padding-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  .test-edit-settings-grid,
+  .test-edit-extra-grid {
+    grid-template-columns: 1fr;
+  }
+}

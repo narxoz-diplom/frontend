@@ -46,6 +46,13 @@ export const canUpload = (keycloak) => {
   return isAdmin(keycloak) || isTeacher(keycloak)
 }
 
+export const canEditCourseContent = (keycloak, course) => {
+  if (!canUpload(keycloak)) return false
+  if (isAdmin(keycloak)) return true
+  const sub = keycloak.tokenParsed?.sub
+  return Boolean(sub && course?.instructorId === sub)
+}
+
 export const canDelete = (keycloak) => {
   return isAdmin(keycloak)
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import auth from '@/shared/config/auth'
-import { canUpload, isTeacher, isAdmin } from '@/shared/lib/roles'
+import { canUpload, isTeacher, isAdmin, canEditCourseContent } from '@/shared/lib/roles'
 import { getCourseParticipants } from '@/shared/api/coursesApi'
 import { getCourseTestResults } from '@/shared/api/testsApi'
 import { pickLocalized } from '@/i18n/localize'
@@ -47,6 +47,7 @@ const CourseDetail = () => {
   })
 
   const canManageCourse = isTeacher(auth) || isAdmin(auth)
+  const canEditTests = canEditCourseContent(auth, course)
   const mySub = auth.tokenParsed?.sub ? String(auth.tokenParsed.sub) : ''
 
   useEffect(() => {
@@ -172,6 +173,7 @@ const CourseDetail = () => {
           <TestsSection
             courseId={id}
             previewMode={previewMode}
+            canEditTests={canEditTests}
             tests={tests}
             highlightedTestId={highlightedTestId}
             testRefs={testRefs}

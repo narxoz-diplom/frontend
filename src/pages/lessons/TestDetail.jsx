@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { getTest, submitTest, getMyTestAttempts } from '@/shared/api/testsApi'
 import { getCourse } from '@/shared/api/coursesApi'
 import { normalizeCourseViewerResponse } from '@/shared/lib/courseResponse'
 import { pickLocalized } from '@/i18n/localize'
 import { useTranslation } from 'react-i18next'
+import auth from '@/shared/config/auth'
+import { canEditCourseContent } from '@/shared/lib/roles'
 import { PageHeader, Donut, Spinner, Icon } from '@/shared/ui/academis'
 import { parseOptions } from './lib/testOptions'
 import './TestDetail.css'
@@ -146,6 +148,10 @@ const TestDetail = () => {
         <div className="learning-flash learning-flash--error">{t('testPage.notFound')}</div>
       </div>
     )
+  }
+
+  if (canEditCourseContent(auth, course)) {
+    return <Navigate to={`/courses/${courseId}/tests/${testId}/edit`} replace />
   }
 
   const questions = test.questions || []
