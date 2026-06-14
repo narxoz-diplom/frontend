@@ -2,11 +2,7 @@ import React from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { getMessageText } from '../lib/chatMessages'
-import QuizGenerativeUI from './QuizGenerativeUI'
-import SummaryGenerativeUI from './SummaryGenerativeUI'
-import AnalyticsGenerativeUI from './AnalyticsGenerativeUI'
-
-const DEFAULT_THEME = { primary: '#e41616', accent: '#ed5a5a' }
+import AguiToolRenderer from './AguiToolRenderer'
 
 function AguiMessage({ msg }) {
   if (msg.role === 'activity') return null
@@ -17,28 +13,7 @@ function AguiMessage({ msg }) {
     } catch {
       return null
     }
-    if (result?.questions?.length) {
-      return (
-        <div className="lesson-chat ag-ui-inline-quiz">
-          <QuizGenerativeUI result={result} theme={result?.theme || DEFAULT_THEME} />
-        </div>
-      )
-    }
-    if (result?.summary != null) {
-      if (result?.ui_type === 'analytics') {
-        return (
-          <div className="lesson-chat ag-ui-inline-gen">
-            <AnalyticsGenerativeUI result={result} theme={result?.theme || DEFAULT_THEME} />
-          </div>
-        )
-      }
-      return (
-        <div className="lesson-chat ag-ui-inline-gen">
-          <SummaryGenerativeUI result={result} theme={result?.theme || DEFAULT_THEME} />
-        </div>
-      )
-    }
-    return null
+    return <AguiToolRenderer result={result} />
   }
   const text = getMessageText(msg)
   if (!text && msg.role !== 'user') return null

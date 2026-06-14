@@ -68,7 +68,14 @@ const AGUIChat = forwardRef(function AGUIChat(
       t('lessonChat.chipExplain'),
       t('lessonChat.chipSummary'),
       t('lessonChat.chipQuiz'),
+      t('lessonChat.chipAnalytics'),
       t('lessonChat.chipTerms'),
+      t('lessonChat.chipChecklist'),
+      t('lessonChat.chipTimeline'),
+      t('lessonChat.chipComparison'),
+      t('lessonChat.chipFaq'),
+      t('lessonChat.chipSteps'),
+      t('lessonChat.chipMindmap'),
     ],
     [t]
   )
