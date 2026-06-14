@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import auth from '@/shared/config/auth'
 import { isAdmin, isTeacher, isStudent } from '@/shared/lib/roles'
-import { getPrimaryRoleLabel, getUserProfile } from '@/shared/lib/userProfile'
+import { getPrimaryRoleLabel, useLiveUserProfile } from '@/shared/lib/userProfile'
+import NavAvatar from './components/NavAvatar'
 import { Icon, Logo, LogoMark } from '@/shared/ui/academis'
 import NavItem from './components/NavItem'
 import SearchBox from './components/SearchBox'
@@ -18,7 +19,7 @@ const Navigation = ({ userRoles = [], children }) => {
   const { t } = useTranslation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const profile = useMemo(() => getUserProfile(), [])
+  const profile = useLiveUserProfile()
   const roleLabel = getPrimaryRoleLabel(t)
 
   useEffect(() => {
@@ -102,7 +103,7 @@ const Navigation = ({ userRoles = [], children }) => {
 
         <div className="sb-foot">
           <Link to="/profile" className="nav-item" onClick={closeMobile} title={t('nav.profile')}>
-            <span className="avatar avatar-sm">{profile.initials}</span>
+            <NavAvatar avatarUrl={profile.avatarUrl} initials={profile.initials} small />
             <span className="nav-txt sb-foot-txt" style={{ overflow: 'hidden' }}>
               <div style={{
                 fontSize: 12.5,

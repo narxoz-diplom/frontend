@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Icon } from '@/shared/ui/academis'
 import Dropdown from '@/shared/ui/Dropdown'
-import { getPrimaryRoleLabel, getUserProfile } from '@/shared/lib/userProfile'
+import { getPrimaryRoleLabel, useLiveUserProfile } from '@/shared/lib/userProfile'
+import NavAvatar from './NavAvatar'
 
 const UserMenu = ({ userRoles = [], onLogout }) => {
   const { t } = useTranslation()
-  const profile = useMemo(() => getUserProfile(), [])
+  const profile = useLiveUserProfile()
   const roleLabel = getPrimaryRoleLabel(t)
 
   return (
@@ -16,7 +17,7 @@ const UserMenu = ({ userRoles = [], onLogout }) => {
       width={240}
       trigger={(
         <div className="tb-user" role="button" tabIndex={0} aria-haspopup="menu">
-          <span className="avatar">{profile.initials}</span>
+          <NavAvatar avatarUrl={profile.avatarUrl} initials={profile.initials} />
           <span className="desktop-only" style={{ color: 'var(--text-3)' }}>
             <Icon name="chevDown" size={15} />
           </span>

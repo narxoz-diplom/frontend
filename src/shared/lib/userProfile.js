@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import auth from '@/shared/config/auth'
 import { isAdmin, isTeacher } from '@/shared/lib/roles'
+import { getStoredAvatarUrl } from '@/shared/lib/profileHelpers'
 
 export const getUserProfile = () => {
   const parsed = auth?.tokenParsed
@@ -10,6 +12,8 @@ export const getUserProfile = () => {
       firstName: 'User',
       lastName: '',
       email: '',
+      avatarUrl: null,
+      userId: null,
     }
   }
 
@@ -22,6 +26,7 @@ export const getUserProfile = () => {
     || ''
   const fullName = [firstName, lastName].filter(Boolean).join(' ')
   const initials = `${firstName.charAt(0) || ''}${lastName.charAt(0) || ''}`.toUpperCase() || 'U'
+  const userId = parsed.sub || null
 
   return {
     initials,
@@ -29,6 +34,8 @@ export const getUserProfile = () => {
     firstName,
     lastName,
     email: parsed.email || '',
+    avatarUrl: getStoredAvatarUrl(userId),
+    userId,
   }
 }
 
@@ -36,4 +43,16 @@ export const getPrimaryRoleLabel = (t) => {
   if (isAdmin(auth)) return 'Admin'
   if (isTeacher(auth)) return t('auth.teacher')
   return t('auth.student')
+}
+
+export const useLiveUserProfile = () => {
+  const [profile, setProfile] = useState(() => getUserProfile())
+
+  useEffect(() => {
+    const refresh = () => setProfile(getUserProfile())
+    window.addEventListener('academis:avatar-updated', refresh)
+    return () => window.removeEventListener('academis:avatar-updated', refresh)
+  }, [])
+
+  return profile
 }

@@ -100,33 +100,7 @@
   background: var(--brand);
 }
 
-/* Profile */
-.profile-page-academis {
-  max-width: 820px;
-}
-
-.profile-card {
-  overflow: hidden;
-}
-
-.profile-banner {
-  height: 110px;
-  background: linear-gradient(120deg, #e41616, #a00d0d 70%, #7d0e0e);
-  position: relative;
-}
-
-.profile-body {
-  padding: 0 22px 22px;
-}
-
-.profile-body .avatar {
-  display: inline-grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--brand-tint);
-  color: var(--brand);
-  font-weight: 800;
-}
+/* Profile — see pages/profile/Profile.css */
 
 /* News */
 .news-dot {

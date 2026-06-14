@@ -14,3 +14,4 @@ const postPublic = async (path, payload) => {
 export const login = (credentials) => postPublic('/auth/login', credentials)
 export const register = (payload) => postPublic('/auth/register', payload)
 export const getCurrentUser = () => api.get('/auth/user')
+export const updateUser = (userId, payload) => api.put(`/auth/user/${userId}`, payload)

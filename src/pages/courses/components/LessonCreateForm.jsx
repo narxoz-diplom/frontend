@@ -17,7 +17,7 @@ const LessonCreateForm = ({ lesson, onChange, onSubmit, onCancel }) => {
             value={lesson.title}
             onChange={(e) => onChange({ ...lesson, title: e.target.value })}
             required
-            placeholder={t('coursePage.lessonTitle')}
+            placeholder={t('coursePage.lessonTitlePlaceholder')}
           />
         </div>
         <div className="form-group">
@@ -26,7 +26,7 @@ const LessonCreateForm = ({ lesson, onChange, onSubmit, onCancel }) => {
             value={lesson.description}
             onChange={(e) => onChange({ ...lesson, description: e.target.value })}
             rows="3"
-            placeholder={t('coursePage.lessonDescription')}
+            placeholder={t('coursePage.lessonDescriptionPlaceholder')}
           />
         </div>
         <div className="form-group">

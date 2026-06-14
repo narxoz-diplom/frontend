@@ -181,7 +181,7 @@ const Files = () => {
         </span>
         <input
           className="input"
-          placeholder={t('filesPage.title')}
+          placeholder={t('filesPage.searchPlaceholder')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

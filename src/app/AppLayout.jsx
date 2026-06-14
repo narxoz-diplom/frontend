@@ -16,6 +16,7 @@ import Notifications from '@/pages/notifications/Notifications'
 import AdminNews from '@/pages/news/AdminNews'
 import NewsDetail from '@/pages/news/NewsDetail'
 import Profile from '@/pages/profile/Profile'
+import ProfileEdit from '@/pages/profile/ProfileEdit'
 import RAG from '@/pages/rag/RAG'
 import TeacherGradesLayout from '@/pages/teacher-grades/TeacherGradesLayout'
 import TeacherGradesCourses from '@/pages/teacher-grades/TeacherGradesCourses'
@@ -46,6 +47,7 @@ const AppLayout = ({ userRoles }) => {
         <Route path="/news/:id" element={<NewsDetail />} />
         <Route path="/admin/news" element={<AdminNews />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<ProfileEdit />} />
         <Route path="/teacher/grades" element={<TeacherGradesLayout />}>
           <Route index element={<TeacherGradesCourses />} />
           <Route path=":courseId" element={<TeacherGradesLessons />} />

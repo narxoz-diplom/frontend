@@ -119,7 +119,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
                 value={newVideo.title}
                 onChange={(e) => setNewVideo({...newVideo, title: e.target.value})}
                 required
-                placeholder={t('lessonPage.videoTitle')}
+                placeholder={t('lessonPage.videoTitlePlaceholder')}
               />
             </div>
             <div className="form-group">
@@ -128,7 +128,7 @@ const LessonVideos = ({ videos, canEdit, courseId, lessonId, onVideosChanged, on
                 value={newVideo.description}
                 onChange={(e) => setNewVideo({...newVideo, description: e.target.value})}
                 rows="3"
-                placeholder={t('lessonPage.videoDescription')}
+                placeholder={t('lessonPage.videoDescriptionPlaceholder')}
               />
             </div>
             <div className="form-row">

@@ -44,7 +44,7 @@ const ModuleSection = ({
             type="text"
             value={collection}
             onChange={(e) => onCollectionChange(e.target.value)}
-            placeholder="default"
+            placeholder=""
           />
         </div>
         <div className="field">

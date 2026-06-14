@@ -46,8 +46,13 @@ a:focus-visible {
 }
 
 ::selection {
-    background: var(--brand);
-    color: #fff;
+    background: #b3d4fd;
+    color: #0d1117;
+}
+
+body.dark-mode ::selection {
+    background: #2d4a7a;
+    color: #f2f4f7;
 }
 
 *::-webkit-scrollbar {

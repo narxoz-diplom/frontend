@@ -316,6 +316,22 @@ body,
   background: var(--surface-3);
 }
 
+.nav-avatar-img {
+  object-fit: cover;
+  display: block;
+  flex-shrink: 0;
+}
+
+.avatar.nav-avatar-img {
+  width: 34px;
+  height: 34px;
+}
+
+.avatar-sm.nav-avatar-img {
+  width: 26px;
+  height: 26px;
+}
+
 .collapse-toggle {
   display: inline-flex;
 }

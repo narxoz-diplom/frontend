@@ -22,7 +22,7 @@ const SummarySection = ({ collection, result, loading, hideResult, onCollectionC
             type="text"
             value={collection}
             onChange={(e) => onCollectionChange(e.target.value)}
-            placeholder="default"
+            placeholder=""
           />
         </div>
         <button type="submit" className="btn btn-primary" disabled={loading}>

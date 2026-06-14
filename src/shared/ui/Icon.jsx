@@ -59,6 +59,7 @@ import {
   FiX,
   FiXCircle,
   FiZap,
+  FiCamera,
 } from 'react-icons/fi'
 
 const STROKE_WIDTH = 1.75
@@ -197,6 +198,7 @@ const ICON_COMPONENTS = {
   monitor: FiMonitor,
   list: FiList,
   grid: FiGrid,
+  camera: FiCamera,
 }
 
 const ICONS = Object.fromEntries(Object.keys(ICON_COMPONENTS).map((name) => [name, name]))
