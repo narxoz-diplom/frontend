@@ -14,6 +14,7 @@ import LessonsSection from './components/LessonsSection'
 import TestsSection from './components/TestsSection'
 import UserAvatar from '@/shared/ui/UserAvatar'
 import { avatarInitials, formatAboutDate, participantDisplayName, participantProgressPercent } from './lib/courseDetailUi'
+import { resolveStudentEmail } from './lib/testResultsUi'
 import './CourseDetail.css'
 
 const CourseDetail = () => {
@@ -265,7 +266,7 @@ const CourseDetail = () => {
                     const percent = result.maxScore > 0
                       ? Math.round((result.score / result.maxScore) * 100)
                       : 0
-                    const studentLabel = result.studentName || result.studentDisplayLabel || result.studentId
+                    const studentLabel = resolveStudentEmail(result)
                     return (
                       <div
                         key={result.attemptId}
@@ -273,7 +274,14 @@ const CourseDetail = () => {
                         style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}
                       >
                         <div>
-                          <div style={{ fontWeight: 650, fontSize: 13.5 }}>{studentLabel}</div>
+                          <div className="row gap8" style={{ alignItems: 'center' }}>
+                            <span style={{ fontWeight: 650, fontSize: 13.5 }}>{studentLabel}</span>
+                            {result.suspiciousFlag && (
+                              <span className="badge course-test-results-flag" title={t('courseEdit.testResultsFlagHint')}>
+                                <Icon name="warn" size={12} />
+                              </span>
+                            )}
+                          </div>
                           <div className="dim" style={{ fontSize: 12 }}>{title}</div>
                         </div>
                         <span className={`badge ${percent >= 60 ? 'badge-published' : 'badge-draft'}`}>

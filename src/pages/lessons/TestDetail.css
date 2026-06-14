@@ -12,6 +12,20 @@
   flex-shrink: 0;
 }
 
+.test-anti-cheat-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 @media (max-width: 768px) {
   .test-page .result-card {
     padding: 28px 20px;

@@ -9,6 +9,7 @@ import auth from '@/shared/config/auth'
 import { canEditCourseContent } from '@/shared/lib/roles'
 import { PageHeader, Donut, Spinner, Icon } from '@/shared/ui/academis'
 import { parseOptions } from './lib/testOptions'
+import { useTestAntiCheat } from './hooks/useTestAntiCheat'
 import './TestDetail.css'
 import './learning-academis.css'
 
@@ -100,6 +101,7 @@ const TestDetail = () => {
   const attemptsLeft = maxAttempts != null && Number.isFinite(maxAttempts) ? Math.max(0, maxAttempts - attemptsUsed) : null
   const isAttemptLimitReached = attemptsLeft === 0 && maxAttempts != null
   const shouldShowQuestions = retakeMode || (!submitted && !latestAttemptResult)
+  const antiCheat = useTestAntiCheat(shouldShowQuestions && !submitting)
 
   const handleSubmit = async () => {
     setSubmitting(true)
@@ -109,6 +111,7 @@ const TestDetail = () => {
         answers: Object.fromEntries(
           Object.entries(answers).map(([k, v]) => [k, String(v)]),
         ),
+        suspiciousFlag: antiCheat.isSuspicious(),
       })
       setResult(response.data)
       setSubmitted(true)
@@ -277,6 +280,11 @@ const TestDetail = () => {
         <div className="learning-flash learning-flash--error">{t('testPage.attemptLimitReached')}</div>
       ) : (
         <div className="col gap14">
+          <div className="learning-flash test-anti-cheat-notice" role="note">
+            <Icon name="warn" size={16} />
+            <span>{t('testPage.antiCheatNotice')}</span>
+          </div>
+
           <div className="quiz-progress">
             <div className="row between" style={{ marginBottom: 7, fontSize: 12.5, fontWeight: 600 }}>
               <span className="muted">

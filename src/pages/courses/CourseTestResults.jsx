@@ -8,6 +8,7 @@ import { getCourse } from '@/shared/api/coursesApi'
 import { getCourseTests, getCourseTestResults } from '@/shared/api/testsApi'
 import { useTranslation } from 'react-i18next'
 import { PageHeader, Icon, Spinner } from '@/shared/ui/academis'
+import { resolveStudentEmail, studentResultSearchText } from './lib/testResultsUi'
 import './CourseTestResults.css'
 
 const csvEscape = (v) => {
@@ -73,7 +74,7 @@ const CourseTestResults = () => {
     }
     const query = testResultSearch.trim().toLowerCase()
     if (query) {
-      rows = rows.filter((row) => (row.studentId || '').toLowerCase().includes(query))
+      rows = rows.filter((row) => studentResultSearchText(row).includes(query))
     }
     return rows
   }, [testResults, testResultFilterTestId, testResultSearch])
@@ -104,11 +105,11 @@ const CourseTestResults = () => {
       const percent = row.maxScore > 0 ? Math.round((row.score / row.maxScore) * 100) : 0
       return [
         row.completedAt || '',
-        row.studentId || '',
+        resolveStudentEmail(row),
         title,
         `${row.score ?? ''}/${row.maxScore ?? ''}`,
         String(percent),
-        row.suspiciousFlag ? '1' : '0',
+        row.suspiciousFlag ? t('courseEdit.testResultsFlagYes') : '',
       ]
     })
     const sep = ';'
@@ -252,10 +253,18 @@ const CourseTestResults = () => {
                       'title',
                     )
                     const percent = row.maxScore > 0 ? Math.round((row.score / row.maxScore) * 100) : 0
+                    const studentEmail = resolveStudentEmail(row)
                     return (
                       <tr key={row.attemptId}>
                         <td>{formatAttemptDate(row.completedAt)}</td>
-                        <td><code>{row.studentId}</code></td>
+                        <td>
+                          <div className="course-test-results-student">
+                            <span>{studentEmail}</span>
+                            {row.studentName && row.studentName !== studentEmail && (
+                              <span className="dim course-test-results-student-name">{row.studentName}</span>
+                            )}
+                          </div>
+                        </td>
                         <td>{title || '—'}</td>
                         <td>{row.score} / {row.maxScore}</td>
                         <td>
@@ -264,7 +273,17 @@ const CourseTestResults = () => {
                           </span>
                         </td>
                         <td>
-                          {row.suspiciousFlag ? t('courseEdit.testResultsFlagYes') : '—'}
+                          {row.suspiciousFlag ? (
+                            <span
+                              className="badge course-test-results-flag"
+                              title={t('courseEdit.testResultsFlagHint')}
+                            >
+                              <Icon name="warn" size={14} />
+                              {t('courseEdit.testResultsFlagYes')}
+                            </span>
+                          ) : (
+                            <span className="muted">—</span>
+                          )}
                         </td>
                       </tr>
                     )

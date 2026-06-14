@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getPublishedCourses, getEnrolledCourses } from '@/shared/api/coursesApi'
+import { getCourses, getEnrolledCourses } from '@/shared/api/coursesApi'
 import { getMyTestAttempts, getUpcomingTestDeadlines, getCourseTests } from '@/shared/api/testsApi'
 import { pickLocalized } from '@/i18n/localize'
 
@@ -69,8 +69,8 @@ const useStudentDashboardData = () => {
         const load = async () => {
             try {
                 setLoading(true)
-                const [publishedRes, enrolledRes, attemptsRes, deadlinesRes] = await Promise.all([
-                    getPublishedCourses(),
+                const [accessibleRes, enrolledRes, attemptsRes, deadlinesRes] = await Promise.all([
+                    getCourses(),
                     getEnrolledCourses(),
                     getMyTestAttempts().catch(() => ({ data: [] })),
                     getUpcomingTestDeadlines().catch(() => ({ data: [] })),
@@ -78,7 +78,7 @@ const useStudentDashboardData = () => {
                 const enrolled = Array.isArray(enrolledRes.data) ? enrolledRes.data : []
                 setEnrolledCourses(enrolled)
                 setStats({
-                    catalogCourses: Array.isArray(publishedRes.data) ? publishedRes.data.length : 0,
+                    catalogCourses: Array.isArray(accessibleRes.data) ? accessibleRes.data.length : 0,
                     enrolledCourses: enrolled.length,
                     completedLessons: countCompletedLessonsFromStorage(),
                     testAttempts: Array.isArray(attemptsRes.data) ? attemptsRes.data.length : 0,

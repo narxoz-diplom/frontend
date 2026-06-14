@@ -11,6 +11,26 @@
   overflow-x: auto;
 }
 
+.course-test-results-student {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 180px;
+}
+
+.course-test-results-student-name {
+  font-size: 12px;
+}
+
+.course-test-results-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(228, 22, 22, 0.12);
+  color: #c40f0f;
+  border: 1px solid rgba(228, 22, 22, 0.18);
+}
+
 .courses-flash {
   display: flex;
   align-items: center;

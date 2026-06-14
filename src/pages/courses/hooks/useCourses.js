@@ -6,7 +6,6 @@ import { canUpload, isAdmin } from '@/shared/lib/roles'
 import { pickLocalized } from '@/i18n/localize'
 import {
   getCourses,
-  getPublishedCourses,
   getEnrolledCourses,
   getCourseViews,
   enrollInCourse,
@@ -50,7 +49,7 @@ export const useCourses = () => {
   const loadCourses = async () => {
     try {
       setLoading(true)
-      const response = await (canUpload(auth) ? getCourses() : getPublishedCourses())
+      const response = await getCourses()
       setCourses(response.data)
 
       const enrolled = new Set()
