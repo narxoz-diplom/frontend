@@ -1,25 +1,24 @@
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Donut, Spinner } from '@/shared/ui/academis'
-import { formatMicrosToCurrency, formatTokenCount } from '@/shared/lib/aiUsageFormat'
+import { formatMicrosToCurrency, formatTokenCount, computeUserQuotaPct } from '@/shared/lib/aiUsageFormat'
 
 const TeacherAiUsagePanel = ({ report, loading, horizontal = false }) => {
   const { t, i18n } = useTranslation()
 
-  const { quotaPct, runs, tokens, cost, monthlyUsed, monthlyLimit } = useMemo(() => {
+  const { quotaPct, runs, tokens, cost, monthlyUsed, monthlyLimit, unlimited } = useMemo(() => {
     const summary = report?.summary || {}
-    const quota = report?.quotaUtilization?.[0]
-    const used = quota?.monthlyUsedTokens ?? 0
-    const limit = quota?.monthlyLimitTokens ?? 0
-    const pct = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0
+    const { pct, unlimited: isUnlimited, monthlyUsed: used, monthlyLimit: limit } =
+      computeUserQuotaPct(report?.userLimit)
 
     return {
       quotaPct: pct,
+      unlimited: isUnlimited,
       runs: summary.generationCount ?? 0,
       tokens: formatTokenCount(summary.totalTokens) ?? '—',
       cost: formatMicrosToCurrency(summary.costMicros, summary.currency, i18n.language) ?? '—',
       monthlyUsed: formatTokenCount(used) ?? '0',
-      monthlyLimit: formatTokenCount(limit) ?? '—',
+      monthlyLimit: isUnlimited ? '∞' : (formatTokenCount(limit) ?? '—'),
     }
   }, [report, i18n.language])
 
@@ -47,7 +46,7 @@ const TeacherAiUsagePanel = ({ report, loading, horizontal = false }) => {
             size={96}
             color="var(--brand)"
             sub={t('dashboard.home.quota')}
-            label={`${quotaPct}%`}
+            label={unlimited ? '∞' : `${quotaPct}%`}
           />
         </div>
         <div className="teacher-ai-stats-row">
@@ -69,7 +68,7 @@ const TeacherAiUsagePanel = ({ report, loading, horizontal = false }) => {
         size={128}
         color="var(--brand)"
         sub={t('dashboard.home.quota')}
-        label={`${quotaPct}%`}
+        label={unlimited ? '∞' : `${quotaPct}%`}
       />
       <div className="row gap16" style={{ width: '100%', justifyContent: 'space-around' }}>
         {metrics.slice(0, 3).map(({ value, label }) => (

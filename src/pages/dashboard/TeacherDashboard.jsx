@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { computeUserQuotaPct } from '@/shared/lib/aiUsageFormat'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import CreateCourseModal from '@/pages/courses/CreateCourseModal'
@@ -38,12 +39,10 @@ const TeacherDashboard = ({ view = 'home' }) => {
   const [showCreateModal, setShowCreateModal] = useState(false)
 
   const aiGenerations = aiUsage.report?.summary?.generationCount ?? 0
-  const quotaPct = useMemo(() => {
-    const quota = aiUsage.report?.quotaUtilization?.[0]
-    const monthlyUsed = quota?.monthlyUsedTokens ?? 0
-    const monthlyLimit = quota?.monthlyLimitTokens ?? 0
-    return monthlyLimit > 0 ? Math.min(100, Math.round((monthlyUsed / monthlyLimit) * 100)) : 0
-  }, [aiUsage.report])
+  const quotaPct = useMemo(
+    () => computeUserQuotaPct(aiUsage.report?.userLimit).pct,
+    [aiUsage.report],
+  )
 
   const performancePct = courses.length > 0
     ? Math.round((publishedCount / courses.length) * 100)

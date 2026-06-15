@@ -17,6 +17,22 @@ export function formatTokenCount(value) {
   return new Intl.NumberFormat().format(Number(value))
 }
 
+/** Teacher account quota from usage report `userLimit` (not per-model policy rows). */
+export function computeUserQuotaPct(userLimit) {
+  if (!userLimit) {
+    return { pct: 0, unlimited: false, monthlyUsed: 0, monthlyLimit: 0 }
+  }
+  const monthlyUsed = userLimit.monthlyUsed ?? 0
+  const monthlyLimit = userLimit.monthlyLimit ?? 0
+  if (userLimit.unlimited) {
+    return { pct: 0, unlimited: true, monthlyUsed, monthlyLimit: 0 }
+  }
+  const pct = monthlyLimit > 0
+    ? Math.min(100, Math.round((monthlyUsed / monthlyLimit) * 100))
+    : 0
+  return { pct, unlimited: false, monthlyUsed, monthlyLimit }
+}
+
 export function resolveAiApiErrorMessage(err, t, fallbackKey = 'courseEdit.outlineError') {
   const data = err?.response?.data
   if (data?.code === 'QUOTA_EXCEEDED') {
