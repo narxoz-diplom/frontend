@@ -7,9 +7,11 @@ import {
   getCourse,
   getCourseParticipants,
   getCourseViews,
+  getCourseProgress,
   enrollInCourse,
   updateCourseStatus
 } from '@/shared/api/coursesApi'
+import { mapCourseProgressLessons } from '@/pages/courses/hooks/useCourseProgress'
 import { getLessons, createLesson } from '@/shared/api/lessonsApi'
 import { getCourseTests } from '@/shared/api/testsApi'
 import { getLessonFiles, uploadToLesson, downloadFile, deleteFile } from '@/shared/api/filesApi'
@@ -40,39 +42,13 @@ export const useCourseDetail = (id) => {
     loadCourse()
   }, [id])
 
-  const loadProgress = () => {
-    if (typeof Storage === 'undefined') return
-    const progressData = localStorage.getItem('videoProgress')
-    if (!progressData) return
+  const loadProgress = async () => {
     try {
-      const progress = JSON.parse(progressData)
-      const lessonProgressMap = {}
-
-      Object.keys(progress).forEach(key => {
-        const [courseId, lessonId, videoId] = key.split('-')
-        if (courseId === id) {
-          if (!lessonProgressMap[lessonId]) {
-            lessonProgressMap[lessonId] = { completed: 0, total: 0, videos: {} }
-          }
-          lessonProgressMap[lessonId].videos[videoId] = progress[key]
-          lessonProgressMap[lessonId].total++
-          if (progress[key].completed) {
-            lessonProgressMap[lessonId].completed++
-          }
-        }
-      })
-
-      const progressPercentages = {}
-      Object.keys(lessonProgressMap).forEach(lessonId => {
-        const lesson = lessonProgressMap[lessonId]
-        progressPercentages[lessonId] = {
-          completed: lesson.completed === lesson.total && lesson.total > 0,
-          progress: lesson.total > 0 ? (lesson.completed / lesson.total) * 100 : 0
-        }
-      })
-
-      setLessonProgress(progressPercentages)
-    } catch {}
+      const { data } = await getCourseProgress(id)
+      setLessonProgress(mapCourseProgressLessons(data))
+    } catch {
+      setLessonProgress({})
+    }
   }
 
   const loadCourse = async () => {
@@ -98,7 +74,7 @@ export const useCourseDetail = (id) => {
         }
         await loadLessons()
         await loadTests()
-        loadProgress()
+        await loadProgress()
       }
 
       try {
@@ -178,7 +154,7 @@ export const useCourseDetail = (id) => {
       const response = await getLessons(id)
       const lessonsData = response.data || []
       setLessons(await enrichLessonsWithVideos(lessonsData))
-      loadProgress()
+      await loadProgress()
     } catch {
       setError(t('coursePage.loadLessonsError'))
     }

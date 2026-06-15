@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import auth from '@/shared/config/auth'
@@ -6,8 +6,8 @@ import { canUpload } from '@/shared/lib/roles'
 import { updateLesson } from '@/shared/api/lessonsApi'
 import { pickLocalized } from '@/i18n/localize'
 import { PageHeader, Icon, Spinner } from '@/shared/ui/academis'
+import { useCourseProgress } from '@/pages/courses/hooks/useCourseProgress'
 import { useLessonData } from './hooks/useLessonData'
-import { useLessonProgress } from './hooks/useLessonProgress'
 import LessonNotes from './components/LessonNotes'
 import LessonVideos from './components/LessonVideos'
 import LessonFiles from './components/LessonFiles'
@@ -32,7 +32,15 @@ const LessonDetail = () => {
     refreshVideos,
     refreshFiles,
   } = useLessonData(courseId, lessonId)
-  const lessonProgress = useLessonProgress(courseId, lessonId, videos)
+  const {
+    lessonProgress,
+    markLessonComplete,
+    markingLessonId,
+    currentLessonProgress,
+  } = useCourseProgress(courseId)
+  const [completeError, setCompleteError] = useState(null)
+
+  const lessonProgressItem = currentLessonProgress(lessonId)
 
   const handleSaveContent = async (content) => {
     try {
@@ -43,6 +51,14 @@ const LessonDetail = () => {
     } catch {
       setError(t('lessonPage.saveError'))
       return false
+    }
+  }
+
+  const handleMarkComplete = async () => {
+    setCompleteError(null)
+    const ok = await markLessonComplete(Number(lessonId))
+    if (!ok) {
+      setCompleteError(t('lessonPage.markCompleteError'))
     }
   }
 
@@ -69,6 +85,7 @@ const LessonDetail = () => {
   const canEdit = canUpload(auth)
   const courseTitle = pickLocalized(course, 'title') || course.title || ''
   const lessonTitle = pickLocalized(lesson, 'title') || lesson.title || ''
+  const isMarking = markingLessonId === Number(lessonId)
 
   return (
     <div className="page page-wide lesson-page">
@@ -87,7 +104,7 @@ const LessonDetail = () => {
                 <span className="badge badge-red">
                   {t('lessonPage.lessonOf', { current: currentIndex + 1, total: lessons.length })}
                 </span>
-                {lessonProgress.completed && (
+                {lessonProgressItem.completed && (
                   <span className="badge badge-published row gap4">
                     <Icon name="check" size={12} />
                     {t('lessonPage.completed')}
@@ -97,16 +114,16 @@ const LessonDetail = () => {
             )}
           />
 
-          {videos.length > 0 && (
+          {lessonProgressItem.completed && (
             <div style={{ marginTop: -4 }}>
               <div className="row between" style={{ marginBottom: 6, fontSize: 12.5, fontWeight: 600 }}>
                 <span className="muted">{t('coursePage.progress')}</span>
                 <span style={{ color: 'var(--brand)', fontWeight: 800 }}>
-                  {Math.round(lessonProgress.progress)}%
+                  {Math.round(lessonProgressItem.progress)}%
                 </span>
               </div>
               <div className="progress">
-                <i style={{ width: `${lessonProgress.progress}%` }} />
+                <i style={{ width: `${lessonProgressItem.progress}%` }} />
               </div>
             </div>
           )}
@@ -135,6 +152,41 @@ const LessonDetail = () => {
             onFilesChanged={refreshFiles}
             onError={setError}
           />
+
+          {!canEdit && (
+            <div className="lesson-complete-section">
+              {completeError && (
+                <div className="learning-flash learning-flash--error" role="alert">
+                  {completeError}
+                </div>
+              )}
+              {lessonProgressItem.completed ? (
+                <div className="lesson-complete-done" role="status">
+                  <Icon name="checkCircle" size={20} />
+                  <span>{t('lessonPage.markedComplete')}</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-primary btn-block"
+                  onClick={handleMarkComplete}
+                  disabled={isMarking}
+                >
+                  {isMarking ? (
+                    <>
+                      <Spinner size={16} color="#fff" />
+                      {t('common.loading')}
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="checkCircle" size={18} />
+                      {t('lessonPage.markComplete')}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="row between gap10 lesson-page-nav">
             {prevLesson ? (

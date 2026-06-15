@@ -628,6 +628,9 @@ const resources = {
         requiredVideoFields: 'Укажите файл видео и название',
         deleteVideoTitle: 'Удаление видео',
         deleteVideoMessage: 'Удалить это видео?',
+        markComplete: 'Отметить как выполненное',
+        markedComplete: 'Урок отмечен как выполненный',
+        markCompleteError: 'Не удалось сохранить прогресс. Попробуйте ещё раз.',
       },
 
       confirmModal: {
@@ -1738,6 +1741,9 @@ const resources = {
         requiredVideoFields: 'Please provide video title and file',
         deleteVideoTitle: 'Delete video',
         deleteVideoMessage: 'Delete this video?',
+        markComplete: 'Mark as completed',
+        markedComplete: 'Lesson marked as completed',
+        markCompleteError: 'Could not save progress. Please try again.',
       },
 
       confirmModal: {
@@ -2848,6 +2854,9 @@ const resources = {
         requiredVideoFields: 'Бейне файлы мен атауын көрсетіңіз',
         deleteVideoTitle: 'Бейнені жою',
         deleteVideoMessage: 'Осы бейнені жою керек пе?',
+        markComplete: 'Орындалды деп белгілеу',
+        markedComplete: 'Сабақ орындалды деп белгіленді',
+        markCompleteError: 'Прогресс сақталмады. Қайта көріңіз.',
       },
 
       confirmModal: {

@@ -21,7 +21,7 @@ const LessonSidebar = ({ course, courseId, lessonId, lessons, lessonProgress }) 
         <div className="lesson-aside-scroll">
           {lessons.map((lesson, index) => {
             const isCurrent = lesson.id === parseInt(lessonId, 10)
-            const isDone = isCurrent && lessonProgress?.completed
+            const isDone = lessonProgress?.[lesson.id]?.completed
             return (
               <div
                 key={lesson.id}

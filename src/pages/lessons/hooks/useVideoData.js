@@ -4,15 +4,22 @@ import auth from '@/shared/config/auth'
 import { getLessons, getLessonVideos } from '@/shared/api/lessonsApi'
 import { getCourse } from '@/shared/api/coursesApi'
 import { normalizeCourseViewerResponse } from '@/shared/lib/courseResponse'
+import { buildVideoStreamPath } from '../lib/videoStreamUrl'
 
-const resolveVideoUrl = (videoUrl) => {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
-  let resolved = videoUrl
-  if (videoUrl.startsWith('/api')) {
-    resolved = apiUrl.startsWith('http') ? `${apiUrl}${videoUrl}` : videoUrl
-  } else if (!videoUrl.startsWith('http')) {
-    resolved = `/api${videoUrl}`
+const apiOrigin = () => {
+  const configured = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  if (configured.startsWith('http')) return configured
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin
   }
+  return 'http://localhost:8083'
+}
+
+const resolveVideoUrl = (video, lessonId, videoId) => {
+  const streamPath = buildVideoStreamPath(video, lessonId, videoId)
+  if (!streamPath) return ''
+  const origin = apiOrigin()
+  let resolved = streamPath.startsWith('/api') ? `${origin}${streamPath}` : streamPath
   if (auth.token) {
     const separator = resolved.includes('?') ? '&' : '?'
     resolved = `${resolved}${separator}access_token=${encodeURIComponent(auth.token)}`
@@ -34,11 +41,12 @@ export function useVideoData(courseId, lessonId, videoId) {
     const loadVideo = async () => {
       try {
         setLoading(true)
+        await auth.initSafe()
         const videosResponse = await getLessonVideos(lessonId)
         const foundVideo = videosResponse.data.find(v => v.id === parseInt(videoId))
         if (foundVideo) {
           setVideo(foundVideo)
-          setVideoUrl(resolveVideoUrl(foundVideo.videoUrl))
+          setVideoUrl(resolveVideoUrl(foundVideo, lessonId, videoId))
         }
 
         const lessonsResponse = await getLessons(courseId)

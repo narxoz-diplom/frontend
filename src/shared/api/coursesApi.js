@@ -11,6 +11,8 @@ export const updateCourseStatus = (courseId, status) =>
 
 export const enrollInCourse = (courseId) => api.post(`/courses/${courseId}/enroll`)
 export const getCourseParticipants = (courseId) => api.get(`/courses/${courseId}/participants`)
+export const getCourseProgress = (courseId) => api.get(`/courses/${courseId}/progress`)
+export const markLessonComplete = (lessonId) => api.post(`/courses/lessons/${lessonId}/complete`)
 export const getCourseViews = (courseId) => api.get(`/courses/${courseId}/views`)
 export const updateAllowedEmails = (courseId, emails) =>
   api.put(`/courses/${courseId}/allowed-emails`, emails)

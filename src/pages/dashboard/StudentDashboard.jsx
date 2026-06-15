@@ -17,7 +17,10 @@ const StudentDashboard = ({ view = 'home' }) => {
   const profile = useMemo(() => getUserProfile(), [])
   const { stats, enrolledCourses, upcomingDeadlines, loading } = useStudentDashboardData()
 
-  const totalLessons = enrolledCourses.reduce((sum, course) => sum + (Number(course.lessonsCount) || 0), 0)
+  const totalLessons = stats.totalLessons || enrolledCourses.reduce(
+    (sum, course) => sum + (Number(course.lessonsCount) || 0),
+    0,
+  )
   const progressPct = totalLessons > 0
     ? Math.min(100, Math.round((stats.completedLessons / totalLessons) * 100))
     : 0
